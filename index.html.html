@@ -1741,7 +1741,8 @@ function duplicateWeek(sourceWid){
     const names=['Haut du corps — Poussée','Bas du corps','Haut du corps — Tirage','Full Body','Cardio & Gainage','Épaules & Bras'];
     const newDiv = document.createElement('div');
     newDiv.className = 'sb'; newDiv.id = `sb-${newSid}`;
-    newDiv.innerHTML = `<div class="sb-hd"><div class="sb-num sb-num-${newWid}">-</div><input class="sb-ni" type="text" id="sn-${newSid}" value="${sname}" oninput="updatePreview()"><button class="btn btn-danger btn-xs" onclick="removeSeanceFromWeek(${newSid},${newWid})">✕</button></div><div class="sb-body"><textarea class="sb-obj" id="sobj-${newSid}" rows="1" oninput="updatePreview()">${sobj}</textarea><div id="exos-${newSid}"></div><button class="btn-add-exo" onclick="addExo(${newSid})">＋ Ajouter un exercice</button></div>`;
+    newDiv.innerHTML = `<div class="sb-hd" onclick="toggleSb(${newSid})"><div class="sb-num sb-num-${newWid}">-</div><input class="sb-ni" type="text" id="sn-${newSid}" value="${sname}" oninput="updatePreview()" onclick="event.stopPropagation()"><span class="sb-collapse-arrow">▶</span><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${newSid},${newWid})">✕</button></div><div class="sb-body"><textarea class="sb-obj" id="sobj-${newSid}" rows="1" oninput="updatePreview()">${sobj}</textarea><div id="exos-${newSid}"></div><button class="btn-add-exo" onclick="addExo(${newSid})">＋ Ajouter un exercice</button></div>`;
+    newDiv.classList.add('sb-open');
     if(newWrap) newWrap.appendChild(newDiv);
     
     // Copy exos
@@ -2197,7 +2198,8 @@ function editProg(id){
       const sid=seanceCount; exoCounts[sid]=0; setDetailCounts[sid]={};
       const wrapS=$(`seances-wrap-${wid}`);
       const div=document.createElement('div'); div.className='sb'; div.id=`sb-${sid}`;
-      div.innerHTML=`<div class="sb-hd"><div class="sb-num sb-num-${wid}">-</div><input class="sb-ni" type="text" id="sn-${sid}" value="${(s.name||'').replace(/"/g,'&quot;')}" oninput="updatePreview()"><button class="btn btn-danger btn-xs" onclick="removeSeanceFromWeek(${sid},${wid})">✕</button></div><div class="sb-body"><textarea class="sb-obj" id="sobj-${sid}" rows="1" oninput="updatePreview()">${s.objective||''}</textarea><div id="exos-${sid}"></div><button class="btn-add-exo" onclick="addExo(${sid})">＋ Ajouter un exercice</button></div>`;
+      div.innerHTML=`<div class="sb-hd" onclick="toggleSb(${sid})"><div class="sb-num sb-num-${wid}">-</div><input class="sb-ni" type="text" id="sn-${sid}" value="${(s.name||'').replace(/"/g,'&quot;')}" oninput="updatePreview()" onclick="event.stopPropagation()"><span class="sb-collapse-arrow">▶</span><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${sid},${wid})">✕</button></div><div class="sb-body"><textarea class="sb-obj" id="sobj-${sid}" rows="1" oninput="updatePreview()">${s.objective||''}</textarea><div id="exos-${sid}"></div><button class="btn-add-exo" onclick="addExo(${sid})">＋ Ajouter un exercice</button></div>`;
+      div.classList.add('sb-open');
       wrapS?.appendChild(div);
       (s.exos||[]).forEach(e=>{
         exoCounts[sid]++;
