@@ -3380,8 +3380,8 @@ function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
     const nseries=e.detail&&e.setDetails&&e.setDetails.length?e.setDetails.length:Math.max(1,parseInt(String(e.sets).replace(/[^0-9]/g,''))||3);
     const seriesData=[];
     let hasData=false;
+    const _dp=displayPid||progId;
     for(let si=0;si<nseries;si++){
-      const _dp=displayPid||progId;
       const r=$(`slog-r-${_dp}-${e.id}-${si}`)?.value||'';
       const l=$(`slog-l-${_dp}-${e.id}-${si}`)?.value||'';
       const checked=$(`chk-${_dp}-${e.id}-${si}`)?.classList.contains('checked')||false;
