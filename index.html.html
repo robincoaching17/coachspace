@@ -1863,12 +1863,13 @@ function collectWeeks(){
         const parts=er.id.split('-'); const eid=parts[parts.length-1];
         const ename=$(`en-${sid}-${eid}`)?.value.trim(); if(!ename)return;
         const detail=isDetailMode(sid,eid);
+        const globalRest=$(`ert-${sid}-${eid}`)?.value||'—';
         let setDetails=null;
         if(detail){
           const n=setDetailCounts[sid]?.[eid]||3;
-          setDetails=Array.from({length:n},(_,i)=>({reps:$(`dr-${sid}-${eid}-${i}`)?.value||'—',load:$(`dl-${sid}-${eid}-${i}`)?.value||'—',rest:$(`drt-${sid}-${eid}-${i}`)?.value||'90s'}));
+          setDetails=Array.from({length:n},(_,i)=>({reps:$(`dr-${sid}-${eid}-${i}`)?.value||'—',load:$(`dl-${sid}-${eid}-${i}`)?.value||'—',rest:$(`drt-${sid}-${eid}-${i}`)?.value||globalRest}));
         }
-        exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:$(`ert-${sid}-${eid}`)?.value||'—',setDetails,tech:$(`etn-${sid}-${eid}`)?.value||''});
+        exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||''});
       });
       if(exos.length) seances.push({num:snum,name:sname,objective:sobj,exos});
     });
@@ -2029,14 +2030,24 @@ function addSetRow(sid,eid){
 }
 
 function parseRestToSeconds(val){
-  if(!val) return 0;
+  if(!val || val==='—' || val==='-') return 0;
   val = String(val).trim().toLowerCase();
-  // formats: 90, 90s, 1'30, 1min30, 1m30, 1:30, 2min, 2m
   let m;
-  if((m=val.match(/^(\d+)[':m](\d+)/))) return parseInt(m[1])*60+parseInt(m[2]);
+  // 1'30, 2:30, 1m30 → min:sec
+  if((m=val.match(/^(\d+)[':m:](\d+)/))) return parseInt(m[1])*60+parseInt(m[2]);
+  // 1min30, 2min45 → min + sec
+  if((m=val.match(/^(\d+)\s*min(?:ute)?s?\s*(\d+)\s*s?$/))) return parseInt(m[1])*60+parseInt(m[2]);
+  // 2min, 3minutes → just minutes
   if((m=val.match(/^(\d+)\s*min(?:ute)?s?$/))) return parseInt(m[1])*60;
-  if((m=val.match(/^(\d+)\s*[ms]?$/))) return parseInt(m[1]);
-  return 90; // default
+  // 2' → minutes only
+  if((m=val.match(/^(\d+)\s*['']$/))) return parseInt(m[1])*60;
+  // 2m → minutes with "m"
+  if((m=val.match(/^(\d+)\s*m$/))) return parseInt(m[1])*60;
+  // 90s → seconds
+  if((m=val.match(/^(\d+)\s*s$/))) return parseInt(m[1]);
+  // 90 → just number, assume seconds
+  if((m=val.match(/^(\d+)$/))) return parseInt(m[1]);
+  return 0; // unknown → no timer
 }
 
 function formatRestDisplay(seconds){
@@ -2080,12 +2091,13 @@ function collectSeances(){
       const parts=er.id.split('-');const eid=parts[parts.length-1];
       const ename=$(`en-${sid}-${eid}`)?.value.trim();if(!ename)return;
       const detail=isDetailMode(sid,eid);
+      const globalRest=$(`ert-${sid}-${eid}`)?.value||'—';
       let setDetails=null;
       if(detail){
         const n=setDetailCounts[sid]?.[eid]||3;
-        setDetails=Array.from({length:n},(_,i)=>({reps:$(`dr-${sid}-${eid}-${i}`)?.value||'—',load:$(`dl-${sid}-${eid}-${i}`)?.value||'—',rest:$(`drt-${sid}-${eid}-${i}`)?.value||'90s'}));
+        setDetails=Array.from({length:n},(_,i)=>({reps:$(`dr-${sid}-${eid}-${i}`)?.value||'—',load:$(`dl-${sid}-${eid}-${i}`)?.value||'—',rest:$(`drt-${sid}-${eid}-${i}`)?.value||globalRest}));
       }
-      exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:$(`ert-${sid}-${eid}`)?.value||'—',setDetails,tech:$(`etn-${sid}-${eid}`)?.value||''});
+      exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||''});
     });
     if(exos.length)seances.push({num,name:sname,objective:sobj,exos});
   });
@@ -2156,7 +2168,20 @@ function saveProg(){
   const editId=parseInt($('editing-prog-id').value)||0;
   if(editId){
     const p=S.programmes.find(x=>x.id===editId);
-    if(p){Object.assign(p,{clientId,name,obj:getObj(),dur:getDur(),notes:$('b-notes').value,weeks});}
+    if(p){
+      // Preserve unlock state, dates, feedback from existing weeks
+      const oldWeeks=p.weeks||[];
+      weeks.forEach((nw,i)=>{
+        const ow=oldWeeks[i];
+        if(ow){
+          nw.unlocked=ow.unlocked;
+          nw.unlockedDate=ow.unlockedDate||null;
+          nw.feedback=ow.feedback||'';
+          nw.done=ow.done||false;
+        }
+      });
+      Object.assign(p,{clientId,name,obj:getObj(),dur:getDur(),notes:$('b-notes').value,weeks});
+    }
     saveState();renderStats();renderProgs();
     showToast('✅ Programme modifié !',true);
     clearBuilder();addWeek();
@@ -2207,9 +2232,30 @@ function editProg(id){
         setDetailCounts[sid][eid]=e.setDetails?e.setDetails.length:3;
         const c=$(`exos-${sid}`); const d=document.createElement('div'); d.className='exo-card'; d.id=`ex-${sid}-${eid}`;
         const mo2=METHODS.map(m=>`<option${m===e.method?' selected':''}>${m}</option>`).join('');
-        d.innerHTML=`<div class="exo-top"><div class="exo-idx">${eid}</div><select class="method-sel" id="mth-${sid}-${eid}" onchange="updatePreview()">${mo2}</select><input type="text" class="exo-name-inp" value="${(e.name||'').replace(/"/g,'&quot;')}" id="en-${sid}-${eid}" oninput="updatePreview()"><button class="btn btn-danger btn-xs" onclick="removeExo(${sid},${eid})">✕</button></div><div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px"><div class="exo-global" style="flex:1"><div><div class="plbl">Séries</div><input class="pinp" type="text" id="es-${sid}-${eid}" value="${e.sets||''}" onchange="syncSetCount(${sid},${eid})"></div><div><div class="plbl">Rép./Durée</div><input class="pinp" type="text" id="er-${sid}-${eid}" value="${e.reps||''}" oninput="updatePreview()"></div><div><div class="plbl">Charge</div><input class="pinp" type="text" id="el-${sid}-${eid}" value="${e.load||''}" oninput="updatePreview()"></div><div><div class="plbl">Repos</div><input class="pinp" type="text" id="ert-${sid}-${eid}" value="${e.rest||''}" oninput="updatePreview()"></div></div></div><input class="ti" type="text" id="etn-${sid}-${eid}" value="${(e.tech||'').replace(/"/g,'&quot;')}" placeholder="💡 Conseil technique..." oninput="updatePreview()">`;
+        const hasDetail=e.detail&&e.setDetails&&e.setDetails.length>0;
+        const detailDisplay=hasDetail?'block':'none';
+        const detailBtnClass=hasDetail?'detail-toggle on':'detail-toggle';
+        const detailBtnText=hasDetail?'✅ Détail actif':'🔢 Détailler';
+        d.innerHTML=`<div class="exo-top" style="margin-bottom:6px"><div class="exo-idx">${eid}</div><select class="method-sel" id="mth-${sid}-${eid}" onchange="updatePreview()">${mo2}</select><input type="text" class="exo-name-inp" value="${(e.name||'').replace(/"/g,'&quot;')}" id="en-${sid}-${eid}" oninput="updatePreview()"><button class="btn btn-danger btn-xs" style="margin-left:auto" onclick="removeExo(${sid},${eid})">✕</button></div>
+  <div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px">
+    <div class="exo-global" style="flex:1">
+      <div><div class="plbl">Séries</div><input class="pinp" type="text" id="es-${sid}-${eid}" value="${e.sets||''}" onchange="syncSetCount(${sid},${eid})"></div>
+      <div><div class="plbl">Rép./Durée</div><input class="pinp" type="text" id="er-${sid}-${eid}" value="${e.reps||''}" oninput="updatePreview()"></div>
+      <div><div class="plbl">Charge</div><input class="pinp" type="text" id="el-${sid}-${eid}" value="${e.load||''}" oninput="updatePreview()"></div>
+      <div><div class="plbl">Repos</div><input class="pinp" type="text" id="ert-${sid}-${eid}" value="${e.rest||''}" oninput="syncRest(${sid},${eid});updatePreview()"></div>
+    </div>
+    <button class="${detailBtnClass}" id="dtog-${sid}-${eid}" onclick="toggleDetail(${sid},${eid})" style="margin-top:14px">${detailBtnText}</button>
+  </div>
+  <div id="detail-wrap-${sid}-${eid}" style="display:${detailDisplay}">
+    <table class="set-detail-table" id="detail-tbl-${sid}-${eid}"><thead><tr><th>#</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody id="detail-tbody-${sid}-${eid}"></tbody></table>
+    <button class="btn-add-exo" style="margin-top:4px" onclick="addSetRow(${sid},${eid})">+ Série</button>
+  </div>
+  <input class="ti" type="text" id="etn-${sid}-${eid}" value="${(e.tech||'').replace(/"/g,'&quot;')}" placeholder="💡 Conseil technique..." oninput="updatePreview()">`;
         c?.appendChild(d);
-        if(e.detail&&e.setDetails){const tbody=$(`detail-tbody-${sid}-${eid}`);if(tbody){tbody.innerHTML=e.setDetails.map((sd,i)=>`<tr><td class="set-row-num">${i+1}</td><td><input type="text" id="dr-${sid}-${eid}-${i}" value="${sd.reps}" oninput="updatePreview()"></td><td><input type="text" id="dl-${sid}-${eid}-${i}" value="${sd.load}" oninput="updatePreview()"></td><td><input type="text" id="drt-${sid}-${eid}-${i}" value="${sd.rest}" oninput="updatePreview()"></td></tr>`).join('');}}else{renderSetRows(sid,eid);}
+        if(hasDetail){
+          const tbody=$(`detail-tbody-${sid}-${eid}`);
+          if(tbody){tbody.innerHTML=e.setDetails.map((sd,i)=>`<tr><td class="set-row-num">${i+1}</td><td><input type="text" id="dr-${sid}-${eid}-${i}" value="${sd.reps}" oninput="updatePreview()"></td><td><input type="text" id="dl-${sid}-${eid}-${i}" value="${sd.load}" oninput="updatePreview()"></td><td><input type="text" id="drt-${sid}-${eid}-${i}" value="${sd.rest}" oninput="updatePreview()"></td></tr>`).join('');}
+        }else{renderSetRows(sid,eid);}
       });
       renumberWeekSeances(wid);
     });
@@ -2288,8 +2334,8 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
           <button class="serie-check" id="chk-${pid}-${e.id}-${si}" onclick="toggleSerie('${pid}','${e.id}',${si},${restSecs})" type="button"></button>
           <span class="serie-label" id="slbl-${pid}-${e.id}-${si}">Série ${si+1} — ${prescribed}</span>
           <div class="serie-log">
-            <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}" placeholder="Rép.">
-            <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}" placeholder="Charge">
+            <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}" placeholder="Rép." oninput="autoSaveLogDraft()">
+            <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}" placeholder="Charge" oninput="autoSaveLogDraft()">
           </div>
         </div>
         <div class="rest-timer" id="timer-${pid}-${e.id}-${si}">
@@ -2314,7 +2360,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
             <div class="feel-btn" id="fl-${pid}-${e.id}-4" onclick="setFeel('${pid}','${e.id}',4,this)">💪</div>
             <div class="feel-btn" id="fl-${pid}-${e.id}-5" onclick="setFeel('${pid}','${e.id}',5,this)">🔥</div>
           </div>
-          <input class="log-note-inp" type="text" id="ln-${pid}-${e.id}" placeholder="Note libre...">
+          <input class="log-note-inp" type="text" id="ln-${pid}-${e.id}" placeholder="Note libre..." oninput="autoSaveLogDraft()">
         </div>
       </td></tr>`;
     }
@@ -3177,10 +3223,72 @@ function renderClientProg(){
       });
       if(!prog.weeks&&prog.seances) initSwipe(prog.id, prog.seances.length);
     });
+    // Restore any draft log data (reps, charges, checks)
+    restoreLogDrafts();
   }catch(e){
     el.innerHTML=`<div class="empty"><div class="ei">⚠️</div><div class="et">Erreur</div><div class="es">${e.message}</div></div>`;
     console.error('renderClientProg',e);
   }
+}
+
+// ── AUTO-SAVE LOG DRAFTS ──
+// Save all slog inputs to localStorage so data persists if user closes app
+let _autoSaveTimer=null;
+function autoSaveLogDraft(){
+  if(_autoSaveTimer) clearTimeout(_autoSaveTimer);
+  _autoSaveTimer=setTimeout(_doSaveLogDraft, 500); // debounce 500ms
+}
+function _doSaveLogDraft(){
+  try{
+    const draft={};
+    // Collect all slog-r and slog-l inputs
+    document.querySelectorAll('[id^="slog-r-"],[id^="slog-l-"]').forEach(inp=>{
+      if(inp.value) draft[inp.id]=inp.value;
+    });
+    // Collect checked series
+    document.querySelectorAll('[id^="chk-"].checked').forEach(chk=>{
+      draft['_chk_'+chk.id]=true;
+    });
+    // Collect feels
+    document.querySelectorAll('.feel-btn.sel').forEach(fb=>{
+      draft['_feel_'+fb.id]=true;
+    });
+    // Collect notes
+    document.querySelectorAll('[id^="ln-"]').forEach(inp=>{
+      if(inp.value) draft[inp.id]=inp.value;
+    });
+    localStorage.setItem('cs_log_draft', JSON.stringify(draft));
+  }catch(e){console.warn('autoSaveLogDraft error',e);}
+}
+function restoreLogDrafts(){
+  try{
+    const raw=localStorage.getItem('cs_log_draft');
+    if(!raw) return;
+    const draft=JSON.parse(raw);
+    // Wait a tick for DOM to be ready
+    setTimeout(()=>{
+      for(const [key,val] of Object.entries(draft)){
+        if(key.startsWith('_chk_')){
+          const chk=$(key.replace('_chk_',''));
+          if(chk&&!chk.classList.contains('checked')){
+            chk.classList.add('checked');
+            chk.textContent='✓';
+            const lbl=$(key.replace('_chk_chk-','slbl-'));
+            if(lbl) lbl.classList.add('checked');
+          }
+        } else if(key.startsWith('_feel_')){
+          const fb=$(key.replace('_feel_',''));
+          if(fb) fb.classList.add('sel');
+        } else {
+          const inp=$(key);
+          if(inp && !inp.value) inp.value=val;
+        }
+      }
+    }, 100);
+  }catch(e){console.warn('restoreLogDrafts error',e);}
+}
+function clearLogDraft(){
+  try{localStorage.removeItem('cs_log_draft');}catch(e){}
 }
 
 // Toggle serie check
@@ -3200,6 +3308,7 @@ function toggleSerie(pid,exoId,si,restSecs=0){
   } else if(!checked){
     stopRestTimer(pid,exoId,si);
   }
+  autoSaveLogDraft();
 }
 
 function startRestTimer(pid,exoId,si,totalSecs){
@@ -3249,6 +3358,7 @@ function skipTimer(pid,exoId,si){
 function setFeel(pid,exoId,val){
   const k=`${pid}-${exoId}`;feels[k]=val;
   for(let i=1;i<=5;i++){const b=$(`fl-${pid}-${exoId}-${i}`);if(b)b.classList.toggle('sel',i===val);}
+  autoSaveLogDraft();
 }
 
 function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
@@ -3293,6 +3403,7 @@ function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
   const doneKey=`${progId}_w${weekIdx??'x'}_s${seanceIdx}`;
   S.doneSeances[cid][doneKey]=new Date().toLocaleDateString('fr-FR');
   saveState();renderStats();renderClientJournal();renderClientProg();
+  clearLogDraft();
   showToast(`✅ Séance "${s.name}" enregistrée !`,true);
 }
 
