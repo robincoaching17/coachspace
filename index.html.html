@@ -250,6 +250,32 @@ select option{background:var(--s2);}
 .exo-name-inp{width:100%;font-size:13px;font-weight:800;background:var(--s1);color:var(--text);border:2px solid var(--red);border-radius:7px;padding:8px 12px;color:var(--text);outline:none;font-family:'Nunito',sans-serif;margin-bottom:8px;}
 .exo-name-inp:focus{border-color:var(--red2);box-shadow:0 0 0 3px var(--red-dim);}
 .exo-name-inp::placeholder{color:var(--muted);font-weight:600;}
+.method-hint{font-size:11px;color:var(--info);background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.15);border-radius:5px;padding:4px 8px;margin-bottom:6px;font-weight:600;}
+.method-custom-wrap{margin-bottom:8px;}
+.ds-form{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-top:4px;}
+.ds-hd{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;color:var(--text);text-transform:uppercase;margin-bottom:8px;}
+.ds-rest-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.ds-rest-row .plbl{margin:0;font-size:11px;}
+.ds-rest-row .pinp{width:80px;}
+.ds-serie-block{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:6px;}
+.ds-serie-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.ds-serie-num{font-size:11px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:1px;}
+.ds-main-row{display:flex;gap:6px;align-items:flex-end;margin-bottom:4px;}
+.ds-main-row .plbl{font-size:10px;margin-bottom:2px;}
+.ds-main-row .pinp{width:80px;}
+.ds-main-label{font-size:10px;color:var(--muted);font-style:italic;padding-bottom:6px;}
+.ds-drop-row{display:flex;gap:6px;align-items:flex-end;margin:2px 0 2px 12px;padding:4px 0;border-left:2px solid var(--warn);}
+.ds-drop-row .plbl{font-size:10px;margin-bottom:2px;}
+.ds-drop-row .pinp{width:80px;}
+.ds-drop-arrow{font-size:14px;color:var(--warn);padding:0 4px 4px;}
+.ds-drop-label{font-size:10px;color:var(--warn);font-weight:700;padding-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
+.ds-sub-row td{background:rgba(245,158,11,.04);border-top:1px dashed rgba(245,158,11,.2);}
+.ds-log-block{flex-wrap:wrap;}
+.ds-log-block .ds-log-content{flex:1;min-width:0;}
+.ds-log-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+.ds-log-main .serie-label{flex:1;min-width:120px;}
+.ds-log-drop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 0 4px 16px;border-left:2px solid var(--warn);margin:2px 0;}
+.ds-log-drop-label{font-size:11px;color:var(--warn);font-weight:700;flex:1;min-width:120px;}
 .ti:focus{color:var(--text);}
 .btn-add-exo{background:transparent;border:1px dashed var(--border);color:var(--muted);border-radius:var(--rs);padding:7px;font-size:11px;cursor:pointer;transition:all .2s;width:100%;font-family:'Nunito',sans-serif;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px;}
 .btn-add-exo:hover{border-color:var(--red);color:var(--red);background:var(--red-dim);}
@@ -1762,7 +1788,7 @@ function duplicateWeek(sourceWid){
       const mo = METHODS.map(m=>`<option${m===method?' selected':''}>${m}</option>`).join('');
       const exoDiv = document.createElement('div');
       exoDiv.className='exo-card'; exoDiv.id=`ex-${newSid}-${newEid}`;
-      exoDiv.innerHTML=`<div class="exo-top"><div class="exo-idx">${newEid}</div><select class="method-sel" id="mth-${newSid}-${newEid}" onchange="updatePreview()">${mo}</select><input type="text" class="exo-name-inp" value="${ename}" id="en-${newSid}-${newEid}" oninput="updatePreview()"><button class="btn btn-danger btn-xs" onclick="removeExo(${newSid},${newEid})">✕</button></div><div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px"><div class="exo-global" style="flex:1"><div><div class="plbl">Séries</div><input class="pinp" type="text" id="es-${newSid}-${newEid}" value="${sets}" onchange="syncSetCount(${newSid},${newEid})"></div><div><div class="plbl">Rép./Durée</div><input class="pinp" type="text" id="er-${newSid}-${newEid}" value="${reps}" oninput="updatePreview()"></div><div><div class="plbl">Charge</div><input class="pinp" type="text" id="el-${newSid}-${newEid}" value="${load}" oninput="updatePreview()"></div><div><div class="plbl">Repos</div><input class="pinp" type="text" id="ert-${newSid}-${newEid}" value="${rest}" oninput="updatePreview()"></div></div></div><input class="ti" type="text" id="etn-${newSid}-${newEid}" value="${tech}" placeholder="💡 Conseil technique..." oninput="updatePreview()">`;
+      exoDiv.innerHTML=`<div class="exo-top" style="margin-bottom:6px"><div class="exo-idx">${newEid}</div><select class="method-sel" id="mth-${newSid}-${newEid}" onchange="onMethodChange(${newSid},${newEid});updatePreview()">${mo}</select><button class="btn btn-danger btn-xs" style="margin-left:auto" onclick="removeExo(${newSid},${newEid})">✕</button></div><div style="margin-bottom:2px"><div class="plbl" style="color:var(--red2);font-weight:800;margin-bottom:4px">🏋️ Nom de l'exercice</div><input type="text" class="exo-name-inp" value="${ename}" id="en-${newSid}-${newEid}" oninput="updatePreview()"></div><div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px"><div class="exo-global" style="flex:1"><div><div class="plbl">Séries</div><input class="pinp" type="text" id="es-${newSid}-${newEid}" value="${sets}" onchange="syncSetCount(${newSid},${newEid})"></div><div><div class="plbl">Rép./Durée</div><input class="pinp" type="text" id="er-${newSid}-${newEid}" value="${reps}" oninput="updatePreview()"></div><div><div class="plbl">Charge</div><input class="pinp" type="text" id="el-${newSid}-${newEid}" value="${load}" oninput="updatePreview()"></div><div><div class="plbl">Repos</div><input class="pinp" type="text" id="ert-${newSid}-${newEid}" value="${rest}" oninput="syncRest(${newSid},${newEid});updatePreview()"></div></div><button class="detail-toggle" id="dtog-${newSid}-${newEid}" onclick="toggleDetail(${newSid},${newEid})" style="margin-top:14px">🔢 Détailler</button></div><div id="detail-wrap-${newSid}-${newEid}" style="display:none"><table class="set-detail-table" id="detail-tbl-${newSid}-${newEid}"><thead><tr><th>#</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody id="detail-tbody-${newSid}-${newEid}"></tbody></table><button class="btn-add-exo" style="margin-top:4px" onclick="addSetRow(${newSid},${newEid})">+ Série</button></div><input class="ti" type="text" id="etn-${newSid}-${newEid}" value="${tech}" placeholder="💡 Conseil technique..." oninput="updatePreview()">`;
       $(`exos-${newSid}`)?.appendChild(exoDiv);
     });
   });
@@ -1846,6 +1872,14 @@ function renumberWeekSeances(wid){
   });
 }
 
+function getMethodData(sid,eid){
+  const method=$(`mth-${sid}-${eid}`)?.value||'Classique';
+  const k=`${sid}-${eid}`;
+  if(method==='Drop Set' && dropSetData[k]) return JSON.parse(JSON.stringify(dropSetData[k]));
+  if(method==='Rest-Pause' && restPauseData[k]) return JSON.parse(JSON.stringify(restPauseData[k]));
+  return null;
+}
+
 function collectWeeks(){
   const weeks=[];
   document.querySelectorAll('.week-builder-content').forEach(wc=>{
@@ -1869,7 +1903,7 @@ function collectWeeks(){
           const n=setDetailCounts[sid]?.[eid]||3;
           setDetails=Array.from({length:n},(_,i)=>({reps:$(`dr-${sid}-${eid}-${i}`)?.value||'—',load:$(`dl-${sid}-${eid}-${i}`)?.value||'—',rest:$(`drt-${sid}-${eid}-${i}`)?.value||globalRest}));
         }
-        exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||''});
+        exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',methodData:getMethodData(sid,eid)});
       });
       if(exos.length) seances.push({num:snum,name:sname,objective:sobj,exos});
     });
@@ -1993,7 +2027,8 @@ function addExo(sid){
   const dlId=`dl-exo-${sid}-${eid}`;
   const suggestions=getExoSuggestions();
   const dlHtml=suggestions.length?`<datalist id="${dlId}">${suggestions.map(n=>`<option value="${n}">`).join('')}</datalist>`:'';
-  d.innerHTML=`${dlHtml}<div class="exo-top" style="margin-bottom:6px"><div class="exo-idx">${eid}</div><select class="method-sel" id="mth-${sid}-${eid}" onchange="updatePreview()">${mo}</select><button class="btn btn-danger btn-xs" style="margin-left:auto" onclick="removeExo(${sid},${eid})">✕</button></div><div style="margin-bottom:2px"><div class="plbl" style="color:var(--red2);font-weight:800;margin-bottom:4px">🏋️ Nom de l'exercice</div><input type="text" class="exo-name-inp" placeholder="${pl}" id="en-${sid}-${eid}" list="${dlId}" oninput="updatePreview()"></div>
+  d.innerHTML=`${dlHtml}<div class="exo-top" style="margin-bottom:6px"><div class="exo-idx">${eid}</div><select class="method-sel" id="mth-${sid}-${eid}" onchange="onMethodChange(${sid},${eid});updatePreview()">${mo}</select><button class="btn btn-danger btn-xs" style="margin-left:auto" onclick="removeExo(${sid},${eid})">✕</button></div><div style="margin-bottom:2px"><div class="plbl" style="color:var(--red2);font-weight:800;margin-bottom:4px">🏋️ Nom de l'exercice</div><input type="text" class="exo-name-inp" placeholder="${pl}" id="en-${sid}-${eid}" list="${dlId}" oninput="updatePreview()"></div>
+  <div class="exo-classic-fields">
   <div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px">
     <div class="exo-global" style="flex:1">
       <div><div class="plbl">Séries</div><input class="pinp" type="text" id="es-${sid}-${eid}" placeholder="4" onchange="syncSetCount(${sid},${eid})"></div>
@@ -2006,6 +2041,7 @@ function addExo(sid){
   <div id="detail-wrap-${sid}-${eid}" style="display:none">
     <table class="set-detail-table" id="detail-tbl-${sid}-${eid}"><thead><tr><th>#</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody id="detail-tbody-${sid}-${eid}"></tbody></table>
     <button class="btn-add-exo" style="margin-top:4px" onclick="addSetRow(${sid},${eid})">+ Série</button>
+  </div>
   </div>
   <input class="ti" type="text" id="etn-${sid}-${eid}" placeholder="💡 Conseil technique..." oninput="updatePreview()">`;
   c.appendChild(d);renderSetRows(sid,eid);
@@ -2078,6 +2114,185 @@ function toggleDetail(sid,eid){
 }
 function isDetailMode(sid,eid){const tog=$(`dtog-${sid}-${eid}`);return tog&&tog.classList.contains('on');}
 
+// ── MODE D'EXERCICE ADAPTATIF ──
+const METHOD_HINTS={
+  'Classique':'',
+  'Superset A':'Enchaîner avec Superset B, pas de repos entre A et B',
+  'Superset B':'Repos après B seulement',
+  'Bi-Set':'2 exos enchaînés sans repos, repos à la fin',
+  'Tri-Set':'3 exos enchaînés sans repos, repos à la fin',
+  'Circuit':'Enchaînement continu, repos en fin de tour',
+  'Drop Set':'Série lourde → baisser la charge sans repos → repos à la fin',
+  'Rest-Pause':'Série lourde → pause courte → relances → repos long',
+  'Pyramidal':'Monter la charge, baisser les reps à chaque série'
+};
+// Which methods use a custom sub-form instead of classic detail
+const CUSTOM_METHODS=['Drop Set','Rest-Pause'];
+
+function onMethodChange(sid,eid){
+  const method=$(`mth-${sid}-${eid}`)?.value||'Classique';
+  const card=$(`ex-${sid}-${eid}`);if(!card)return;
+  // Show/hide hint
+  let hintEl=card.querySelector('.method-hint');
+  if(!hintEl){
+    const nameBlock=card.querySelector('.exo-name-inp')?.parentElement;
+    if(nameBlock){hintEl=document.createElement('div');hintEl.className='method-hint';nameBlock.after(hintEl);}
+  }
+  if(hintEl){
+    const hint=METHOD_HINTS[method]||'';
+    hintEl.textContent=hint;
+    hintEl.style.display=hint?'block':'none';
+  }
+  // Show/hide custom method form vs classic fields
+  const customWrap=$(`method-custom-${sid}-${eid}`);
+  const classicWrap=card.querySelector('.exo-classic-fields');
+  if(CUSTOM_METHODS.includes(method)){
+    if(classicWrap) classicWrap.style.display='none';
+    if(!customWrap){
+      // Create custom wrap after classic fields
+      const cw=document.createElement('div');cw.id=`method-custom-${sid}-${eid}`;cw.className='method-custom-wrap';
+      if(classicWrap) classicWrap.after(cw); else card.appendChild(cw);
+    }
+    renderMethodCustom(sid,eid,method);
+  } else {
+    if(classicWrap) classicWrap.style.display='';
+    if(customWrap) customWrap.remove();
+  }
+}
+
+function renderMethodCustom(sid,eid,method){
+  const wrap=$(`method-custom-${sid}-${eid}`);if(!wrap)return;
+  if(method==='Drop Set') renderDropSetForm(sid,eid,wrap);
+  else if(method==='Rest-Pause') renderRestPauseForm(sid,eid,wrap);
+}
+
+// ── DROP SET FORM ──
+// Data stored per exo: dropSetData[sid-eid] = {sets:[{reps,load,drops:[{reps,load},...]},...],rest}
+if(typeof dropSetData==='undefined') var dropSetData={};
+
+function getDropSetKey(sid,eid){return `${sid}-${eid}`;}
+
+function initDropSetData(sid,eid){
+  const k=getDropSetKey(sid,eid);
+  if(!dropSetData[k]) dropSetData[k]={sets:[{reps:'10',load:'',drops:[{reps:'max',load:''}]}],rest:"2'00"};
+  return dropSetData[k];
+}
+
+function renderDropSetForm(sid,eid,wrap){
+  const d=initDropSetData(sid,eid);
+  let h=`<div class="ds-form">
+    <div class="ds-hd">🔻 Configuration Drop Set</div>
+    <div class="ds-rest-row"><span class="plbl">Repos entre séries</span><input class="pinp" type="text" value="${d.rest}" onchange="dropSetData['${getDropSetKey(sid,eid)}'].rest=this.value;updatePreview()"></div>`;
+  d.sets.forEach((s,si)=>{
+    h+=`<div class="ds-serie-block" id="ds-serie-${sid}-${eid}-${si}">
+      <div class="ds-serie-hd"><span class="ds-serie-num">Série ${si+1}</span>${d.sets.length>1?`<button class="btn btn-danger btn-xs" onclick="removeDropSetSerie(${sid},${eid},${si})">✕</button>`:''}</div>
+      <div class="ds-main-row">
+        <div><div class="plbl">Rép.</div><input class="pinp" type="text" value="${s.reps}" onchange="dropSetData['${getDropSetKey(sid,eid)}'].sets[${si}].reps=this.value;updatePreview()"></div>
+        <div><div class="plbl">Charge</div><input class="pinp" type="text" value="${s.load}" onchange="dropSetData['${getDropSetKey(sid,eid)}'].sets[${si}].load=this.value;updatePreview()"></div>
+        <div class="ds-main-label">← série principale</div>
+      </div>`;
+    s.drops.forEach((dr,di)=>{
+      h+=`<div class="ds-drop-row">
+        <div class="ds-drop-arrow">↘</div>
+        <div><div class="plbl">Rép.</div><input class="pinp" type="text" value="${dr.reps}" onchange="dropSetData['${getDropSetKey(sid,eid)}'].sets[${si}].drops[${di}].reps=this.value;updatePreview()"></div>
+        <div><div class="plbl">Charge</div><input class="pinp" type="text" value="${dr.load}" onchange="dropSetData['${getDropSetKey(sid,eid)}'].sets[${si}].drops[${di}].load=this.value;updatePreview()"></div>
+        <div class="ds-drop-label">drop ${di+1}</div>
+        ${s.drops.length>1?`<button class="btn btn-danger btn-xs" onclick="removeDropFromSerie(${sid},${eid},${si},${di})">✕</button>`:''}
+      </div>`;
+    });
+    h+=`<button class="btn-add-exo" style="margin:4px 0 0 28px;font-size:10px;padding:3px 8px" onclick="addDropToSerie(${sid},${eid},${si})">+ Drop</button>
+    </div>`;
+  });
+  h+=`<button class="btn-add-exo" style="margin-top:6px" onclick="addDropSetSerie(${sid},${eid})">+ Série</button></div>`;
+  wrap.innerHTML=h;
+}
+
+function addDropSetSerie(sid,eid){
+  const d=initDropSetData(sid,eid);
+  d.sets.push({reps:'10',load:'',drops:[{reps:'max',load:''}]});
+  renderMethodCustom(sid,eid,'Drop Set');updatePreview();
+}
+function removeDropSetSerie(sid,eid,si){
+  const d=initDropSetData(sid,eid);
+  d.sets.splice(si,1);
+  renderMethodCustom(sid,eid,'Drop Set');updatePreview();
+}
+function addDropToSerie(sid,eid,si){
+  const d=initDropSetData(sid,eid);
+  d.sets[si].drops.push({reps:'max',load:''});
+  renderMethodCustom(sid,eid,'Drop Set');updatePreview();
+}
+function removeDropFromSerie(sid,eid,si,di){
+  const d=initDropSetData(sid,eid);
+  d.sets[si].drops.splice(di,1);
+  renderMethodCustom(sid,eid,'Drop Set');updatePreview();
+}
+
+// ── REST-PAUSE FORM ──
+if(typeof restPauseData==='undefined') var restPauseData={};
+
+function getRestPauseKey(sid,eid){return `${sid}-${eid}`;}
+
+function initRestPauseData(sid,eid){
+  const k=getRestPauseKey(sid,eid);
+  if(!restPauseData[k]) restPauseData[k]={sets:[{reps:'6–8',load:'',pause:'15–20s',relances:[{reps:'2–4'}]}],restEnd:"2'00"};
+  return restPauseData[k];
+}
+
+function renderRestPauseForm(sid,eid,wrap){
+  const d=initRestPauseData(sid,eid);
+  let h=`<div class="ds-form">
+    <div class="ds-hd">⏸ Configuration Rest-Pause</div>
+    <div class="ds-rest-row"><span class="plbl">Repos entre blocs</span><input class="pinp" type="text" value="${d.restEnd}" onchange="restPauseData['${getRestPauseKey(sid,eid)}'].restEnd=this.value;updatePreview()"></div>`;
+  d.sets.forEach((s,si)=>{
+    h+=`<div class="ds-serie-block" id="rp-serie-${sid}-${eid}-${si}">
+      <div class="ds-serie-hd"><span class="ds-serie-num">Bloc ${si+1}</span>${d.sets.length>1?`<button class="btn btn-danger btn-xs" onclick="removeRestPauseBloc(${sid},${eid},${si})">✕</button>`:''}</div>
+      <div class="ds-main-row">
+        <div><div class="plbl">Rép.</div><input class="pinp" type="text" value="${s.reps}" onchange="restPauseData['${getRestPauseKey(sid,eid)}'].sets[${si}].reps=this.value;updatePreview()"></div>
+        <div><div class="plbl">Charge</div><input class="pinp" type="text" value="${s.load}" onchange="restPauseData['${getRestPauseKey(sid,eid)}'].sets[${si}].load=this.value;updatePreview()"></div>
+        <div class="ds-main-label">← effort principal</div>
+      </div>
+      <div class="ds-drop-row">
+        <div class="ds-drop-arrow">⏱</div>
+        <div><div class="plbl">Pause</div><input class="pinp" type="text" value="${s.pause}" onchange="restPauseData['${getRestPauseKey(sid,eid)}'].sets[${si}].pause=this.value;updatePreview()"></div>
+        <div class="ds-drop-label" style="color:var(--warn)">pause courte</div>
+      </div>`;
+    s.relances.forEach((r,ri)=>{
+      h+=`<div class="ds-drop-row">
+        <div class="ds-drop-arrow">↩</div>
+        <div><div class="plbl">Rép.</div><input class="pinp" type="text" value="${r.reps}" onchange="restPauseData['${getRestPauseKey(sid,eid)}'].sets[${si}].relances[${ri}].reps=this.value;updatePreview()"></div>
+        <div class="ds-drop-label">relance ${ri+1}</div>
+        ${s.relances.length>1?`<button class="btn btn-danger btn-xs" onclick="removeRestPauseRelance(${sid},${eid},${si},${ri})">✕</button>`:''}
+      </div>`;
+    });
+    h+=`<button class="btn-add-exo" style="margin:4px 0 0 28px;font-size:10px;padding:3px 8px" onclick="addRestPauseRelance(${sid},${eid},${si})">+ Relance</button>
+    </div>`;
+  });
+  h+=`<button class="btn-add-exo" style="margin-top:6px" onclick="addRestPauseBloc(${sid},${eid})">+ Bloc</button></div>`;
+  wrap.innerHTML=h;
+}
+
+function addRestPauseBloc(sid,eid){
+  const d=initRestPauseData(sid,eid);
+  d.sets.push({reps:'6–8',load:'',pause:'15–20s',relances:[{reps:'2–4'}]});
+  renderMethodCustom(sid,eid,'Rest-Pause');updatePreview();
+}
+function removeRestPauseBloc(sid,eid,si){
+  const d=initRestPauseData(sid,eid);
+  d.sets.splice(si,1);
+  renderMethodCustom(sid,eid,'Rest-Pause');updatePreview();
+}
+function addRestPauseRelance(sid,eid,si){
+  const d=initRestPauseData(sid,eid);
+  d.sets[si].relances.push({reps:'2–4'});
+  renderMethodCustom(sid,eid,'Rest-Pause');updatePreview();
+}
+function removeRestPauseRelance(sid,eid,si,ri){
+  const d=initRestPauseData(sid,eid);
+  d.sets[si].relances.splice(ri,1);
+  renderMethodCustom(sid,eid,'Rest-Pause');updatePreview();
+}
+
 function collectSeances(){
   const seances=[];
   let num=0;
@@ -2097,7 +2312,7 @@ function collectSeances(){
         const n=setDetailCounts[sid]?.[eid]||3;
         setDetails=Array.from({length:n},(_,i)=>({reps:$(`dr-${sid}-${eid}-${i}`)?.value||'—',load:$(`dl-${sid}-${eid}-${i}`)?.value||'—',rest:$(`drt-${sid}-${eid}-${i}`)?.value||globalRest}));
       }
-      exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||''});
+      exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',methodData:getMethodData(sid,eid)});
     });
     if(exos.length)seances.push({num,name:sname,objective:sobj,exos});
   });
@@ -2236,7 +2451,11 @@ function editProg(id){
         const detailDisplay=hasDetail?'block':'none';
         const detailBtnClass=hasDetail?'detail-toggle on':'detail-toggle';
         const detailBtnText=hasDetail?'✅ Détail actif':'🔢 Détailler';
-        d.innerHTML=`<div class="exo-top" style="margin-bottom:6px"><div class="exo-idx">${eid}</div><select class="method-sel" id="mth-${sid}-${eid}" onchange="updatePreview()">${mo2}</select><input type="text" class="exo-name-inp" value="${(e.name||'').replace(/"/g,'&quot;')}" id="en-${sid}-${eid}" oninput="updatePreview()"><button class="btn btn-danger btn-xs" style="margin-left:auto" onclick="removeExo(${sid},${eid})">✕</button></div>
+        const dlId2=`dl-exo-${sid}-${eid}`;
+        const suggestions2=getExoSuggestions();
+        const dlHtml2=suggestions2.length?`<datalist id="${dlId2}">${suggestions2.map(n=>`<option value="${n}">`).join('')}</datalist>`:'';
+        d.innerHTML=`${dlHtml2}<div class="exo-top" style="margin-bottom:6px"><div class="exo-idx">${eid}</div><select class="method-sel" id="mth-${sid}-${eid}" onchange="onMethodChange(${sid},${eid});updatePreview()">${mo2}</select><button class="btn btn-danger btn-xs" style="margin-left:auto" onclick="removeExo(${sid},${eid})">✕</button></div><div style="margin-bottom:2px"><div class="plbl" style="color:var(--red2);font-weight:800;margin-bottom:4px">🏋️ Nom de l'exercice</div><input type="text" class="exo-name-inp" value="${(e.name||'').replace(/"/g,'&quot;')}" id="en-${sid}-${eid}" list="${dlId2}" oninput="updatePreview()"></div>
+  <div class="exo-classic-fields">
   <div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px">
     <div class="exo-global" style="flex:1">
       <div><div class="plbl">Séries</div><input class="pinp" type="text" id="es-${sid}-${eid}" value="${e.sets||''}" onchange="syncSetCount(${sid},${eid})"></div>
@@ -2250,9 +2469,17 @@ function editProg(id){
     <table class="set-detail-table" id="detail-tbl-${sid}-${eid}"><thead><tr><th>#</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody id="detail-tbody-${sid}-${eid}"></tbody></table>
     <button class="btn-add-exo" style="margin-top:4px" onclick="addSetRow(${sid},${eid})">+ Série</button>
   </div>
+  </div>
   <input class="ti" type="text" id="etn-${sid}-${eid}" value="${(e.tech||'').replace(/"/g,'&quot;')}" placeholder="💡 Conseil technique..." oninput="updatePreview()">`;
         c?.appendChild(d);
-        if(hasDetail){
+        // Restore custom method data if present
+        if(e.methodData && e.method==='Drop Set'){
+          dropSetData[getDropSetKey(sid,eid)]=JSON.parse(JSON.stringify(e.methodData));
+          onMethodChange(sid,eid);
+        } else if(e.methodData && e.method==='Rest-Pause'){
+          restPauseData[getRestPauseKey(sid,eid)]=JSON.parse(JSON.stringify(e.methodData));
+          onMethodChange(sid,eid);
+        } else if(hasDetail){
           const tbody=$(`detail-tbody-${sid}-${eid}`);
           if(tbody){tbody.innerHTML=e.setDetails.map((sd,i)=>`<tr><td class="set-row-num">${i+1}</td><td><input type="text" id="dr-${sid}-${eid}-${i}" value="${sd.reps}" oninput="updatePreview()"></td><td><input type="text" id="dl-${sid}-${eid}-${i}" value="${sd.load}" oninput="updatePreview()"></td><td><input type="text" id="drt-${sid}-${eid}-${i}" value="${sd.rest}" oninput="updatePreview()"></td></tr>`).join('');}
         }else{renderSetRows(sid,eid);}
@@ -2315,39 +2542,122 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
   s.exos.forEach((e,i)=>{
     if(!e||!e.name)return;
     e.id=e.id||`${s.num||0}-${i}`;
-    if(e.detail&&e.setDetails&&e.setDetails.length){
+    // Custom method rendering
+    if(e.method==='Drop Set' && e.methodData && e.methodData.sets){
+      const md=e.methodData;
+      let dsHtml='';
+      md.sets.forEach((st,si)=>{
+        dsHtml+=`<tr><td>${si+1}</td><td>${st.reps}</td><td>${st.load||'—'}</td><td rowspan="${1+st.drops.length}" style="vertical-align:middle">${si===md.sets.length-1?md.rest||"2'00":'—'}</td></tr>`;
+        st.drops.forEach((dr,di)=>{
+          dsHtml+=`<tr class="ds-sub-row"><td><span style="color:var(--warn);font-size:10px">↘ drop ${di+1}</span></td><td>${dr.reps}</td><td>${dr.load||'—'}</td></tr>`;
+        });
+      });
+      h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${dsHtml}</tbody></table></td></tr>`;
+    } else if(e.method==='Rest-Pause' && e.methodData && e.methodData.sets){
+      const md=e.methodData;
+      let rpHtml='';
+      md.sets.forEach((st,si)=>{
+        rpHtml+=`<tr><td rowspan="${2+st.relances.length}" style="vertical-align:middle">${si+1}</td><td>${st.reps}</td><td>${st.load||'—'}</td><td>—</td></tr>`;
+        rpHtml+=`<tr class="ds-sub-row"><td colspan="2"><span style="color:var(--warn);font-size:10px">⏱ pause ${st.pause}</span></td><td>—</td></tr>`;
+        st.relances.forEach((r,ri)=>{
+          rpHtml+=`<tr class="ds-sub-row"><td><span style="color:var(--info);font-size:10px">↩ relance ${ri+1}</span> ${r.reps}</td><td>=</td><td>${ri===st.relances.length-1?(md.restEnd||"2'00"):(st.pause||'15s')}</td></tr>`;
+        });
+      });
+      h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpHtml}</tbody></table></td></tr>`;
+    } else if(e.detail&&e.setDetails&&e.setDetails.length){
       h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
     } else {
       h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
     }
     if(withLog&&!preview){
-      // Inline log row with series checkboxes
-      const nseries=e.detail&&e.setDetails&&e.setDetails.length?e.setDetails.length:Math.max(1,parseInt(String(e.sets).replace(/[^0-9]/g,''))||3);
       let seriesHtml='';
-      for(let si=0;si<nseries;si++){
-        const sd=e.detail&&e.setDetails?e.setDetails[si]:null;
-        const prescribed=sd?`${sd.reps} rép. @ ${sd.load}`:`${e.reps} rép. @ ${e.load}`;
-        const restVal=sd?sd.rest:e.rest;
-        const restSecs=parseRestToSeconds(restVal);
-        const restLabel=restVal?`⏱ ${restVal}`:'';
-        seriesHtml+=`<div class="serie-row">
-          <button class="serie-check" id="chk-${pid}-${e.id}-${si}" onclick="toggleSerie('${pid}','${e.id}',${si},${restSecs})" type="button"></button>
-          <span class="serie-label" id="slbl-${pid}-${e.id}-${si}">Série ${si+1} — ${prescribed}</span>
-          <div class="serie-log">
-            <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}" placeholder="Rép." oninput="autoSaveLogDraft()">
-            <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}" placeholder="Charge" oninput="autoSaveLogDraft()">
+      if(e.method==='Drop Set' && e.methodData && e.methodData.sets){
+        // Drop Set log: each serie = main + drops in one block
+        const md=e.methodData;
+        const restSecs=parseRestToSeconds(md.rest||"2'00");
+        md.sets.forEach((st,si)=>{
+          const nDrops=st.drops.length;
+          seriesHtml+=`<div class="serie-row ds-log-block">
+            <button class="serie-check" id="chk-${pid}-${e.id}-${si}" onclick="toggleSerie('${pid}','${e.id}',${si},${restSecs})" type="button"></button>
+            <div class="ds-log-content">
+              <div class="ds-log-main">
+                <span class="serie-label">Série ${si+1} — ${st.reps} rép. @ ${st.load||'?'}</span>
+                <div class="serie-log">
+                  <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}" placeholder="Rép." oninput="autoSaveLogDraft()">
+                  <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}" placeholder="Charge" oninput="autoSaveLogDraft()">
+                </div>
+              </div>`;
+          st.drops.forEach((dr,di)=>{
+            seriesHtml+=`<div class="ds-log-drop">
+                <span class="ds-log-drop-label">↘ drop ${di+1} — ${dr.reps} rép. @ ${dr.load||'?'}</span>
+                <div class="serie-log">
+                  <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}d${di}" placeholder="Rép." oninput="autoSaveLogDraft()">
+                  <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}d${di}" placeholder="Charge" oninput="autoSaveLogDraft()">
+                </div>
+              </div>`;
+          });
+          seriesHtml+=`</div></div>
+          <div class="rest-timer" id="timer-${pid}-${e.id}-${si}">
+            <div><div class="rest-timer-label">Repos</div><div class="rest-timer-count" id="tcount-${pid}-${e.id}-${si}">${formatRestDisplay(restSecs)||'—'}</div></div>
+            <div style="flex:1"><div class="rest-timer-bar"><div class="rest-timer-progress" id="tbar-${pid}-${e.id}-${si}"></div></div></div>
+            <button class="rest-timer-skip" onclick="skipTimer('${pid}','${e.id}',${si})">⏭ Passer</button>
+          </div>`;
+        });
+      } else if(e.method==='Rest-Pause' && e.methodData && e.methodData.sets){
+        // Rest-Pause log: each bloc = main effort + relances
+        const md=e.methodData;
+        const restSecs=parseRestToSeconds(md.restEnd||"2'00");
+        md.sets.forEach((st,si)=>{
+          seriesHtml+=`<div class="serie-row ds-log-block">
+            <button class="serie-check" id="chk-${pid}-${e.id}-${si}" onclick="toggleSerie('${pid}','${e.id}',${si},${restSecs})" type="button"></button>
+            <div class="ds-log-content">
+              <div class="ds-log-main">
+                <span class="serie-label">Bloc ${si+1} — ${st.reps} rép. @ ${st.load||'?'}</span>
+                <div class="serie-log">
+                  <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}" placeholder="Rép." oninput="autoSaveLogDraft()">
+                  <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}" placeholder="Charge" oninput="autoSaveLogDraft()">
+                </div>
+              </div>
+              <div class="ds-log-drop" style="border-color:var(--warn)">
+                <span class="ds-log-drop-label" style="color:var(--warn)">⏱ pause ${st.pause}</span>
+              </div>`;
+          st.relances.forEach((r,ri)=>{
+            seriesHtml+=`<div class="ds-log-drop" style="border-color:var(--info)">
+                <span class="ds-log-drop-label" style="color:var(--info)">↩ relance ${ri+1} — ${r.reps} rép.</span>
+                <div class="serie-log">
+                  <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}r${ri}" placeholder="Rép." oninput="autoSaveLogDraft()">
+                </div>
+              </div>`;
+          });
+          seriesHtml+=`</div></div>
+          <div class="rest-timer" id="timer-${pid}-${e.id}-${si}">
+            <div><div class="rest-timer-label">Repos</div><div class="rest-timer-count" id="tcount-${pid}-${e.id}-${si}">${formatRestDisplay(restSecs)||'—'}</div></div>
+            <div style="flex:1"><div class="rest-timer-bar"><div class="rest-timer-progress" id="tbar-${pid}-${e.id}-${si}"></div></div></div>
+            <button class="rest-timer-skip" onclick="skipTimer('${pid}','${e.id}',${si})">⏭ Passer</button>
+          </div>`;
+        });
+      } else {
+        // Classic log
+        const nseries=e.detail&&e.setDetails&&e.setDetails.length?e.setDetails.length:Math.max(1,parseInt(String(e.sets).replace(/[^0-9]/g,''))||3);
+        for(let si=0;si<nseries;si++){
+          const sd=e.detail&&e.setDetails?e.setDetails[si]:null;
+          const prescribed=sd?`${sd.reps} rép. @ ${sd.load}`:`${e.reps} rép. @ ${e.load}`;
+          const restVal=sd?sd.rest:e.rest;
+          const restSecs=parseRestToSeconds(restVal);
+          seriesHtml+=`<div class="serie-row">
+            <button class="serie-check" id="chk-${pid}-${e.id}-${si}" onclick="toggleSerie('${pid}','${e.id}',${si},${restSecs})" type="button"></button>
+            <span class="serie-label" id="slbl-${pid}-${e.id}-${si}">Série ${si+1} — ${prescribed}</span>
+            <div class="serie-log">
+              <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}" placeholder="Rép." oninput="autoSaveLogDraft()">
+              <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}" placeholder="Charge" oninput="autoSaveLogDraft()">
+            </div>
           </div>
-        </div>
-        <div class="rest-timer" id="timer-${pid}-${e.id}-${si}">
-          <div>
-            <div class="rest-timer-label">Repos</div>
-            <div class="rest-timer-count" id="tcount-${pid}-${e.id}-${si}">${formatRestDisplay(restSecs)||'—'}</div>
-          </div>
-          <div style="flex:1">
-            <div class="rest-timer-bar"><div class="rest-timer-progress" id="tbar-${pid}-${e.id}-${si}"></div></div>
-          </div>
-          <button class="rest-timer-skip" onclick="skipTimer('${pid}','${e.id}',${si})">⏭ Passer</button>
-        </div>`;
+          <div class="rest-timer" id="timer-${pid}-${e.id}-${si}">
+            <div><div class="rest-timer-label">Repos</div><div class="rest-timer-count" id="tcount-${pid}-${e.id}-${si}">${formatRestDisplay(restSecs)||'—'}</div></div>
+            <div style="flex:1"><div class="rest-timer-bar"><div class="rest-timer-progress" id="tbar-${pid}-${e.id}-${si}"></div></div></div>
+            <button class="rest-timer-skip" onclick="skipTimer('${pid}','${e.id}',${si})">⏭ Passer</button>
+          </div>`;
+        }
       }
       h+=`<tr class="exo-log-row"><td colspan="6">
         <div class="series-list">${seriesHtml}</div>
