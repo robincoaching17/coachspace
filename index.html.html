@@ -182,7 +182,30 @@ select option{background:var(--s2);}
 .stab.done{background:rgba(34,197,94,.15);border-color:var(--success);color:var(--success);}
 .seance-content{display:none;animation:fadeIn .2s ease;}
 .acc-seance-body .seance-content{display:block;}
+.seance-tab-content .seance-content{display:block;}
+.week-tab-content.active > .seance-tab-content:only-of-type{display:block;}
 .seance-content.active{display:block;}
+
+/* ── WEEK TABS ── */
+.week-tabs-wrap{margin-top:8px;}
+.week-tabs-bar{display:flex;gap:4px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:thin;-webkit-overflow-scrolling:touch;}
+.week-tabs-bar::-webkit-scrollbar{height:3px;}
+.week-tabs-bar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.week-tab{flex-shrink:0;padding:8px 14px;border:1px solid var(--border);border-radius:var(--rs);background:var(--s2);cursor:pointer;text-align:center;transition:all .15s;position:relative;}
+.week-tab:hover{background:var(--s3);}
+.week-tab.active{background:var(--red-dim);border-color:var(--red);color:var(--red);}
+.week-tab-name{display:block;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:inherit;font-weight:700;}
+.week-tab-meta{display:block;font-size:9px;color:var(--muted);margin-top:2px;}
+.week-tab.active .week-tab-meta{color:var(--red2);}
+.week-tab-done{position:absolute;top:-4px;right:-4px;font-size:10px;background:var(--success);color:white;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;}
+.week-tab-content{display:none;padding:8px 0;}
+.week-tab-content.active{display:block;}
+.seance-tabs-bar{display:flex;gap:4px;margin-bottom:10px;overflow-x:auto;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.seance-tab{flex-shrink:0;padding:6px 12px;border:1px solid var(--border);border-radius:var(--rs);background:var(--s1);font-size:12px;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s;}
+.seance-tab:hover{background:var(--s2);}
+.seance-tab.active{background:var(--s3);border-color:var(--text);color:var(--text);}
+.seance-tab-content{display:none;}
+.seance-tab-content.active{display:block;}
 
 /* WEEK BADGE */
 .acc-week{border:1px solid var(--border);border-radius:var(--rs);margin-bottom:8px;overflow:visible;}
@@ -412,6 +435,41 @@ a.contact-link:hover{text-decoration:underline;}
 
 /* SUIVI */
 .suivi-client-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden;}
+
+/* ── SUIVI CLIENT LIST ── */
+.suivi-client-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:16px;}
+.scl-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px;}
+.scl-card:hover{background:var(--s2);border-color:var(--text);}
+.scl-card.active{border-color:var(--red);background:var(--red-dim);}
+.scl-info{flex:1;min-width:0;}
+.scl-name{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.scl-meta{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.scl-progress{text-align:right;flex-shrink:0;}
+.scl-pbar{width:40px;height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin-bottom:2px;}
+.scl-pfill{height:100%;background:var(--red);border-radius:2px;transition:width .3s;}
+.scl-ppct{font-size:10px;font-weight:800;color:var(--red);}
+
+/* ── SUIVI DASHBOARD ── */
+.sd-header{display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid var(--border);margin-bottom:14px;}
+.sd-stats{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:16px;}
+@media(max-width:600px){.sd-stats{grid-template-columns:repeat(3,1fr);}}
+.sd-stat{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:10px 8px;text-align:center;}
+.sd-stat-val{font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+.sd-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.sd-section-title{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;color:var(--muted);margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.sd-week-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--s3);font-size:12px;}
+.sd-analytics-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:12px;}
+.sd-ac-title{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;color:var(--muted);margin-bottom:8px;}
+.sd-exo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;}
+.sd-exo-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;}
+.sd-exo-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.sd-exo-name{font-size:13px;font-weight:800;color:var(--text);}
+.sd-exo-verdict{font-size:10px;font-weight:700;}
+.sd-exo-metrics{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;margin-top:6px;}
+.sd-em{display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:2px 0;}
+.sd-em-l{color:var(--muted);}
+.sd-em-v{font-weight:700;color:var(--text);}
+.sd-em-v small{font-weight:600;font-size:9px;}
 .scc-hd{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
 .scc-body{padding:14px 16px;}
 .log-hist{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:8px;overflow:hidden;}
@@ -557,6 +615,35 @@ a.contact-link:hover{text-decoration:underline;}
 /* CLIENT DASHBOARD */
 .client-dash{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
 @media(max-width:480px){.client-dash{grid-template-columns:1fr 1fr;}}
+
+/* ── CLIENT HOME ── */
+.client-home{margin-bottom:20px;}
+.ch-greeting{margin-bottom:16px;}
+.ch-greet-text{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;color:var(--text);}
+.ch-motiv{font-size:13px;color:var(--muted);margin-top:4px;}
+.ch-next-seance{background:linear-gradient(135deg,rgba(192,21,42,.12),rgba(192,21,42,.04));border:1.5px solid var(--red);border-radius:var(--r);padding:18px 16px;margin-bottom:14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.ch-next-seance:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(192,21,42,.15);}
+.ch-next-seance:active{transform:translateY(0);}
+.ch-next-badge{font-size:9px;letter-spacing:2px;color:var(--red);font-weight:800;text-transform:uppercase;margin-bottom:6px;}
+.ch-next-name{font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.ch-next-meta{display:flex;flex-wrap:wrap;gap:4px;font-size:11px;color:var(--muted);margin-bottom:10px;}
+.ch-next-exos{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;}
+.ch-exo-pill{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600;color:var(--text);}
+.ch-next-cta{font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;color:var(--red);letter-spacing:1px;text-transform:uppercase;}
+.ch-week-progress{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:14px;}
+.ch-wp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.ch-wp-label{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--text);font-weight:700;}
+.ch-wp-count{font-size:11px;color:var(--muted);font-weight:700;}
+.ch-wp-bar{width:100%;height:8px;background:var(--s3);border-radius:4px;overflow:hidden;}
+.ch-wp-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--red2));border-radius:4px;transition:width .4s ease;}
+.ch-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.ch-stat{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:12px 10px;text-align:center;}
+.ch-stat-val{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;color:var(--text);}
+.ch-stat-lbl{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.5px;}
+.ch-divider{text-align:center;margin:20px 0 16px;position:relative;}
+.ch-divider::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--border);}
+.ch-divider span{background:var(--bg);padding:0 14px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:var(--muted);position:relative;font-weight:700;}
+@media(max-width:480px){.ch-stats{grid-template-columns:1fr 1fr;}.ch-stat:last-child{grid-column:span 2;}}
 .client-dash-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;text-align:center;}
 .client-dash-val{font-family:'Oswald',sans-serif;font-size:28px;color:var(--red);line-height:1;margin-bottom:2px;}
 .client-dash-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
@@ -1954,56 +2041,156 @@ function toggleAcc(el){
   el.closest('.acc-week,.acc-seance').classList.toggle('open');
 }
 
-function renderAccordion(prog, withLog=false, openFirstWeek=true){
+function renderAccordion(prog, withLog=false, openFirstWeek=true, useClassicAccordion=false){
   const weeks = prog.weeks || (prog.seances ? [{id:0,name:'Programme',seances:prog.seances,unlocked:true}] : []);
   const cid = withLog ? currentClient?.id : null;
-  let h = '';
-  weeks.forEach((w, wi) => {
-    if(withLog && !w.unlocked) return;
-    const seances = w.seances || [];
-    const doneCount = seances.filter((_,si) => S.doneSeances?.[cid]?.[`${prog.id}-w${wi}_s${si}`] || S.doneSeances?.[cid]?.[`${prog.id}_w${wi}_s${si}`]).length;
-    const isOpen = openFirstWeek && wi === 0;
-    h += `<div class="acc-week${isOpen?' open':''}">
-      <div class="acc-week-hd" onclick="toggleAcc(this)">
-        <div>
-          <div class="acc-week-title">${w.name}</div>
-          <div class="acc-week-meta">${seances.length} séance${seances.length>1?'s':''} ${withLog&&doneCount>0?`· ✅ ${doneCount}/${seances.length}`:''}</div>
-        </div>
-        <span class="acc-week-arrow">▶</span>
-      </div>
-      <div class="acc-week-body">`;
-    seances.forEach((s, si) => {
-      const doneKey1 = `${prog.id}-w${wi}_s${si}`;
-      const doneKey2 = `${prog.id}_w${wi}_s${si}`;
-      const doneDate = withLog ? (S.doneSeances?.[cid]?.[doneKey1] || S.doneSeances?.[cid]?.[doneKey2]) : null;
-      const exoCount = (s.exos||[]).filter(e=>e.name).length;
-      h += `<div class="acc-seance${doneDate?' done-seance':''}">
-        <div class="acc-seance-hd" onclick="toggleAcc(this)">
+
+  // ── CLASSIC ACCORDION MODE (for builder preview) ──
+  if(useClassicAccordion){
+    let h='';
+    weeks.forEach((w,wi)=>{
+      if(withLog && !w.unlocked) return;
+      const seances=w.seances||[];
+      const doneCount=seances.filter((_,si)=>S.doneSeances?.[cid]?.[`${prog.id}-w${wi}_s${si}`]||S.doneSeances?.[cid]?.[`${prog.id}_w${wi}_s${si}`]).length;
+      const isOpen=openFirstWeek && wi===0;
+      h+=`<div class="acc-week${isOpen?' open':''}">
+        <div class="acc-week-hd" onclick="toggleAcc(this)">
           <div>
-            <div class="acc-seance-title">${doneDate?'✅ ':''}${s.name}</div>
-            <div class="acc-seance-meta">${exoCount} exercice${exoCount>1?'s':''}${s.objective?' · '+s.objective:''}</div>
+            <div class="acc-week-title">${w.name}</div>
+            <div class="acc-week-meta">${seances.length} séance${seances.length>1?'s':''} ${withLog&&doneCount>0?`· ✅ ${doneCount}/${seances.length}`:''}</div>
           </div>
-          <span class="acc-seance-arrow">▶</span>
+          <span class="acc-week-arrow">▶</span>
         </div>
-        <div class="acc-seance-body">`;
-      if(withLog){
-        // Full interactive version for client
-        const pidStr = `${prog.id}-w${wi}`;
-        h += renderSeanceContent(s, false, pidStr, si, true, false, prog.id, wi);
-      } else {
-        // Preview version for coach aperçu
-        h += `<table class="exo-table" style="margin:0"><thead><tr><th>#</th><th>Exercice</th><th>Séries</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>`;
+        <div class="acc-week-body">`;
+      seances.forEach((s,si)=>{
+        const doneKey1=`${prog.id}-w${wi}_s${si}`;
+        const doneKey2=`${prog.id}_w${wi}_s${si}`;
+        const doneDate=withLog?(S.doneSeances?.[cid]?.[doneKey1]||S.doneSeances?.[cid]?.[doneKey2]):null;
+        const exoCount=(s.exos||[]).filter(e=>e.name).length;
+        h+=`<div class="acc-seance${doneDate?' done-seance':''}">
+          <div class="acc-seance-hd" onclick="toggleAcc(this)">
+            <div>
+              <div class="acc-seance-title">${doneDate?'✅ ':''}${s.name}</div>
+              <div class="acc-seance-meta">${exoCount} exercice${exoCount>1?'s':''}${s.objective?' · '+s.objective:''}</div>
+            </div>
+            <span class="acc-seance-arrow">▶</span>
+          </div>
+          <div class="acc-seance-body">
+            <table class="exo-table" style="margin:0"><thead><tr><th>#</th><th>Exercice</th><th>Séries</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>`;
         (s.exos||[]).forEach((e,ei)=>{
           if(!e.name) return;
-          h += `<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong></td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
+          h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.method&&e.method!=='Classique'?MT(e.method):''}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
         });
-        h += `</tbody></table>`;
-      }
-      h += `</div></div>`;
+        h+=`</tbody></table></div></div>`;
+      });
+      h+=`</div></div>`;
     });
-    h += `</div></div>`;
+    return h || '<div class="empty"><div class="ei">📋</div><div class="et">Aucune séance</div></div>';
+  }
+
+  // ── TAB MODE (for Programmes view & client view) ──
+  const accId = `acc-${prog.id}-${Date.now()}`;
+  // Find first unlocked/incomplete week for default
+  let defaultWeek=0;
+  if(withLog){
+    for(let wi=0;wi<weeks.length;wi++){
+      if(!weeks[wi].unlocked) continue;
+      const seances=weeks[wi].seances||[];
+      const allDone=seances.every((_,si)=>S.doneSeances?.[cid]?.[`${prog.id}-w${wi}_s${si}`]||S.doneSeances?.[cid]?.[`${prog.id}_w${wi}_s${si}`]);
+      if(!allDone){defaultWeek=wi;break;}
+      defaultWeek=wi;
+    }
+  }
+  // Week tabs (horizontal scrollable)
+  let h=`<div class="week-tabs-wrap" id="${accId}">
+    <div class="week-tabs-bar">`;
+  weeks.forEach((w,wi)=>{
+    if(withLog && !w.unlocked) return;
+    const seances=w.seances||[];
+    const doneCount=seances.filter((_,si)=>S.doneSeances?.[cid]?.[`${prog.id}-w${wi}_s${si}`]||S.doneSeances?.[cid]?.[`${prog.id}_w${wi}_s${si}`]).length;
+    const allDone=doneCount===seances.length && seances.length>0;
+    const isActive=wi===defaultWeek;
+    h+=`<button class="week-tab${isActive?' active':''}" onclick="switchWeekTab('${accId}',${wi})" data-wi="${wi}">
+      <span class="week-tab-name">${w.name}</span>
+      <span class="week-tab-meta">${seances.length} séance${seances.length>1?'s':''}${withLog&&doneCount?' · ✅'+doneCount+'/'+seances.length:''}</span>
+      ${allDone?'<span class="week-tab-done">✓</span>':''}
+    </button>`;
   });
+  h+=`</div>`;
+  // Week contents
+  weeks.forEach((w,wi)=>{
+    if(withLog && !w.unlocked) return;
+    const seances=w.seances||[];
+    const isActive=wi===defaultWeek;
+    h+=`<div class="week-tab-content${isActive?' active':''}" data-wi="${wi}">`;
+    if(seances.length>1){
+      // Seance sub-tabs
+      h+=`<div class="seance-tabs-bar">`;
+      seances.forEach((s,si)=>{
+        const doneKey1=`${prog.id}-w${wi}_s${si}`;
+        const doneKey2=`${prog.id}_w${wi}_s${si}`;
+        const doneDate=withLog?(S.doneSeances?.[cid]?.[doneKey1]||S.doneSeances?.[cid]?.[doneKey2]):null;
+        h+=`<button class="seance-tab${si===0?' active':''}" onclick="switchAccSeanceTab(this)" data-si="${si}">
+          ${doneDate?'✅ ':''}${s.name}
+        </button>`;
+      });
+      h+=`</div>`;
+    }
+    seances.forEach((s,si)=>{
+      const doneKey1=`${prog.id}-w${wi}_s${si}`;
+      const doneKey2=`${prog.id}_w${wi}_s${si}`;
+      const doneDate=withLog?(S.doneSeances?.[cid]?.[doneKey1]||S.doneSeances?.[cid]?.[doneKey2]):null;
+      h+=`<div class="seance-tab-content${si===0?' active':''}" data-si="${si}">`;
+      if(s.objective) h+=`<div style="background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--info)">🎯 <strong>Objectif :</strong> ${s.objective}</div>`;
+      if(withLog){
+        const pidStr=`${prog.id}-w${wi}`;
+        h+=renderSeanceContent(s,false,pidStr,si,true,false,prog.id,wi);
+      } else {
+        h+=`<table class="exo-table" style="margin:0"><thead><tr><th>#</th><th>Exercice</th><th>Séries</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>`;
+        (s.exos||[]).forEach((e,ei)=>{
+          if(!e.name) return;
+          if(e.method==='Drop Set'&&e.methodData&&e.methodData.sets){
+            const md=e.methodData;let dsH='';
+            md.sets.forEach((st,sti)=>{
+              dsH+=`<tr><td>${sti+1}</td><td>${st.reps}</td><td>${st.load||'—'}</td><td>${sti===md.sets.length-1?md.rest||"2'00":'—'}</td></tr>`;
+              st.drops.forEach((dr,di)=>{dsH+=`<tr class="ds-sub-row"><td><span style="color:var(--warn);font-size:10px">↘ drop ${di+1}</span></td><td>${dr.reps}</td><td>${dr.load||'—'}</td></tr>`;});
+            });
+            h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${MT(e.method)}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${dsH}</tbody></table></td></tr>`;
+          } else if(e.method==='Rest-Pause'&&e.methodData&&e.methodData.sets){
+            const md=e.methodData;let rpH='';
+            md.sets.forEach((st,sti)=>{
+              rpH+=`<tr><td>${sti+1}</td><td>${st.reps}</td><td>${st.load||'—'}</td><td>—</td></tr>`;
+              rpH+=`<tr class="ds-sub-row"><td colspan="2"><span style="color:var(--warn);font-size:10px">⏱ pause ${st.pause}</span></td><td>—</td></tr>`;
+              st.relances.forEach((r,ri)=>{rpH+=`<tr class="ds-sub-row"><td>↩ ${r.reps}</td><td>=</td><td>${ri===st.relances.length-1?md.restEnd||"2'00":st.pause||'15s'}</td></tr>`;});
+            });
+            h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${MT(e.method)}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpH}</tbody></table></td></tr>`;
+          } else {
+            h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.method&&e.method!=='Classique'?MT(e.method):''}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
+          }
+        });
+        h+=`</tbody></table>`;
+      }
+      h+=`</div>`;
+    });
+    h+=`</div>`;
+  });
+  h+=`</div>`;
   return h || '<div class="empty"><div class="ei">📋</div><div class="et">Aucune séance</div></div>';
+}
+
+function switchWeekTab(accId,wi){
+  const wrap=document.getElementById(accId);if(!wrap)return;
+  wrap.querySelectorAll('.week-tab').forEach(t=>t.classList.toggle('active',parseInt(t.dataset.wi)===wi));
+  wrap.querySelectorAll('.week-tab-content').forEach(c=>c.classList.toggle('active',parseInt(c.dataset.wi)===wi));
+}
+function switchAccSeanceTab(btn){
+  const si=parseInt(btn.dataset.si);
+  const bar=btn.closest('.seance-tabs-bar');
+  if(!bar) return;
+  bar.querySelectorAll('.seance-tab').forEach(t=>t.classList.toggle('active',parseInt(t.dataset.si)===si));
+  const weekContent=bar.parentElement;
+  if(!weekContent) return;
+  weekContent.querySelectorAll('.seance-tab-content').forEach(c=>c.classList.toggle('active',parseInt(c.dataset.si)===si));
 }
 
 function getExoSuggestions(){
@@ -2328,7 +2515,7 @@ function updatePreview(){
   let h=renderProgHeader({name:name||'Sans titre',obj:$('b-obj')?.value||'',dur:$('b-dur')?.value||'',weeks,notes:''},c);
   // Use accordion for preview
   const previewProg={weeks,id:'preview'};
-  h+=renderAccordion(previewProg, false, true);
+  h+=renderAccordion(previewProg, false, true, true);
   $('prog-preview').innerHTML=h;
   renderBuilderLogs();
 }
@@ -2749,9 +2936,8 @@ function renderProgs(){
     const totalWeeks=p.weeks?p.weeks.length:0;
     return `<div class="prog-card"><div class="pc-hd"><div><div class="pc-name">${p.name}</div><div class="pc-meta">${p.obj} · ${p.dur} · ${p.date}${totalWeeks?` · <strong style="color:var(--red)">${unlockedCount}/${totalWeeks} sem. débloquées</strong>`:''}</div></div><div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">${avatarHTML(c||{},28)}<span style="font-size:12px;font-weight:800">${c?.prenom||'?'} ${c?.nom||''}</span><button class="btn btn-ghost btn-xs" onclick="editProg(${p.id})">✏️ Modifier</button><button class="btn btn-ghost btn-xs" onclick="exportProgPDF(${p.id})">📄 PDF</button><button class="btn btn-ghost btn-xs" onclick="copyProgTo(${p.id})">📋 Copier</button><button class="btn btn-danger btn-xs" onclick="deleteProg(${p.id})">🗑</button></div></div>
     <div class="pc-body">
-      ${p.weeks?p.weeks.map(w=>`<span class="stag" style="background:${w.unlocked?'rgba(34,197,94,.1)':w.done?'rgba(34,197,94,.15)':'var(--s2)'};border-color:${w.unlocked&&!w.done?'var(--success)':w.done?'var(--success)':'var(--border)'}"><span class="stag-num">${w.unlocked?'✅':'🔒'}</span>${w.name}<span style="color:var(--muted);font-size:10px;margin-left:3px">(${(w.seances||[]).length} séances)</span></span>`).join(''):p.seances?p.seances.map(s=>`<span class="stag"><span class="stag-num">J${s.num}</span>${s.name}</span>`).join(''):''}
-      <div style="margin-top:8px;font-size:11px;color:var(--muted)">Total : <strong style="color:var(--red)">${total} exercices</strong></div>
-      <div style="margin-top:10px">${renderSeanceTabs(p,false,true)}</div>
+      <div style="margin-bottom:8px;font-size:11px;color:var(--muted)">Total : <strong style="color:var(--red)">${total} exercices</strong></div>
+      ${renderAccordion(p,false,true)}
       ${renderChangelog(p)}
       <button class="add-seance-to-prog" onclick="openAddSeanceToProg(${p.id})">＋ Ajouter des séances à ce programme</button>
     </div></div>`;
@@ -2958,162 +3144,412 @@ function confirmUnlock(){
   showToast(`🔓 ${week.name} débloquée pour ${c?.prenom||'?'} !`,true);
 }
 
+var suiviSelectedClient=null;
 function renderSuivi(){
   const el=$('suivi-content');
   if(!S.clients.length){el.innerHTML=`<div class="empty"><div class="ei">📊</div><div class="et">Aucun coaché</div></div>`;return;}
-  let h='';
+  // Client list
+  let h=`<div class="suivi-client-list" id="suivi-list">`;
   S.clients.forEach(c=>{
     const logs=S.logs[c.id]||{};
-    const logEntries=Object.values(logs).sort((a,b)=>b.date>a.date?1:-1);
-    const measurements=c.measurements||[];
-    // Completion rate
+    const logCount=Object.keys(logs).length;
     const cProgsAll=S.programmes.filter(p=>p.clientId===c.id&&p.weeks);
-    let totalSeancesC=0, doneSeancesC=0;
-    cProgsAll.forEach(p=>{
-      p.weeks.forEach((w,wi)=>{
-        (w.seances||[]).forEach((s,si)=>{
-          totalSeancesC++;
-          if(S.doneSeances?.[c.id]?.[`${p.id}_w${wi}_s${si}`]) doneSeancesC++;
-        });
+    let totalS=0,doneS=0;
+    cProgsAll.forEach(p=>{p.weeks.forEach((w,wi)=>{(w.seances||[]).forEach((_,si)=>{totalS++;if(S.doneSeances?.[c.id]?.[`${p.id}_w${wi}_s${si}`])doneS++;});});});
+    const pct=totalS?Math.round(doneS/totalS*100):0;
+    const sel=suiviSelectedClient===c.id;
+    h+=`<div class="scl-card${sel?' active':''}" onclick="selectSuiviClient(${c.id})">
+      ${avatarHTML(c)}
+      <div class="scl-info">
+        <div class="scl-name">${c.prenom} ${c.nom}</div>
+        <div class="scl-meta">${c.obj||'—'} · ${logCount} séance${logCount>1?'s':''}</div>
+      </div>
+      <div class="scl-progress">
+        <div class="scl-pbar"><div class="scl-pfill" style="width:${pct}%"></div></div>
+        <span class="scl-ppct">${pct}%</span>
+      </div>
+    </div>`;
+  });
+  h+=`</div><div id="suivi-dashboard"></div>`;
+  el.innerHTML=h;
+  if(suiviSelectedClient) renderSuiviDashboard(suiviSelectedClient);
+}
+
+function selectSuiviClient(cid){
+  suiviSelectedClient=cid;
+  // Update active state in list
+  document.querySelectorAll('.scl-card').forEach(el=>{
+    el.classList.toggle('active',parseInt(el.getAttribute('onclick').match(/\d+/)?.[0])===cid);
+  });
+  renderSuiviDashboard(cid);
+}
+
+function renderSuiviDashboard(cid){
+  const el=$('suivi-dashboard');if(!el)return;
+  const c=S.clients.find(x=>x.id===cid);if(!c){el.innerHTML='';return;}
+  const logs=S.logs[cid]||{};
+  const logEntries=Object.values(logs).sort((a,b)=>b.date>a.date?1:-1);
+  const measurements=c.measurements||[];
+
+  let h=`<div class="sd-header">
+    <div>${avatarHTML(c)}</div>
+    <div>
+      <div style="font-size:16px;font-weight:800">${c.prenom} ${c.nom}</div>
+      <div style="font-size:11px;color:var(--muted)">${c.obj||'—'}${c.email?' · '+c.email:''}</div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="btn btn-info btn-xs" onclick="openMesure(${c.id})">+ Mesures</button>
+      <button class="btn btn-ghost btn-xs" onclick="showNotifModal(${c.id})">🔔 Notifier</button>
+    </div>
+  </div>`;
+
+  // ── GLOBAL STATS ──
+  const cProgsAll=S.programmes.filter(p=>p.clientId===cid&&p.weeks);
+  let totalSeances=0,doneSeances=0;
+  cProgsAll.forEach(p=>{p.weeks.forEach((w,wi)=>{(w.seances||[]).forEach((_,si)=>{totalSeances++;if(S.doneSeances?.[cid]?.[`${p.id}_w${wi}_s${si}`])doneSeances++;});});});
+  const completionPct=totalSeances?Math.round(doneSeances/totalSeances*100):0;
+
+  // Streak
+  const logDates=[...new Set(logEntries.map(l=>l.date))].sort().reverse();
+  let streak=0;
+  if(logDates.length){let check=new Date(new Date().toISOString().split('T')[0]);for(const d of logDates){const diff=Math.round((check-new Date(d))/(1e3*60*60*24));if(diff<=1){streak++;check=new Date(d);}else break;}}
+
+  // Frequency (avg sessions per week over last 4 weeks)
+  const fourWeeksAgo=new Date();fourWeeksAgo.setDate(fourWeeksAgo.getDate()-28);
+  const recentLogs=logEntries.filter(l=>new Date(l.date)>=fourWeeksAgo);
+  const freqPerWeek=recentLogs.length?Math.round(recentLogs.length/4*10)/10:0;
+
+  // Total volume across all logs
+  let totalVolume=0,totalSeries=0,totalReps=0;
+  logEntries.forEach(log=>{
+    (log.entries||[]).forEach(e=>{
+      (e.seriesData||[]).forEach(s=>{
+        const r=parseFloat(s.reps)||0;
+        const l=parseFloat(s.load)||0;
+        totalReps+=r;totalSeries++;totalVolume+=r*l;
       });
     });
-    const completionPct=totalSeancesC>0?Math.round(doneSeancesC/totalSeancesC*100):0;
-    const completionColor=completionPct>=80?'#22c55e':completionPct>=50?'#f59e0b':'#ef4444';
-    h+=`<div class="suivi-client-card"><div class="scc-hd">${avatarHTML(c)}<div>
-      <div style="font-size:14px;font-weight:800">${c.prenom} ${c.nom}</div>
-      <div style="font-size:11px;color:var(--muted)">${c.obj} · ${logEntries.length} log(s)</div>
-      ${totalSeancesC>0?`<div style="display:flex;align-items:center;gap:6px;margin-top:3px">
-        <div style="flex:1;height:4px;background:var(--s3);border-radius:2px;overflow:hidden;max-width:120px">
-          <div style="height:100%;width:${completionPct}%;background:${completionColor};border-radius:2px;transition:width .5s"></div>
-        </div>
-        <span style="font-size:10px;font-weight:800;color:${completionColor}">${completionPct}%</span>
-        <span style="font-size:10px;color:var(--muted)">${doneSeancesC}/${totalSeancesC} séances</span>
-      </div>`:''}
-    </div>
-    <button class="btn btn-info btn-xs" style="margin-left:auto" onclick="openMesure(${c.id})">+ Mesures</button>
-    <button class="btn btn-ghost btn-xs" onclick="showNotifModal(${c.id})">🔔 Notifier</button>
-    </div><div class="scc-body">`;
-    // Week unlock section
-    const cProgs=S.programmes.filter(p=>p.clientId===c.id&&p.weeks&&p.weeks.length);
-    if(cProgs.length){
-      h+=`<div style="font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;color:var(--muted);margin-bottom:8px">DÉBLOCAGE SEMAINES</div>`;
-      cProgs.forEach(p=>{
-        h+=`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:800;margin-bottom:5px">${p.name}</div>`;
-        p.weeks.forEach((w,wi)=>{
-          const isLocked=!w.unlocked;
-          const isDone=w.done;
-          const isCurrent=w.unlocked&&!w.done&&wi===p.weeks.filter(x=>x.unlocked).length-1;
-          const weekLogs=getWeekLogs(c.id,p.id,wi);
-          if(isLocked){
-            h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--s3)">
-              <span style="font-size:12px;color:var(--muted)">🔒 ${w.name}</span>
-              <button class="btn btn-success btn-xs" style="margin-left:auto" onclick="openUnlockWeek(${p.id},${wi})">Débloquer</button>
-            </div>`;
-          } else if(isDone){
-            h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--s3)">
-              <span style="font-size:12px;color:var(--success)">✅ ${w.name}</span>
-              <span style="font-size:10px;color:var(--muted);margin-left:auto">${weekLogs.length} séance(s)</span>
-            </div>`;
-          } else {
-            h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--s3)">
-              <span style="font-size:12px;color:var(--red2)">▶ ${w.name} (en cours)</span>
-              <span style="font-size:10px;color:var(--muted);margin-left:auto">${weekLogs.length} séance(s) remplie(s)</span>
-              ${wi<p.weeks.length-1?`<button class="btn btn-ghost btn-xs" onclick="openUnlockWeek(${p.id},${wi+1})">→ Sem. suivante</button>`:''}
-            </div>`;
-          }
-        });
-        h+=`</div>`;
+  });
+
+  h+=`<div class="sd-stats">
+    <div class="sd-stat"><div class="sd-stat-val">${logEntries.length}</div><div class="sd-stat-lbl">Séances</div></div>
+    <div class="sd-stat"><div class="sd-stat-val">${completionPct}<span style="font-size:14px">%</span></div><div class="sd-stat-lbl">Complétion</div></div>
+    <div class="sd-stat"><div class="sd-stat-val">${streak>0?streak+'🔥':'—'}</div><div class="sd-stat-lbl">Streak</div></div>
+    <div class="sd-stat"><div class="sd-stat-val">${freqPerWeek}</div><div class="sd-stat-lbl">Séances/sem</div></div>
+    <div class="sd-stat"><div class="sd-stat-val">${totalVolume>1000?(totalVolume/1000).toFixed(1)+'t':totalVolume+'kg'}</div><div class="sd-stat-lbl">Volume total</div></div>
+    <div class="sd-stat"><div class="sd-stat-val">${totalSeries}</div><div class="sd-stat-lbl">Séries totales</div></div>
+  </div>`;
+
+  // ── WEEK UNLOCK ──
+  const cProgs=S.programmes.filter(p=>p.clientId===cid&&p.weeks&&p.weeks.length);
+  if(cProgs.length){
+    h+=`<div class="sd-section-title">🔓 DÉBLOCAGE SEMAINES</div>`;
+    cProgs.forEach(p=>{
+      h+=`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:800;margin-bottom:5px">${p.name}</div>`;
+      p.weeks.forEach((w,wi)=>{
+        const isLocked=!w.unlocked;const isDone=w.done;
+        const weekLogs=getWeekLogs(cid,p.id,wi);
+        if(isLocked){h+=`<div class="sd-week-row"><span style="color:var(--muted)">🔒 ${w.name}</span><button class="btn btn-success btn-xs" style="margin-left:auto" onclick="openUnlockWeek(${p.id},${wi})">Débloquer</button></div>`;}
+        else if(isDone){h+=`<div class="sd-week-row"><span style="color:var(--success)">✅ ${w.name}</span><span style="font-size:10px;color:var(--muted);margin-left:auto">${weekLogs.length} séance(s)</span></div>`;}
+        else{h+=`<div class="sd-week-row"><span style="color:var(--red2)">▶ ${w.name} (en cours)</span><span style="font-size:10px;color:var(--muted);margin-left:auto">${weekLogs.length} remplie(s)</span>${wi<p.weeks.length-1?`<button class="btn btn-ghost btn-xs" onclick="openUnlockWeek(${p.id},${wi+1})">→ Suivante</button>`:''}</div>`;}
       });
+      h+=`</div>`;
+    });
+  }
+
+  // ── ADVANCED EXERCISE ANALYTICS ──
+  h+=renderAdvancedAnalytics(cid);
+
+  // ── MENSURATIONS ──
+  if(measurements.length){
+    h+=`<div class="sd-section-title">📏 MENSURATIONS</div>`;
+    h+=renderWeightChart(measurements);
+    h+=`<table class="mesure-tbl"><thead><tr><th>Date</th><th>Poids</th><th>Poitrine</th><th>Taille</th><th>Hanches</th><th>Bras</th><th>Cuisse</th></tr></thead><tbody>${measurements.slice(-5).reverse().map(m=>`<tr><td>${m.date}</td><td style="font-family:'Oswald',sans-serif">${m.poids||'—'} kg</td><td>${m.poitrine||'—'}</td><td>${m.taille||'—'}</td><td>${m.hanches||'—'}</td><td>${m.bras||'—'}</td><td>${m.cuisse||'—'}</td></tr>`).join('')}</tbody></table>`;
+  }
+
+  // ── SÉANCES REMPLIES ──
+  const feelMap2=['','😓','😐','🙂','💪','🔥'];
+  if(logEntries.length){
+    h+=`<div class="sd-section-title">📋 SÉANCES REMPLIES (${logEntries.length})</div>`;
+    logEntries.forEach((log,li)=>{
+      const entries=log.entries||[];
+      const uid=`suivi-log-${cid}-${li}`;
+      h+=`<div class="blog-entry">
+        <div class="blog-entry-hd" onclick="document.getElementById('${uid}').classList.toggle('open')">
+          <div>
+            <div class="blog-entry-title">🗓 ${log.date} — ${log.seanceName||'Séance'}</div>
+            <div class="blog-entry-date">${log.progName||''}${log.weekName?' · '+log.weekName:''}</div>
+          </div>
+          <span style="color:var(--muted);font-size:10px">${entries.length} exo${entries.length>1?'s':''} ▾</span>
+        </div>
+        <div class="blog-entry-body" id="${uid}">
+          ${entries.length?entries.map(e=>`
+            <div class="blog-exo-row">
+              <div class="blog-exo-name">${e.exo} ${e.feel?`<span>${feelMap2[e.feel]}</span>`:''}</div>
+              <div class="blog-exo-series">${e.series||'—'}</div>
+              ${e.note?`<div style="font-size:10px;color:var(--muted);font-style:italic">💬 ${e.note}</div>`:''}
+              ${e.seriesData?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${e.seriesData.map((sd,si)=>sd.reps||sd.load?`<span style="font-size:10px;background:var(--s2);border:1px solid var(--s3);border-radius:3px;padding:1px 5px">S${si+1}: ${sd.reps||'?'}r${sd.load?' @ '+sd.load:''}${sd.done?' ✓':''}</span>`:'').join('')}</div>`:''}
+            </div>`).join(''):'<div class="blog-empty">Aucune donnée enregistrée</div>'}
+        </div>
+      </div>`;
+    });
+  }
+
+  el.innerHTML=h;
+}
+
+// ── ADVANCED ANALYTICS ENGINE ──
+function renderAdvancedAnalytics(clientId){
+  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>a.date>b.date?1:-1);
+  if(logs.length<1) return '';
+  const exoData={};
+  logs.forEach(log=>{
+    (log.entries||[]).forEach(e=>{
+      if(!e.exo||!e.seriesData) return;
+      let vol=0,maxLoad=0,totalReps=0,totalSeries=0,totalRestSec=0,hasData=false;
+      const loads=[];
+      e.seriesData.forEach(s=>{
+        const r=parseFloat(s.reps)||0;
+        const l=parseFloat(s.load)||0;
+        if(r>0||l>0) hasData=true;
+        totalReps+=r;totalSeries++;vol+=r*l;
+        if(l>maxLoad) maxLoad=l;
+        if(l>0) loads.push({r,l});
+      });
+      if(!hasData) return;
+      // Estimated 1RM (Epley formula): best single set
+      let est1RM=0;
+      loads.forEach(({r,l})=>{
+        if(r>0&&r<=30&&l>0){const e1rm=l*(1+r/30);if(e1rm>est1RM) est1RM=e1rm;}
+      });
+      // Intensity = weighted avg load (sum(reps*load)/totalReps)
+      const intensity=totalReps>0?vol/totalReps:0;
+      // Tonnage per set
+      const tonnagePerSet=totalSeries>0?vol/totalSeries:0;
+      if(!exoData[e.exo]) exoData[e.exo]=[];
+      exoData[e.exo].push({
+        date:log.date,volume:vol,maxLoad,totalReps,totalSeries,
+        est1RM:Math.round(est1RM*10)/10,
+        intensity:Math.round(intensity*10)/10,
+        tonnagePerSet:Math.round(tonnagePerSet*10)/10
+      });
+    });
+  });
+  const exoNames=Object.keys(exoData).filter(k=>exoData[k].length>=1);
+  if(!exoNames.length) return '';
+
+  // ── SESSION-LEVEL ANALYTICS ──
+  let sessionH='';
+  if(logs.length>=2){
+    const sessionData=logs.map(log=>{
+      let vol=0,series=0,reps=0;
+      (log.entries||[]).forEach(e=>{
+        (e.seriesData||[]).forEach(s=>{
+          const r=parseFloat(s.reps)||0;const l=parseFloat(s.load)||0;
+          vol+=r*l;series++;reps+=r;
+        });
+      });
+      return{date:log.date,volume:vol,series,reps};
+    }).filter(d=>d.volume>0||d.reps>0);
+
+    if(sessionData.length>=2){
+      const W=300,H=70,P=6;
+      const vols=sessionData.map(d=>d.volume);
+      const mnV=Math.min(...vols),mxV=Math.max(...vols),rangeV=mxV-mnV||1;
+      const pts=sessionData.map((d,i)=>[P+(i/(Math.max(sessionData.length-1,1))*(W-P*2)),H-P-((d.volume-mnV)/rangeV*(H-P*2))]);
+      const poly=pts.map(p=>p.join(',')).join(' ');
+      const firstV=sessionData[0].volume,lastV=sessionData[sessionData.length-1].volume;
+      const vDiff=lastV-firstV;
+      const vPct=firstV?((vDiff/firstV)*100).toFixed(0):'—';
+      sessionH=`<div class="sd-analytics-card">
+        <div class="sd-ac-title">📊 Volume par séance</div>
+        <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;border-radius:4px;background:var(--s1)">
+          <defs><linearGradient id="sgV" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--red)" stop-opacity=".2"/><stop offset="100%" stop-color="var(--red)" stop-opacity="0"/></linearGradient></defs>
+          <polygon points="${pts[0][0]},${H-P} ${poly} ${pts[pts.length-1][0]},${H-P}" fill="url(#sgV)"/>
+          <polyline points="${poly}" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"/>
+          ${pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="var(--red)"><title>${sessionData[i].date}: ${sessionData[i].volume}kg vol · ${sessionData[i].reps}reps · ${sessionData[i].series}séries</title></circle>`).join('')}
+        </svg>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:3px">
+          <span>${sessionData[0].date}</span>
+          <span style="color:${vDiff>=0?'#22c55e':'#ef4444'};font-weight:700">${vDiff>=0?'+':''}${vPct}% volume</span>
+          <span>${sessionData[sessionData.length-1].date}</span>
+        </div>
+      </div>`;
+    }
+  }
+
+  // ── PER-EXERCISE ANALYTICS ──
+  let exoH='';
+  const colors=['#c0152a','#3b82f6','#22c55e','#f59e0b','#a855f7','#ec4899','#14b8a6','#f97316','#06b6d4','#8b5cf6'];
+  exoNames.forEach((name,ni)=>{
+    const data=exoData[name];
+    const first=data[0],last=data[data.length-1];
+    const col=colors[ni%colors.length];
+    const hasTrend=data.length>=2;
+
+    // Trend calcs (only meaningful with 2+ entries)
+    const volDiff=hasTrend?last.volume-first.volume:0;
+    const volPct=hasTrend&&first.volume?((volDiff/first.volume)*100).toFixed(0):'—';
+    const loadDiff=hasTrend?last.maxLoad-first.maxLoad:0;
+    const rmDiff=hasTrend?last.est1RM-first.est1RM:0;
+    const intDiff=hasTrend?last.intensity-first.intensity:0;
+
+    // Smart verdict
+    let verdict='',vColor='var(--muted)';
+    if(!hasTrend){verdict='📊 1 séance';vColor='var(--muted)';}
+    else if(volDiff>0&&rmDiff>=0){verdict='📈 Progression globale';vColor='#22c55e';}
+    else if(volDiff>0&&rmDiff<0){verdict='📈 Volume ↑ (endurance)';vColor='#22c55e';}
+    else if(volDiff<=0&&rmDiff>0){verdict='💪 Force ↑ (intensité)';vColor='#3b82f6';}
+    else if(volDiff<=0&&loadDiff>0){verdict='💪 Charge ↑ (reps ajustées)';vColor='#3b82f6';}
+    else if(Math.abs(volDiff)<first.volume*0.05){verdict='➡️ Stable';vColor='var(--muted)';}
+    else{verdict='📉 En baisse';vColor='#ef4444';}
+
+    // Chart (only if 2+ entries)
+    let chartHtml='';
+    if(hasTrend){
+      const W=280,H=60,P=6;
+      const vols=data.map(d=>d.volume),rms=data.map(d=>d.est1RM);
+      const mnV=Math.min(...vols),mxV=Math.max(...vols),rV=mxV-mnV||1;
+      const mnR=Math.min(...rms),mxR=Math.max(...rms),rR=mxR-mnR||1;
+      const ptsV=data.map((d,i)=>[P+(i/Math.max(data.length-1,1)*(W-P*2)),H-P-((d.volume-mnV)/rV*(H-P*2))]);
+      const ptsR=data.map((d,i)=>[P+(i/Math.max(data.length-1,1)*(W-P*2)),H-P-((d.est1RM-mnR)/rR*(H-P*2))]);
+      chartHtml=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;border-radius:4px;background:var(--s1)">
+        <polyline points="${ptsV.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round"/>
+        <polyline points="${ptsR.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="4 3" opacity=".35" stroke-linecap="round"/>
+        ${ptsV.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="${col}"><title>${data[i].date}\nVol: ${data[i].volume}kg\n1RM: ${data[i].est1RM}kg\nMax: ${data[i].maxLoad}kg\nInt: ${data[i].intensity}kg\nReps: ${data[i].totalReps}\nSéries: ${data[i].totalSeries}</title></circle>`).join('')}
+      </svg>
+      <div style="display:flex;gap:3px;font-size:9px;color:var(--muted);margin-top:2px;justify-content:space-between">
+        <span>━ volume</span><span style="opacity:.5">┄ 1RM estimé</span>
+      </div>`;
     }
 
-    const feelMap2=['','😓','😐','🙂','💪','🔥'];
-    if(logEntries.length){
-      h+=`<div style="font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;color:var(--muted);margin:10px 0 6px;display:flex;justify-content:space-between;align-items:center">
-        <span>📋 SÉANCES REMPLIES (${logEntries.length})</span>
-        <span style="font-size:10px;font-family:inherit">${logEntries.filter(l=>l.entries?.length).length} avec données</span>
-      </div>`;
-      logEntries.forEach((log,li)=>{
-        const entries=log.entries||[];
-        const uid=`suivi-log-${c.id}-${li}`;
-        h+=`<div class="blog-entry">
-          <div class="blog-entry-hd" onclick="document.getElementById('${uid}').classList.toggle('open')">
-            <div>
-              <div class="blog-entry-title">🗓 ${log.date} — ${log.seanceName||'Séance'}</div>
-              <div class="blog-entry-date">${log.progName||''}${log.weekName?' · '+log.weekName:''}</div>
-            </div>
-            <span style="color:var(--muted);font-size:10px">${entries.length} exo${entries.length>1?'s':''} ▾</span>
-          </div>
-          <div class="blog-entry-body" id="${uid}">
-            ${entries.length?entries.map(e=>`
-              <div class="blog-exo-row">
-                <div class="blog-exo-name">${e.exo} ${e.feel?`<span>${feelMap2[e.feel]}</span>`:''}</div>
-                <div class="blog-exo-series">${e.series||'—'}</div>
-                ${e.note?`<div style="font-size:10px;color:var(--muted);font-style:italic">💬 ${e.note}</div>`:''}
-                ${e.seriesData?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${e.seriesData.map((sd,si)=>sd.reps||sd.load?`<span style="font-size:10px;background:var(--s2);border:1px solid var(--s3);border-radius:3px;padding:1px 5px">S${si+1}: ${sd.reps||'?'}r${sd.load?' @ '+sd.load:''}${sd.done?' ✓':''}</span>`:'').join('')}</div>`:''}
-              </div>`).join(''):'<div class="blog-empty">Aucune donnée enregistrée</div>'}
-          </div>
-        </div>`;
-      });
-    } else {h+=`<div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:10px">Aucune séance remplie.</div>`;}
-    if(measurements.length){
-      h+=`<div style="font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;color:var(--muted);margin:12px 0 8px">MENSURATIONS</div>`;
-      h+=renderWeightChart(measurements);
-      h+=`<table class="mesure-tbl"><thead><tr><th>Date</th><th>Poids</th><th>Poitrine</th><th>Taille</th><th>Hanches</th><th>Bras</th><th>Cuisse</th></tr></thead><tbody>${measurements.slice(-5).reverse().map(m=>`<tr><td>${m.date}</td><td style="font-family:'Oswald',sans-serif">${m.poids||'—'} kg</td><td>${m.poitrine||'—'}</td><td>${m.taille||'—'}</td><td>${m.hanches||'—'}</td><td>${m.bras||'—'}</td><td>${m.cuisse||'—'}</td></tr>`).join('')}</tbody></table>`;
-    }
-    // Exercise progression chart
-    const progChart=renderExoProgressChart(c.id);
-    if(progChart) h+=progChart;
-    h+='</div></div>';
+    exoH+=`<div class="sd-exo-card">
+      <div class="sd-exo-hd">
+        <span class="sd-exo-name" style="border-left:3px solid ${col};padding-left:8px">${name}</span>
+        <span class="sd-exo-verdict" style="color:${vColor}">${verdict}</span>
+      </div>
+      ${chartHtml}
+      <div class="sd-exo-metrics">
+        <div class="sd-em"><span class="sd-em-l">Volume</span><span class="sd-em-v" ${hasTrend?`style="color:${volDiff>=0?'#22c55e':'#ef4444'}"`:''}>${last.volume}kg ${hasTrend?`<small>(${volDiff>=0?'+':''}${volPct}%)</small>`:''}</span></div>
+        <div class="sd-em"><span class="sd-em-l">1RM estimé</span><span class="sd-em-v" ${hasTrend?`style="color:${rmDiff>=0?'#22c55e':'#ef4444'}"`:''}>${last.est1RM}kg ${hasTrend?`<small>(${rmDiff>=0?'+':''}${rmDiff.toFixed(1)})</small>`:''}</span></div>
+        <div class="sd-em"><span class="sd-em-l">Charge max</span><span class="sd-em-v" ${hasTrend?`style="color:${loadDiff>=0?'#22c55e':'#ef4444'}"`:''}>${last.maxLoad}kg ${hasTrend?`<small>(${loadDiff>=0?'+':''}${loadDiff})</small>`:''}</span></div>
+        <div class="sd-em"><span class="sd-em-l">Intensité moy.</span><span class="sd-em-v" ${hasTrend?`style="color:${intDiff>=0?'#22c55e':'#ef4444'}"`:''}>${last.intensity}kg ${hasTrend?`<small>(${intDiff>=0?'+':''}${intDiff.toFixed(1)})</small>`:''}</span></div>
+        <div class="sd-em"><span class="sd-em-l">Tonnage/série</span><span class="sd-em-v">${last.tonnagePerSet}kg</span></div>
+        <div class="sd-em"><span class="sd-em-l">Reps totales</span><span class="sd-em-v">${last.totalReps} <small>(${last.totalSeries}s)</small></span></div>
+      </div>
+    </div>`;
   });
-  el.innerHTML=h;
+
+  let h='';
+  if(sessionH||exoH){
+    h+=`<div class="sd-section-title">📈 ANALYSE DE PROGRESSION</div>`;
+    if(sessionH) h+=sessionH;
+    if(exoH) h+=`<div class="sd-exo-grid">${exoH}</div>`;
+  }
+  return h;
 }
 
 function renderExoProgressChart(clientId){
   const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>a.date>b.date?1:-1);
   if(logs.length<2) return '';
-  // Collect all exercise names with load data
+  // Collect per-exercise: volume (reps×charge), max load, total reps
   const exoData={};
   logs.forEach(log=>{
     (log.entries||[]).forEach(e=>{
       if(!e.exo||!e.seriesData) return;
-      const loads=e.seriesData.filter(s=>s.load&&!isNaN(parseFloat(s.load))).map(s=>parseFloat(s.load));
-      if(!loads.length) return;
-      const maxLoad=Math.max(...loads);
+      let totalVol=0,maxLoad=0,totalReps=0,hasData=false;
+      e.seriesData.forEach(s=>{
+        const reps=parseFloat(s.reps)||0;
+        const load=parseFloat(s.load)||0;
+        if(reps>0||load>0) hasData=true;
+        totalReps+=reps;
+        if(load>maxLoad) maxLoad=load;
+        totalVol+=reps*load;
+      });
+      if(!hasData) return;
       if(!exoData[e.exo]) exoData[e.exo]=[];
-      exoData[e.exo].push({date:log.date, load:maxLoad});
+      exoData[e.exo].push({date:log.date,volume:totalVol,maxLoad,totalReps,nSeries:e.seriesData.length});
     });
   });
-  const exoNames=Object.keys(exoData).filter(k=>exoData[k].length>=2).slice(0,6);
+  const exoNames=Object.keys(exoData).filter(k=>exoData[k].length>=1);
   if(!exoNames.length) return '';
-  const colors=['#c0152a','#3b82f6','#22c55e','#f59e0b','#a855f7','#ec4899'];
-  let h=`<div style="font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;color:var(--muted);margin:14px 0 8px">📈 PROGRESSION DES CHARGES</div>`;
+  const colors=['#c0152a','#3b82f6','#22c55e','#f59e0b','#a855f7','#ec4899','#14b8a6','#f97316'];
+  let h=`<div style="font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;color:var(--muted);margin:14px 0 8px">📈 PROGRESSION INTELLIGENTE</div>`;
+  h+=`<div style="font-size:10px;color:var(--muted);margin-bottom:10px">Volume = reps × charge · Compare les performances globales, pas seulement la charge max</div>`;
   exoNames.forEach((name,ni)=>{
     const data=exoData[name];
-    const vals=data.map(d=>d.load);
-    const mn=Math.min(...vals), mx=Math.max(...vals);
-    const W=280,H=60,P=6;
-    const range=mx-mn||1;
-    const pts=data.map((d,i)=>[P+((i/(data.length-1))*(W-P*2)),H-P-((d.load-mn)/range*(H-P*2))]);
-    const polyline=pts.map(p=>p.join(',')).join(' ');
-    const firstLoad=data[0].load, lastLoad=data[data.length-1].load;
-    const diff=lastLoad-firstLoad;
-    const trend=diff>0?`+${diff.toFixed(1)}kg ↑`:(diff<0?`${diff.toFixed(1)}kg ↓`:'stable');
-    const trendColor=diff>0?'#22c55e':(diff<0?'#ef4444':'var(--muted)');
-    h+=`<div style="margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <span style="font-size:12px;font-weight:800;color:var(--text)">${name}</span>
-        <span style="font-size:11px;font-weight:700;color:${trendColor}">${trend}</span>
+    const hasTrend=data.length>=2;
+    const lastD=data[data.length-1];
+    
+    if(!hasTrend){
+      // Single entry — show stats only, no chart
+      h+=`<div style="margin-bottom:14px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:800;color:var(--text)">${name}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--muted)">📊 1 séance</span>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div style="font-size:10px"><span style="color:var(--muted)">Volume:</span> <strong>${lastD.volume}kg</strong></div>
+          <div style="font-size:10px"><span style="color:var(--muted)">Charge max:</span> <strong>${lastD.maxLoad}kg</strong></div>
+          <div style="font-size:10px"><span style="color:var(--muted)">Reps:</span> <strong>${lastD.totalReps}</strong></div>
+        </div>
+      </div>`;
+      return;
+    }
+    
+    // Multi-entry — full chart
+    const vols=data.map(d=>d.volume);
+    const loads=data.map(d=>d.maxLoad);
+    const mnV=Math.min(...vols),mxV=Math.max(...vols);
+    const mnL=Math.min(...loads),mxL=Math.max(...loads);
+    const W=300,H=70,P=6;
+    const rangeV=mxV-mnV||1;
+    const rangeL=mxL-mnL||1;
+    const ptsV=data.map((d,i)=>[P+((i/(Math.max(data.length-1,1)))*(W-P*2)),H-P-((d.volume-mnV)/rangeV*(H-P*2))]);
+    const ptsL=data.map((d,i)=>[P+((i/(Math.max(data.length-1,1)))*(W-P*2)),H-P-((d.maxLoad-mnL)/rangeL*(H-P*2))]);
+    const polyV=ptsV.map(p=>p.join(',')).join(' ');
+    const polyL=ptsL.map(p=>p.join(',')).join(' ');
+    // Trend analysis
+    const firstV=data[0].volume,lastV=data[data.length-1].volume;
+    const firstL=data[0].maxLoad,lastL=data[data.length-1].maxLoad;
+    const volDiff=lastV-firstV;
+    const loadDiff=lastL-firstL;
+    // Smart analysis: volume up even if load down = still progressing
+    let analysis='',analysisColor='var(--muted)';
+    if(volDiff>0&&loadDiff>=0){analysis='📈 Progression';analysisColor='#22c55e';}
+    else if(volDiff>0&&loadDiff<0){analysis='📈 Volume ↑ (+ reps, charge ajustée)';analysisColor='#22c55e';}
+    else if(volDiff<=0&&loadDiff>0){analysis='💪 Charge ↑ (reps adaptées)';analysisColor='#3b82f6';}
+    else if(volDiff===0){analysis='➡️ Stable';analysisColor='var(--muted)';}
+    else{analysis='📉 Volume en baisse';analysisColor='#ef4444';}
+    const volPct=firstV?((volDiff/firstV)*100).toFixed(0):'—';
+    h+=`<div style="margin-bottom:14px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:800;color:var(--text)">${name}</span>
+        <span style="font-size:11px;font-weight:700;color:${analysisColor}">${analysis}</span>
       </div>
-      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;background:var(--s2);border-radius:var(--rs)">
-        <polyline points="${polyline}" fill="none" stroke="${colors[ni%colors.length]}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        ${pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${colors[ni%colors.length]}"/><title>${data[i].date}: ${data[i].load}kg</title>`).join('')}
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;border-radius:4px;background:var(--s1)">
+        <!-- Volume curve -->
+        <polyline points="${polyV}" fill="none" stroke="${colors[ni%colors.length]}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+        <!-- Load curve (lighter) -->
+        <polyline points="${polyL}" fill="none" stroke="${colors[ni%colors.length]}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 3" opacity="0.4"/>
+        ${ptsV.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${colors[ni%colors.length]}"><title>${data[i].date}: Vol=${data[i].volume}kg · ${data[i].totalReps}reps · Max=${data[i].maxLoad}kg</title></circle>`).join('')}
       </svg>
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px">
-        <span>${data[0].date}</span><span>${lastLoad}kg</span><span>${data[data.length-1].date}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--muted);margin-top:4px">
+        <span>${data[0].date}</span>
+        <span style="display:flex;gap:10px">
+          <span>━ volume</span>
+          <span style="opacity:.5">┄ charge max</span>
+        </span>
+        <span>${data[data.length-1].date}</span>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap">
+        <div style="font-size:10px"><span style="color:var(--muted)">Volume:</span> <strong style="color:${volDiff>=0?'#22c55e':'#ef4444'}">${lastV}kg</strong> <span style="color:${volDiff>=0?'#22c55e':'#ef4444'}">(${volDiff>=0?'+':''}${volPct}%)</span></div>
+        <div style="font-size:10px"><span style="color:var(--muted)">Charge max:</span> <strong>${lastL}kg</strong> <span style="color:${loadDiff>=0?'#22c55e':'#ef4444'}">(${loadDiff>=0?'+':''}${loadDiff.toFixed(1)}kg)</span></div>
+        <div style="font-size:10px"><span style="color:var(--muted)">Reps totales:</span> <strong>${data[data.length-1].totalReps}</strong></div>
       </div>
     </div>`;
   });
-  return `<div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-top:12px">${h}</div>`;
+  return `<div style="margin-top:12px">${h}</div>`;
 }
 
 function renderWeightChart(measurements){
@@ -3453,18 +3889,29 @@ function initSwipe(pid, total){
 }
 
 function scrollToSeance(progId,weekIdx,seanceIdx){
-  // Find the tab for this seance and click it
-  const pid = parseInt(progId);
-  // Switch to the right week tab first
-  const weekTabId = `wt-client-${progId}-${weekIdx}`;
-  const wTab = document.getElementById(weekTabId);
-  if(wTab) wTab.click();
-  // Then click the seance tab
+  // Find the week-tabs-wrap for this prog
+  const allWraps=document.querySelectorAll('.week-tabs-wrap');
+  let targetWrap=null;
+  for(const wrap of allWraps){
+    if(wrap.id.startsWith(`acc-${progId}-`)){targetWrap=wrap;break;}
+  }
+  if(!targetWrap) return;
+  // Switch week tab
+  switchWeekTab(targetWrap.id, weekIdx);
+  // Switch seance tab inside that week
   setTimeout(()=>{
-    const stabId = `stab-${progId}-w${weekIdx}-${seanceIdx}`;
-    const stab = document.getElementById(stabId);
-    if(stab){ stab.click(); stab.scrollIntoView({behavior:'smooth',block:'center'}); }
-  }, 150);
+    const weekContent=targetWrap.querySelector(`.week-tab-content[data-wi="${weekIdx}"]`);
+    if(!weekContent) return;
+    const seanceTab=weekContent.querySelector(`.seance-tab[data-si="${seanceIdx}"]`);
+    if(seanceTab){
+      switchAccSeanceTab(seanceTab);
+      seanceTab.scrollIntoView({behavior:'smooth',block:'center'});
+    } else {
+      // Single seance, no tabs — just scroll to the content
+      const content=weekContent.querySelector('.seance-tab-content');
+      if(content) content.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  },100);
 }
 
 function renderClientProg(){
@@ -3477,40 +3924,105 @@ function renderClientProg(){
     const logs=S.logs[cid]||{};
     const logCount=Object.keys(logs).length;
     const lastLog=logCount?Object.values(logs).sort((a,b)=>b.date>a.date?1:-1)[0]:null;
-    // Count total seances across all weeks
-    const totalSeances=progs.reduce((a,p)=>{
-      if(p.weeks) return a+p.weeks.reduce((b,w)=>b+(w.seances||[]).length,0);
-      return a+(p.seances||[]).length;
-    },0);
-    let h=`<div class="client-dash">
-      <div class="client-dash-card"><div class="client-dash-val">${logCount}</div><div class="client-dash-lbl">Séances faites</div></div>
-      <div class="client-dash-card"><div class="client-dash-val">${totalSeances}</div><div class="client-dash-lbl">Séances prévues</div></div>
-      <div class="client-dash-card"><div class="client-dash-val" style="font-size:18px">${lastLog?lastLog.date:'—'}</div><div class="client-dash-lbl">Dernière séance</div></div>
-    </div>`;
+    const now=new Date();
+    const hour=now.getHours();
+    const greeting=hour<12?'Bonjour':hour<18?'Bon après-midi':'Bonsoir';
+    const prenom=currentClient.prenom||'';
 
-    // Find next undone seance
-    let nextProg=null,nextWeekIdx=null,nextSeanceIdx=null,nextSeanceName='';
+    // Week progress for current prog
+    let weekDone=0,weekTotal=0,currentWeekName='';
+    let nextWeekIdx=0;
     for(const prog of progs){
       const weeks=prog.weeks||[];
       for(let wi=0;wi<weeks.length;wi++){
         const w=weeks[wi];
         if(!w.unlocked)continue;
         const seances=w.seances||[];
-        for(let si=0;si<seances.length;si++){
+        let allDone=true;
+        seances.forEach((_,si)=>{
           const dk=`${prog.id}_w${wi}_s${si}`;
-          const done=(S.doneSeances?.[cid]?.[dk]);
-          if(!done){nextProg=prog;nextWeekIdx=wi;nextSeanceIdx=si;nextSeanceName=seances[si].name;break;}
+          const dk2=`${prog.id}-w${wi}_s${si}`;
+          if(!(S.doneSeances?.[cid]?.[dk]||S.doneSeances?.[cid]?.[dk2])) allDone=false;
+        });
+        if(!allDone){
+          currentWeekName=w.name;
+          weekTotal=seances.length;
+          nextWeekIdx=wi;
+          seances.forEach((_,si)=>{
+            const dk=`${prog.id}_w${wi}_s${si}`;
+            const dk2=`${prog.id}-w${wi}_s${si}`;
+            if(S.doneSeances?.[cid]?.[dk]||S.doneSeances?.[cid]?.[dk2]) weekDone++;
+          });
+          break;
         }
-        if(nextProg)break;
       }
-      if(nextProg)break;
-    }
-    if(nextProg){
-      h+=`<button class="btn btn-red" style="width:100%;justify-content:center;padding:14px;font-size:15px;margin-bottom:16px;border-radius:var(--r)" onclick="scrollToSeance('${nextProg.id}',${nextWeekIdx},${nextSeanceIdx})">
-        🏋️ Ma prochaine séance — ${nextSeanceName}
-      </button>`;
+      if(weekTotal>0)break;
     }
 
+    // Streak calculation (consecutive days with logs)
+    const logDates=[...new Set(Object.values(logs).map(l=>l.date))].sort().reverse();
+    let streak=0;
+    if(logDates.length){
+      const today=new Date().toISOString().split('T')[0];
+      let checkDate=new Date(today);
+      for(const d of logDates){
+        const diff=Math.round((checkDate-new Date(d))/(1000*60*60*24));
+        if(diff<=1){streak++;checkDate=new Date(d);}
+        else break;
+      }
+    }
+
+    // Motivation message based on context
+    let motiv='';
+    if(streak>=5) motiv='🔥 Quelle régularité ! Continue comme ça, les résultats suivent !';
+    else if(streak>=3) motiv='💪 Belle série en cours, ne lâche rien !';
+    else if(logCount>10) motiv='📈 Tu avances bien, chaque séance compte.';
+    else if(logCount>0) motiv='🚀 C\'est le début, la régularité est la clé !';
+    else motiv='👋 Prêt à commencer ? Ta première séance t\'attend !';
+
+    // ── BUILD HOME ──
+    let h=`<div class="client-home">`;
+
+    // Greeting
+    h+=`<div class="ch-greeting">
+      <div class="ch-greet-text">${greeting} ${prenom} !</div>
+      <div class="ch-motiv">${motiv}</div>
+    </div>`;
+
+    // Week progress bar
+    if(weekTotal>0){
+      const pct=Math.round(weekDone/weekTotal*100);
+      h+=`<div class="ch-week-progress">
+        <div class="ch-wp-header">
+          <span class="ch-wp-label">${currentWeekName}</span>
+          <span class="ch-wp-count">${weekDone}/${weekTotal} séances</span>
+        </div>
+        <div class="ch-wp-bar"><div class="ch-wp-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    }
+
+    // Quick stats
+    h+=`<div class="ch-stats">
+      <div class="ch-stat">
+        <div class="ch-stat-val">${logCount}</div>
+        <div class="ch-stat-lbl">Séances faites</div>
+      </div>
+      <div class="ch-stat">
+        <div class="ch-stat-val">${streak>0?streak+'🔥':'—'}</div>
+        <div class="ch-stat-lbl">Jours d'affilée</div>
+      </div>
+      <div class="ch-stat">
+        <div class="ch-stat-val" style="font-size:16px">${lastLog?lastLog.date:'—'}</div>
+        <div class="ch-stat-lbl">Dernière séance</div>
+      </div>
+    </div>`;
+
+    h+=`</div>`;
+
+    // Separator
+    h+=`<div class="ch-divider"><span>MON PROGRAMME COMPLET</span></div>`;
+
+    // Full programme below
     progs.forEach(prog=>{
       try{
         const wk=weekNum(prog.startDate,prog.dur);
