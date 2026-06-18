@@ -251,12 +251,10 @@ select option{background:var(--s2);}
 .builder-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
 /* SÉANCE BLOCK BUILDER */
-.sb{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;animation:sIn .2s ease;}
-.sb .sb-body{display:none;}
-.sb.sb-open .sb-body{display:block;}
-.sb-hd{cursor:pointer;user-select:none;}
-.sb-collapse-arrow{font-size:11px;color:var(--muted);transition:transform .2s;margin-left:auto;margin-right:8px;}
-.sb.sb-open .sb-collapse-arrow{transform:rotate(90deg);}
+.sb{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;animation:sIn .2s ease;display:none;}
+.sb.sb-active{display:block;}
+.sb .sb-body{display:block;}
+.sb-hd{user-select:none;}
 @keyframes sIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
 .sb-hd{padding:9px 12px;background:var(--s3);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
 .sb-num{background:var(--red);color:#fff;font-weight:800;font-size:10px;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -264,6 +262,21 @@ select option{background:var(--s2);}
 .sb-body{padding:10px 12px;}
 .sb-obj{width:100%;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;padding:6px 10px;outline:none;margin-bottom:8px;}
 .sb-obj:focus{border-color:var(--red);color:var(--text);}
+
+/* ── BUILDER SÉANCE TABS ── */
+.builder-seance-tabs{display:flex;gap:4px;margin-bottom:10px;overflow-x:auto;padding-bottom:4px;}
+.bst-btn{flex-shrink:0;padding:7px 14px;border:1px solid var(--border);border-radius:var(--rs);background:var(--s2);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;}
+.bst-btn:hover{background:var(--s3);color:var(--text);}
+.bst-btn.active{background:var(--red-dim);border-color:var(--red);color:var(--red);}
+
+/* ── WARMUP BLOCK ── */
+.sb-warmup-wrap{margin-bottom:8px;}
+.sb-warmup-toggle{font-size:12px;font-weight:700;color:var(--warn);cursor:pointer;padding:8px 10px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:var(--rs);transition:all .15s;display:flex;align-items:center;justify-content:space-between;}
+.sb-warmup-toggle:hover{background:rgba(245,158,11,.12);}
+.sb-warmup-arrow{font-size:10px;color:var(--muted);}
+.sb-warmup-body{padding-top:6px;}
+.sb-warmup-ta{width:100%;background:var(--s2);border:1px solid rgba(245,158,11,.2);border-radius:var(--rs);padding:10px;font-size:12px;color:var(--text);font-family:'Nunito',sans-serif;line-height:1.6;resize:vertical;outline:none;}
+.sb-warmup-ta:focus{border-color:var(--warn);}
 
 /* EXERCISE CARD */
 .exo-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:8px;animation:sIn .15s ease;}
@@ -307,6 +320,17 @@ select option{background:var(--s2);}
 .ds-drop-arrow{font-size:14px;color:var(--warn);padding:0 4px 4px;}
 .ds-drop-label{font-size:10px;color:var(--warn);font-weight:700;padding-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
 .ds-sub-row td{background:rgba(245,158,11,.04);border-top:1px dashed rgba(245,158,11,.2);}
+
+/* ── CIRCUIT FORM ── */
+.ct-station{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:6px;}
+.ct-station-hd{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.ct-station-num{background:var(--info);color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;}
+.ct-station-name{flex:1;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:6px 10px;font-size:12px;color:var(--text);font-weight:700;}
+.ct-station-name:focus{border-color:var(--info);}
+.ct-station-fields{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap;}
+.ct-type-toggle{display:flex;border:1px solid var(--border);border-radius:var(--rs);overflow:hidden;margin-bottom:0;}
+.ct-type-btn{background:var(--s1);border:none;padding:4px 10px;font-size:10px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;}
+.ct-type-btn.active{background:var(--info);color:white;}
 .ds-log-block{flex-wrap:wrap;}
 .ds-log-block .ds-log-content{flex:1;min-width:0;}
 .ds-log-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
@@ -320,6 +344,8 @@ select option{background:var(--s2);}
 .week-tab-btn{font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;background:var(--s2);border:1px solid var(--border);color:var(--muted);border-radius:var(--rs);padding:6px 12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;}
 .week-tab-btn:hover{border-color:var(--red);color:var(--text);}
 .week-tab-btn.active{background:var(--red-dim);border-color:var(--red);color:var(--text);}
+.week-builder-content{display:none;}
+.week-builder-content.active{display:block;}
 .btn-add-week{font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;background:transparent;border:1px dashed var(--red);color:var(--red);border-radius:var(--rs);padding:6px 12px;cursor:pointer;transition:all .2s;}
 .btn-add-week:hover{background:var(--red-dim);}
 .btn-add-seance{background:transparent;border:1px dashed var(--border);color:var(--muted);border-radius:var(--r);padding:10px;font-size:12px;cursor:pointer;transition:all .2s;width:100%;font-family:'Nunito',sans-serif;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;}
@@ -2118,6 +2144,9 @@ function duplicateWeek(sourceWid){
   });
   
   renumberWeekSeances(newWid);
+  updateBuilderSeanceTabs(newWid);
+  const firstSb2=$(`seances-wrap-${newWid}`)?.querySelector('.sb');
+  if(firstSb2) switchBuilderSeance(newWid, firstSb2.id.replace('sb-',''));
   switchWeekBuilder(newWid);
   showToast(`⧉ ${newName} créée !`, true);
   updatePreview();
@@ -2166,9 +2195,19 @@ function addSeanceToWeek(wid){
   const wrap = $(`seances-wrap-${wid}`);
   if(!wrap) return;
   const div = document.createElement('div');
-  div.className='sb sb-open'; div.id=`sb-${sid}`;
-  div.innerHTML=`<div class="sb-hd" onclick="toggleSb(${sid})"><div class="sb-num sb-num-${wid}">-</div><input class="sb-ni" type="text" id="sn-${sid}" placeholder="${names[(sid-1)%names.length]}" oninput="updatePreview()"><span class="sb-collapse-arrow">▶</span><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${sid},${wid})">✕</button></div>
+  div.className='sb'; div.id=`sb-${sid}`; div.dataset.wid=wid;
+  div.innerHTML=`<div class="sb-hd">
+    <div class="sb-num sb-num-${wid}">-</div>
+    <input class="sb-ni" type="text" id="sn-${sid}" placeholder="${names[(sid-1)%names.length]}" oninput="updatePreview();updateBuilderSeanceTabs(${wid})">
+    <button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${sid},${wid})">✕</button>
+  </div>
   <div class="sb-body">
+    <div class="sb-warmup-wrap">
+      <div class="sb-warmup-toggle" onclick="toggleWarmup(${sid})">🔥 Échauffement <span class="sb-warmup-arrow" id="warmup-arrow-${sid}">▶</span></div>
+      <div class="sb-warmup-body" id="warmup-body-${sid}" style="display:none">
+        <textarea class="sb-warmup-ta" id="swarmup-${sid}" rows="4" placeholder="Ex:&#10;• 5 min rameur&#10;• Mobilité épaules / hanches&#10;• 2×12 bandes élastiques&#10;• Montée progressive sur l'exercice principal" oninput="updatePreview()"></textarea>
+      </div>
+    </div>
     <textarea class="sb-obj" id="sobj-${sid}" placeholder="💡 Objectif de la séance..." rows="1" oninput="updatePreview()"></textarea>
     <div id="exos-${sid}"></div>
     <button class="btn-add-exo" onclick="addExo(${sid})">＋ Ajouter un exercice</button>
@@ -2176,14 +2215,72 @@ function addSeanceToWeek(wid){
   wrap.appendChild(div);
   addExo(sid); addExo(sid);
   renumberWeekSeances(wid);
+  updateBuilderSeanceTabs(wid);
+  // Switch to the new séance
+  switchBuilderSeance(wid, sid);
   updatePreview();
   }catch(e){console.error('addSeanceToWeek error:',e);}
+}
+
+function toggleWarmup(sid){
+  const body=$(`warmup-body-${sid}`);
+  const arrow=$(`warmup-arrow-${sid}`);
+  if(!body)return;
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  if(arrow) arrow.textContent=open?'▶':'▼';
+}
+
+function updateBuilderSeanceTabs(wid){
+  const wrap=$(`seances-wrap-${wid}`);if(!wrap)return;
+  let tabBar=wrap.previousElementSibling;
+  if(!tabBar||!tabBar.classList.contains('builder-seance-tabs')){
+    tabBar=document.createElement('div');
+    tabBar.className='builder-seance-tabs';
+    wrap.parentElement.insertBefore(tabBar,wrap);
+  }
+  const sbs=wrap.querySelectorAll('.sb');
+  if(sbs.length<=1){tabBar.style.display='none';return;}
+  tabBar.style.display='flex';
+  let h='';
+  sbs.forEach((sb,i)=>{
+    const sid=sb.id.replace('sb-','');
+    const name=$(`sn-${sid}`)?.value.trim()||`Séance ${i+1}`;
+    const isActive=sb.classList.contains('sb-active');
+    h+=`<button class="bst-btn${isActive?' active':''}" onclick="switchBuilderSeance(${wid},'${sid}')">${name}</button>`;
+  });
+  tabBar.innerHTML=h;
+}
+
+function switchBuilderSeance(wid, sid){
+  const wrap=$(`seances-wrap-${wid}`);if(!wrap)return;
+  wrap.querySelectorAll('.sb').forEach(sb=>{
+    sb.classList.remove('sb-active');
+    sb.style.display='none';
+  });
+  const target=$(`sb-${sid}`);
+  if(target){
+    target.classList.add('sb-active');
+    target.style.display='block';
+  }
+  // Update tab bar active state
+  const tabBar=wrap.previousElementSibling;
+  if(tabBar&&tabBar.classList.contains('builder-seance-tabs')){
+    tabBar.querySelectorAll('.bst-btn').forEach(btn=>{
+      btn.classList.toggle('active',btn.getAttribute('onclick').includes(`'${sid}'`));
+    });
+  }
 }
 
 function removeSeanceFromWeek(sid, wid){
   $(`sb-${sid}`)?.remove();
   delete exoCounts[sid]; delete setDetailCounts[sid];
   renumberWeekSeances(wid);
+  updateBuilderSeanceTabs(wid);
+  // Show first remaining séance
+  const wrap=$(`seances-wrap-${wid}`);
+  const first=wrap?.querySelector('.sb');
+  if(first) switchBuilderSeance(wid, first.id.replace('sb-',''));
   updatePreview();
 }
 
@@ -2201,6 +2298,7 @@ function getMethodData(sid,eid){
   const k=`${sid}-${eid}`;
   if(method==='Drop Set' && dropSetData[k]) return JSON.parse(JSON.stringify(dropSetData[k]));
   if(method==='Rest-Pause' && restPauseData[k]) return JSON.parse(JSON.stringify(restPauseData[k]));
+  if(method==='Circuit' && circuitData[k]) return JSON.parse(JSON.stringify(circuitData[k]));
   return null;
 }
 
@@ -2229,7 +2327,7 @@ function collectWeeks(){
         }
         exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',methodData:getMethodData(sid,eid)});
       });
-      if(exos.length) seances.push({num:snum,name:sname,objective:sobj,exos});
+      if(exos.length) seances.push({num:snum,name:sname,objective:sobj,warmup:$(`swarmup-${sid}`)?.value.trim()||'',exos});
     });
     if(seances.length) weeks.push({id:parseInt(wid),name:wname,seances,unlocked:parseInt(wid)===1,unlockedDate:parseInt(wid)===1?new Date().toISOString().split('T')[0]:null,feedback:''});
   });
@@ -2379,6 +2477,7 @@ function renderAccordion(prog, withLog=false, openFirstWeek=true, useClassicAcco
       const doneDate=withLog?(S.doneSeances?.[cid]?.[doneKey1]||S.doneSeances?.[cid]?.[doneKey2]):null;
       h+=`<div class="seance-tab-content${si===0?' active':''}" data-si="${si}">`;
       if(s.objective) h+=`<div style="background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--info)">🎯 <strong>Objectif :</strong> ${s.objective}</div>`;
+      if(s.warmup) h+=`<div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--warn);white-space:pre-line;line-height:1.6">🔥 <strong>Échauffement</strong>\n${s.warmup}</div>`;
       if(withLog){
         const pidStr=`${prog.id}-w${wi}`;
         h+=renderSeanceContent(s,false,pidStr,si,true,false,prog.id,wi);
@@ -2401,6 +2500,10 @@ function renderAccordion(prog, withLog=false, openFirstWeek=true, useClassicAcco
               st.relances.forEach((r,ri)=>{rpH+=`<tr class="ds-sub-row"><td>↩ ${r.reps}</td><td>=</td><td>${ri===st.relances.length-1?md.restEnd||"2'00":st.pause||'15s'}</td></tr>`;});
             });
             h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${MT(e.method)}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpH}</tbody></table></td></tr>`;
+          } else if(e.method==='Circuit'&&e.methodData&&e.methodData.stations){
+            const md=e.methodData;let ctH=`<tr style="background:rgba(56,189,248,.05)"><td colspan="4" style="font-size:10px;color:var(--info);padding:4px 8px">🔄 ${md.tours} tours · Repos tours: ${md.reposTours||'—'} · Repos stations: ${md.reposStations||'0'}</td></tr>`;
+            md.stations.forEach((st,sti)=>{const p=st.type==='durée'?st.durée:st.reps;ctH+=`<tr><td style="color:var(--info);font-weight:700">${sti+1}</td><td>${st.name||'Station '+(sti+1)}</td><td>${p||'—'}${st.type==='durée'?' (durée)':''}</td><td>${st.load||'PDC'}</td></tr>`;});
+            h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name||'Circuit'}</strong>${MT(e.method)}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>#</th><th>Station</th><th>Rép./Durée</th><th>Charge</th></tr></thead><tbody>${ctH}</tbody></table></td></tr>`;
           } else {
             h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.method&&e.method!=='Classique'?MT(e.method):''}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
           }
@@ -2551,7 +2654,7 @@ const METHOD_HINTS={
   'Pyramidal':'Monter la charge, baisser les reps à chaque série'
 };
 // Which methods use a custom sub-form instead of classic detail
-const CUSTOM_METHODS=['Drop Set','Rest-Pause'];
+const CUSTOM_METHODS=['Drop Set','Rest-Pause','Circuit'];
 
 function onMethodChange(sid,eid){
   const method=$(`mth-${sid}-${eid}`)?.value||'Classique';
@@ -2588,6 +2691,7 @@ function renderMethodCustom(sid,eid,method){
   const wrap=$(`method-custom-${sid}-${eid}`);if(!wrap)return;
   if(method==='Drop Set') renderDropSetForm(sid,eid,wrap);
   else if(method==='Rest-Pause') renderRestPauseForm(sid,eid,wrap);
+  else if(method==='Circuit') renderCircuitForm(sid,eid,wrap);
 }
 
 // ── DROP SET FORM ──
@@ -2717,6 +2821,79 @@ function removeRestPauseRelance(sid,eid,si,ri){
   renderMethodCustom(sid,eid,'Rest-Pause');updatePreview();
 }
 
+// ── CIRCUIT TRAINING FORM ──
+if(typeof circuitData==='undefined') var circuitData={};
+
+function getCircuitKey(sid,eid){return `${sid}-${eid}`;}
+
+function initCircuitData(sid,eid){
+  const k=getCircuitKey(sid,eid);
+  if(!circuitData[k]) circuitData[k]={
+    tours:3,
+    reposTours:"2'00",
+    reposStations:'0',
+    stations:[
+      {name:'',reps:'12',durée:'',load:'',type:'reps'},
+      {name:'',reps:'12',durée:'',load:'',type:'reps'}
+    ]
+  };
+  return circuitData[k];
+}
+
+function renderCircuitForm(sid,eid,wrap){
+  const d=initCircuitData(sid,eid);
+  const dlId=`dl-circuit-${sid}-${eid}`;
+  const suggestions=getExoSuggestions();
+  const dlHtml=suggestions.length?`<datalist id="${dlId}">${suggestions.map(n=>`<option value="${n}">`).join('')}</datalist>`:'';
+  let h=`${dlHtml}<div class="ds-form">
+    <div class="ds-hd">🔄 Configuration Circuit Training</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+      <div><div class="plbl">Tours</div><input class="pinp" type="number" min="1" max="20" value="${d.tours}" style="width:60px" onchange="circuitData['${getCircuitKey(sid,eid)}'].tours=parseInt(this.value)||3;updatePreview()"></div>
+      <div><div class="plbl">Repos entre tours</div><input class="pinp" type="text" value="${d.reposTours}" style="width:80px" onchange="circuitData['${getCircuitKey(sid,eid)}'].reposTours=this.value;updatePreview()"></div>
+      <div><div class="plbl">Repos entre stations</div><input class="pinp" type="text" value="${d.reposStations}" style="width:80px" onchange="circuitData['${getCircuitKey(sid,eid)}'].reposStations=this.value;updatePreview()"></div>
+    </div>
+    <div class="plbl" style="margin-bottom:6px;font-weight:800;color:var(--red2)">📍 Stations du circuit</div>`;
+  d.stations.forEach((st,si)=>{
+    const isReps=st.type!=='durée';
+    h+=`<div class="ct-station" id="ct-st-${sid}-${eid}-${si}">
+      <div class="ct-station-hd">
+        <span class="ct-station-num">${si+1}</span>
+        <input type="text" class="ct-station-name" value="${(st.name||'').replace(/"/g,'&quot;')}" placeholder="Nom de l'exercice" list="${dlId}" onchange="circuitData['${getCircuitKey(sid,eid)}'].stations[${si}].name=this.value;updatePreview()">
+        ${d.stations.length>1?`<button class="btn btn-danger btn-xs" onclick="removeCircuitStation(${sid},${eid},${si})">✕</button>`:''}
+      </div>
+      <div class="ct-station-fields">
+        <div class="ct-type-toggle">
+          <button class="ct-type-btn${isReps?' active':''}" onclick="setStationType(${sid},${eid},${si},'reps')">Rép.</button>
+          <button class="ct-type-btn${!isReps?' active':''}" onclick="setStationType(${sid},${eid},${si},'durée')">Durée</button>
+        </div>
+        ${isReps?
+          `<div><div class="plbl">Rép.</div><input class="pinp" type="text" value="${st.reps||''}" style="width:60px" onchange="circuitData['${getCircuitKey(sid,eid)}'].stations[${si}].reps=this.value;updatePreview()"></div>`
+          :`<div><div class="plbl">Durée</div><input class="pinp" type="text" value="${st.durée||''}" placeholder="30s" style="width:60px" onchange="circuitData['${getCircuitKey(sid,eid)}'].stations[${si}].durée=this.value;updatePreview()"></div>`
+        }
+        <div><div class="plbl">Charge</div><input class="pinp" type="text" value="${st.load||''}" placeholder="—" style="width:70px" onchange="circuitData['${getCircuitKey(sid,eid)}'].stations[${si}].load=this.value;updatePreview()"></div>
+      </div>
+    </div>`;
+  });
+  h+=`<button class="btn-add-exo" style="margin-top:6px" onclick="addCircuitStation(${sid},${eid})">+ Station</button></div>`;
+  wrap.innerHTML=h;
+}
+
+function addCircuitStation(sid,eid){
+  const d=initCircuitData(sid,eid);
+  d.stations.push({name:'',reps:'12',durée:'',load:'',type:'reps'});
+  renderMethodCustom(sid,eid,'Circuit');updatePreview();
+}
+function removeCircuitStation(sid,eid,si){
+  const d=initCircuitData(sid,eid);
+  d.stations.splice(si,1);
+  renderMethodCustom(sid,eid,'Circuit');updatePreview();
+}
+function setStationType(sid,eid,si,type){
+  const d=initCircuitData(sid,eid);
+  d.stations[si].type=type;
+  renderMethodCustom(sid,eid,'Circuit');updatePreview();
+}
+
 function collectSeances(){
   const seances=[];
   let num=0;
@@ -2738,7 +2915,7 @@ function collectSeances(){
       }
       exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',methodData:getMethodData(sid,eid)});
     });
-    if(exos.length)seances.push({num,name:sname,objective:sobj,exos});
+    if(exos.length)seances.push({num,name:sname,objective:sobj,warmup:$(`swarmup-${sid}`)?.value.trim()||'',exos});
   });
   return seances;
 }
@@ -2855,15 +3032,20 @@ function editProg(id){
     const wid = weekCount;
     // Clear default seances
     const wrapEl = $(`seances-wrap-${wid}`);
-    if(wrapEl){ wrapEl.querySelectorAll('.sb').forEach(sb=>{ const s2=sb.id.replace('sb-',''); delete exoCounts[parseInt(s2)]; delete setDetailCounts[parseInt(s2)]; sb.remove(); }); }
+    if(wrapEl){ 
+      wrapEl.querySelectorAll('.sb').forEach(sb=>{ const s2=sb.id.replace('sb-',''); delete exoCounts[parseInt(s2)]; delete setDetailCounts[parseInt(s2)]; sb.remove(); });
+      // Remove stale tab bar
+      const staleTabBar=wrapEl.previousElementSibling;
+      if(staleTabBar&&staleTabBar.classList.contains('builder-seance-tabs')) staleTabBar.remove();
+    }
     
     (w.seances||[]).forEach(s => {
       seanceCount++;
       const sid=seanceCount; exoCounts[sid]=0; setDetailCounts[sid]={};
       const wrapS=$(`seances-wrap-${wid}`);
       const div=document.createElement('div'); div.className='sb'; div.id=`sb-${sid}`;
-      div.innerHTML=`<div class="sb-hd" onclick="toggleSb(${sid})"><div class="sb-num sb-num-${wid}">-</div><input class="sb-ni" type="text" id="sn-${sid}" value="${(s.name||'').replace(/"/g,'&quot;')}" oninput="updatePreview()" onclick="event.stopPropagation()"><span class="sb-collapse-arrow">▶</span><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${sid},${wid})">✕</button></div><div class="sb-body"><textarea class="sb-obj" id="sobj-${sid}" rows="1" oninput="updatePreview()">${s.objective||''}</textarea><div id="exos-${sid}"></div><button class="btn-add-exo" onclick="addExo(${sid})">＋ Ajouter un exercice</button></div>`;
-      div.classList.add('sb-open');
+      div.innerHTML=`<div class="sb-hd"><div class="sb-num sb-num-${wid}">-</div><input class="sb-ni" type="text" id="sn-${sid}" value="${(s.name||'').replace(/"/g,'&quot;')}" oninput="updatePreview();updateBuilderSeanceTabs(${wid})"><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${sid},${wid})">✕</button></div><div class="sb-body"><div class="sb-warmup-wrap"><div class="sb-warmup-toggle" onclick="toggleWarmup(${sid})">🔥 Échauffement <span class="sb-warmup-arrow" id="warmup-arrow-${sid}">▶</span></div><div class="sb-warmup-body" id="warmup-body-${sid}" style="display:${s.warmup?'block':'none'}"><textarea class="sb-warmup-ta" id="swarmup-${sid}" rows="4" oninput="updatePreview()">${s.warmup||''}</textarea></div></div><textarea class="sb-obj" id="sobj-${sid}" rows="1" oninput="updatePreview()">${s.objective||''}</textarea><div id="exos-${sid}"></div><button class="btn-add-exo" onclick="addExo(${sid})">＋ Ajouter un exercice</button></div>`;
+      div.classList.add('sb-active');
       wrapS?.appendChild(div);
       (s.exos||[]).forEach(e=>{
         exoCounts[sid]++;
@@ -2903,12 +3085,19 @@ function editProg(id){
         } else if(e.methodData && e.method==='Rest-Pause'){
           restPauseData[getRestPauseKey(sid,eid)]=JSON.parse(JSON.stringify(e.methodData));
           onMethodChange(sid,eid);
+        } else if(e.methodData && e.method==='Circuit'){
+          circuitData[getCircuitKey(sid,eid)]=JSON.parse(JSON.stringify(e.methodData));
+          onMethodChange(sid,eid);
         } else if(hasDetail){
           const tbody=$(`detail-tbody-${sid}-${eid}`);
           if(tbody){tbody.innerHTML=e.setDetails.map((sd,i)=>`<tr><td class="set-row-num">${i+1}</td><td><input type="text" id="dr-${sid}-${eid}-${i}" value="${sd.reps}" oninput="updatePreview()"></td><td><input type="text" id="dl-${sid}-${eid}-${i}" value="${sd.load}" oninput="updatePreview()"></td><td><input type="text" id="drt-${sid}-${eid}-${i}" value="${sd.rest}" oninput="updatePreview()"></td></tr>`).join('');}
         }else{renderSetRows(sid,eid);}
       });
       renumberWeekSeances(wid);
+      updateBuilderSeanceTabs(wid);
+      // Show first séance
+      const firstSbInWeek=$(`seances-wrap-${wid}`)?.querySelector('.sb');
+      if(firstSbInWeek) switchBuilderSeance(wid, firstSbInWeek.id.replace('sb-',''));
     });
   });
   cTab('builder',null);
@@ -2962,6 +3151,7 @@ function switchSeanceTab(pid,idx,total){
 function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOverride=null,weekIdxOverride=null){
   let h=`<div class="seance-content${isActive?' active':''}" id="scontent-${pid}-${idx}">`;
   if(s.objective){h+=`<div style="background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--info)">🎯 <strong>Objectif :</strong> ${s.objective}</div>`;}
+  if(s.warmup){h+=`<div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--warn);white-space:pre-line;line-height:1.6">🔥 <strong>Échauffement</strong>\n${s.warmup}</div>`;}
   h+=`<table class="exo-table"><thead><tr><th>#</th><th>Exercice</th><th>Séries</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>`;
   s.exos.forEach((e,i)=>{
     if(!e||!e.name)return;
@@ -2988,6 +3178,14 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
         });
       });
       h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpHtml}</tbody></table></td></tr>`;
+    } else if(e.method==='Circuit' && e.methodData && e.methodData.stations){
+      const md=e.methodData;
+      let ctHtml=`<tr style="background:rgba(56,189,248,.05)"><td colspan="4" style="font-size:10px;color:var(--info);padding:4px 8px">🔄 ${md.tours} tours · Repos entre tours: ${md.reposTours||'—'} · Repos entre stations: ${md.reposStations||'0'}</td></tr>`;
+      md.stations.forEach((st,si)=>{
+        const prescrit=st.type==='durée'?st.durée:st.reps;
+        ctHtml+=`<tr><td style="color:var(--info);font-weight:700">${si+1}</td><td>${st.name||'Station '+(si+1)}</td><td>${prescrit||'—'}${st.type==='durée'?' (durée)':''}</td><td>${st.load||'PDC'}</td></tr>`;
+      });
+      h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name||'Circuit'}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>#</th><th>Station</th><th>Rép./Durée</th><th>Charge</th></tr></thead><tbody>${ctHtml}</tbody></table></td></tr>`;
     } else if(e.detail&&e.setDetails&&e.setDetails.length){
       h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
     } else {
@@ -3060,6 +3258,35 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
             <button class="rest-timer-skip" onclick="skipTimer('${pid}','${e.id}',${si})">⏭ Passer</button>
           </div>`;
         });
+      } else if(e.method==='Circuit' && e.methodData && e.methodData.stations){
+        // Circuit log: one check per tour, showing all stations inside
+        const md=e.methodData;
+        const restSecs=parseRestToSeconds(md.reposTours||"2'00");
+        const nTours=parseInt(md.tours)||3;
+        for(let ti=0;ti<nTours;ti++){
+          seriesHtml+=`<div class="serie-row ds-log-block">
+            <button class="serie-check" id="chk-${pid}-${e.id}-${ti}" onclick="toggleSerie('${pid}','${e.id}',${ti},${restSecs})" type="button"></button>
+            <div class="ds-log-content">
+              <div class="ds-log-main" style="margin-bottom:6px">
+                <span class="serie-label" style="font-weight:800;color:var(--info)">🔄 Tour ${ti+1}/${nTours}</span>
+              </div>`;
+          md.stations.forEach((st,si)=>{
+            const prescrit=st.type==='durée'?(st.durée||'30s'):(st.reps||'12')+' rép.';
+            seriesHtml+=`<div class="ds-log-drop" style="border-color:var(--info)">
+                <span class="ds-log-drop-label" style="color:var(--info)">📍 ${st.name||'Station '+(si+1)} — ${prescrit} ${st.load?'@ '+st.load:'PDC'}</span>
+                <div class="serie-log">
+                  <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${ti}s${si}" placeholder="${st.type==='durée'?'Durée':'Rép.'}" oninput="autoSaveLogDraft()">
+                  ${st.load?`<input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${ti}s${si}" placeholder="Charge" oninput="autoSaveLogDraft()">`:''}
+                </div>
+              </div>`;
+          });
+          seriesHtml+=`</div></div>
+          <div class="rest-timer" id="timer-${pid}-${e.id}-${ti}">
+            <div><div class="rest-timer-label">Repos</div><div class="rest-timer-count" id="tcount-${pid}-${e.id}-${ti}">${formatRestDisplay(restSecs)||'—'}</div></div>
+            <div style="flex:1"><div class="rest-timer-bar"><div class="rest-timer-progress" id="tbar-${pid}-${e.id}-${ti}"></div></div></div>
+            <button class="rest-timer-skip" onclick="skipTimer('${pid}','${e.id}',${ti})">⏭ Passer</button>
+          </div>`;
+        }
       } else {
         // Classic log
         const nseries=e.detail&&e.setDetails&&e.setDetails.length?e.setDetails.length:Math.max(1,parseInt(String(e.sets).replace(/[^0-9]/g,''))||3);
