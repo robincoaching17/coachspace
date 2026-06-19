@@ -412,6 +412,10 @@ select option{background:var(--s2);}
   .exo-table td{padding:4px 2px;font-size:11px;}
   .exo-table th:nth-child(1),.exo-table td:nth-child(1){width:24px;}
   .exo-table th:nth-child(2),.exo-table td:nth-child(2){width:auto;}
+  .exo-row{display:flex;flex-wrap:wrap;}
+  .exo-row td:first-child{width:28px;flex-shrink:0;}
+  .exo-row td:nth-child(2){flex:1;min-width:80px;}
+  .exo-row td[colspan]{width:100%;padding-left:28px;}
   .exo-table th:nth-child(3),.exo-table td:nth-child(3){width:32px;text-align:center;}
   .exo-table th:nth-child(4),.exo-table td:nth-child(4){width:32px;text-align:center;}
   .exo-table th:nth-child(5),.exo-table td:nth-child(5){width:40px;text-align:center;}
