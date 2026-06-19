@@ -412,14 +412,6 @@ select option{background:var(--s2);}
   .exo-table td{padding:4px 2px;font-size:11px;}
   .exo-table th:nth-child(1),.exo-table td:nth-child(1){width:24px;}
   .exo-table th:nth-child(2),.exo-table td:nth-child(2){width:auto;}
-  .exo-row{display:flex;flex-wrap:wrap;}
-  .exo-row td:first-child{width:28px;flex-shrink:0;}
-  .exo-row td:nth-child(2){flex:1;min-width:80px;}
-  .exo-row td[colspan]{width:100%;padding:8px 0 4px 0;}
-  .exo-row td[colspan] .set-tbl{width:100%;}
-  .exo-row-detail td:first-child{display:none;}
-  .exo-row-detail td:nth-child(2){width:100%;text-align:center;padding:10px 4px 4px;}
-  .exo-row-detail td:nth-child(2) div[style*="font-weight"]{font-size:16px;}
   .set-tbl th{padding:5px 8px;font-size:9px;}
   .set-tbl td{padding:6px 8px;font-size:12px;}
   .exo-table th:nth-child(3),.exo-table td:nth-child(3){width:32px;text-align:center;}
@@ -588,6 +580,12 @@ a.contact-link:hover{text-decoration:underline;}
 .set-tbl th{font-size:9px;color:var(--muted);text-align:center;padding:3px 6px;border-bottom:1px solid var(--border);}
 .set-tbl td{font-size:11px;font-family:'Oswald',sans-serif;color:var(--red);text-align:center;padding:4px 6px;border-bottom:1px solid var(--s3);}
 .set-tbl tr:last-child td{border-bottom:none;}
+
+/* ── EXERCISE DETAIL CELL ── */
+.exo-detail-cell{padding:10px 4px !important;}
+.exo-detail-name{font-size:16px;font-weight:800;text-align:center;color:var(--text);margin-bottom:2px;}
+.exo-detail-badge{text-align:center;margin-bottom:8px;}
+.exo-detail-cell .set-tbl{width:100%;}
 
 /* SAVE SEANCE BTN */
 .save-seance-btn{width:100%;padding:12px;background:var(--red);color:#fff;border:none;border-radius:var(--rs);font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:12px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
@@ -3176,7 +3174,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
           dsHtml+=`<tr class="ds-sub-row"><td><span style="color:var(--warn);font-size:10px">↘ drop ${di+1}</span></td><td>${dr.reps}</td><td>${dr.load||'—'}</td></tr>`;
         });
       });
-      h+=`<tr class="exo-row exo-row-detail"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${dsHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${dsHtml}</tbody></table></td></tr>`;
     } else if(e.method==='Rest-Pause' && e.methodData && e.methodData.sets){
       const md=e.methodData;
       let rpHtml='';
@@ -3187,7 +3185,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
           rpHtml+=`<tr class="ds-sub-row"><td><span style="color:var(--info);font-size:10px">↩ relance ${ri+1}</span> ${r.reps}</td><td>=</td><td>${ri===st.relances.length-1?(md.restEnd||"2'00"):(st.pause||'15s')}</td></tr>`;
         });
       });
-      h+=`<tr class="exo-row exo-row-detail"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpHtml}</tbody></table></td></tr>`;
     } else if(e.method==='Circuit' && e.methodData && e.methodData.stations){
       const md=e.methodData;
       let ctHtml=`<tr style="background:rgba(56,189,248,.05)"><td colspan="4" style="font-size:10px;color:var(--info);padding:4px 8px">🔄 ${md.tours} tours · Repos entre tours: ${md.reposTours||'—'} · Repos entre stations: ${md.reposStations||'0'}</td></tr>`;
@@ -3195,9 +3193,9 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
         const prescrit=st.type==='durée'?st.durée:st.reps;
         ctHtml+=`<tr><td style="color:var(--info);font-weight:700">${si+1}</td><td>${st.name||'Station '+(si+1)}</td><td>${prescrit||'—'}${st.type==='durée'?' (durée)':''}</td><td>${st.load||'PDC'}</td></tr>`;
       });
-      h+=`<tr class="exo-row exo-row-detail"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name||'Circuit'}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>#</th><th>Station</th><th>Rép./Durée</th><th>Charge</th></tr></thead><tbody>${ctHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'Circuit'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>#</th><th>Station</th><th>Rép./Durée</th><th>Charge</th></tr></thead><tbody>${ctHtml}</tbody></table></td></tr>`;
     } else if(e.detail&&e.setDetails&&e.setDetails.length){
-      h+=`<tr class="exo-row exo-row-detail"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
     } else {
       h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
     }
