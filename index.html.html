@@ -280,10 +280,12 @@ select option{background:var(--s2);}
 
 /* EXERCISE CARD */
 .exo-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:8px;animation:sIn .15s ease;}
-.exo-top{display:flex;align-items:center;gap:7px;margin-bottom:7px;}
+.exo-top{display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:nowrap;}
 .exo-idx{background:var(--s3);color:var(--muted);font-size:10px;font-weight:800;width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.method-sel{background:var(--s2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;padding:4px 6px;outline:none;cursor:pointer;flex-shrink:0;}
+.method-sel{background:var(--s2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;padding:4px 6px;outline:none;cursor:pointer;flex-shrink:0;max-width:120px;}
 .method-sel:focus{border-color:var(--red);}
+.exo-del-btn{background:var(--s3);border:1px solid var(--border);border-radius:5px;color:var(--red);font-size:14px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s;margin-left:auto;}
+.exo-del-btn:hover{background:var(--red);color:#fff;border-color:var(--red);}
 .exo-global{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:5px;}
 .plbl{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:2px;}
 .pinp{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Oswald',sans-serif;font-size:12px;padding:5px 7px;outline:none;text-align:center;}
@@ -590,6 +592,10 @@ a.contact-link:hover{text-decoration:underline;}
 /* SAVE SEANCE BTN */
 .save-seance-btn{width:100%;padding:12px;background:var(--red);color:#fff;border:none;border-radius:var(--rs);font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:12px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
 .save-seance-btn:hover{background:var(--red2);transform:translateY(-1px);}
+.skip-seance-btn{width:100%;padding:8px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:var(--rs);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-top:6px;transition:all .2s;}
+.skip-seance-btn:hover{border-color:var(--warn);color:var(--warn);}
+.exo-replace-btn{background:none;border:1px solid var(--border);border-radius:var(--rs);color:var(--muted);font-size:10px;font-weight:700;padding:3px 8px;cursor:pointer;transition:all .15s;}
+.exo-replace-btn:hover{border-color:var(--info);color:var(--info);}
 
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:998;}
 .sidebar-overlay.active{display:block;}
@@ -1525,7 +1531,7 @@ a.contact-link:hover{text-decoration:underline;}
 // CONSTANTS & DATA
 // ════════════════════════════════════════════
 const COLORS=['#c0152a','#2563eb','#16a34a','#d97706','#7c3aed','#0891b2','#be185d'];
-const METHODS=['Classique','Superset A','Superset B','Drop Set','Rest-Pause','Pyramidal','Bi-Set','Tri-Set','Circuit'];
+const METHODS=['Classique','Superset','Bi-Set','Tri-Set','Drop Set','Rest-Pause','Pyramidal','Circuit','EMOM','AMRAP','Tempo','Tabata','Cluster Set'];
 const MT=(m)=>{
   if(!m||m==='Classique') return `<span class="method-tag mt-c">Classique</span>`;
   if(m.startsWith('Superset')||m==='Bi-Set'||m==='Tri-Set') return `<span class="method-tag mt-s">${m}</span>`;
@@ -1716,7 +1722,7 @@ function closeConfirm(){$('confirm-ov').classList.remove('open');confirmCb=null;
 function showModal(title,html){
   let ov=document.getElementById('generic-modal-ov');
   if(!ov){
-    ov=document.createElement('div');ov.id='generic-modal-ov';ov.className='modal-overlay';
+    ov=document.createElement('div');ov.id='generic-modal-ov';ov.className='modal-ov';
     ov.innerHTML=`<div class="modal"><div class="modal-hd"><div class="modal-title" id="gm-title"></div><button class="modal-close" onclick="closeGenericModal()">✕</button></div><div class="modal-body" id="gm-body"></div></div>`;
     document.body.appendChild(ov);
     ov.addEventListener('click',e=>{if(e.target===ov)closeGenericModal();});
@@ -1853,7 +1859,7 @@ function renderDashboard(){
     </div>`).join('');
 }
 
-function renderClientSelect(){
+function renderClientSelect(){getVariantSuggestions();
   $('b-client').innerHTML='<option value="">— Choisir —</option>'+S.clients.map(c=>`<option value="${c.id}">${c.prenom} ${c.nom}</option>`).join('');
 }
 
@@ -2089,68 +2095,111 @@ function addWeek(name){
 }
 
 function duplicateWeek(sourceWid){
-  // Collect seances from source week
   const sourceWrap = $(`seances-wrap-${sourceWid}`);
   if(!sourceWrap) return;
-  
-  // Read source week name
   const sourceName = $(`wname-${sourceWid}`)?.value || `Semaine ${sourceWid}`;
   const newName = sourceName + ' (copie)';
-  
-  // Create new week
   addWeek(newName);
   const newWid = weekCount;
-  
-  // Copy seances: clear defaults first
   const newWrap = $(`seances-wrap-${newWid}`);
-  if(newWrap) newWrap.innerHTML = '';
-  // Remove default exos that addWeek added
-  const defaultSids = [];
-  if(newWrap) newWrap.querySelectorAll('.sb').forEach(sb => {
-    const sid = sb.id.replace('sb-','');
-    defaultSids.push(parseInt(sid));
-    delete exoCounts[parseInt(sid)];
-    delete setDetailCounts[parseInt(sid)];
-    sb.remove();
+  // Clear default séances
+  if(newWrap) newWrap.querySelectorAll('.sb').forEach(sb=>{
+    const sid=sb.id.replace('sb-','');
+    delete exoCounts[parseInt(sid)];delete setDetailCounts[parseInt(sid)];sb.remove();
   });
+  // Remove stale tab bar
+  if(newWrap){const stale=newWrap.previousElementSibling;if(stale&&stale.classList.contains('builder-seance-tabs'))stale.remove();}
 
-  // Re-read source week seances
-  sourceWrap.querySelectorAll('.sb').forEach(sb => {
-    const sourceSid = sb.id.replace('sb-','');
+  // Copy each séance
+  sourceWrap.querySelectorAll('.sb').forEach(sb=>{
+    const sourceSid=sb.id.replace('sb-','');
     seanceCount++;
-    const newSid = seanceCount;
-    exoCounts[newSid] = 0; setDetailCounts[newSid] = {};
-    const sname = $(`sn-${sourceSid}`)?.value || '';
-    const sobj = $(`sobj-${sourceSid}`)?.value || '';
-    const names=['Haut du corps — Poussée','Bas du corps','Haut du corps — Tirage','Full Body','Cardio & Gainage','Épaules & Bras'];
-    const newDiv = document.createElement('div');
-    newDiv.className = 'sb'; newDiv.id = `sb-${newSid}`;
-    newDiv.innerHTML = `<div class="sb-hd" onclick="toggleSb(${newSid})"><div class="sb-num sb-num-${newWid}">-</div><input class="sb-ni" type="text" id="sn-${newSid}" value="${sname}" oninput="updatePreview()" onclick="event.stopPropagation()"><span class="sb-collapse-arrow">▶</span><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${newSid},${newWid})">✕</button></div><div class="sb-body"><textarea class="sb-obj" id="sobj-${newSid}" rows="1" oninput="updatePreview()">${sobj}</textarea><div id="exos-${newSid}"></div><button class="btn-add-exo" onclick="addExo(${newSid})">＋ Ajouter un exercice</button></div>`;
-    newDiv.classList.add('sb-open');
+    const newSid=seanceCount;
+    exoCounts[newSid]=0;setDetailCounts[newSid]={};
+    const sname=$(`sn-${sourceSid}`)?.value||'';
+    const sobj=$(`sobj-${sourceSid}`)?.value||'';
+    const swarmup=$(`swarmup-${sourceSid}`)?.value||'';
+    const hasWarmup=swarmup.length>0;
+    const newDiv=document.createElement('div');
+    newDiv.className='sb';newDiv.id=`sb-${newSid}`;newDiv.dataset.wid=newWid;
+    newDiv.innerHTML=`<div class="sb-hd"><div class="sb-num sb-num-${newWid}">-</div><input class="sb-ni" type="text" id="sn-${newSid}" value="${sname.replace(/"/g,'&quot;')}" oninput="updatePreview();updateBuilderSeanceTabs(${newWid})"><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${newSid},${newWid})">✕</button></div>
+    <div class="sb-body">
+      <div class="sb-warmup-wrap"><div class="sb-warmup-toggle" onclick="toggleWarmup(${newSid})">🔥 Échauffement <span class="sb-warmup-arrow" id="warmup-arrow-${newSid}">${hasWarmup?'▼':'▶'}</span></div><div class="sb-warmup-body" id="warmup-body-${newSid}" style="display:${hasWarmup?'block':'none'}"><textarea class="sb-warmup-ta" id="swarmup-${newSid}" rows="4" oninput="updatePreview()">${swarmup.replace(/</g,'&lt;')}</textarea></div></div>
+      <textarea class="sb-obj" id="sobj-${newSid}" rows="1" oninput="updatePreview()">${sobj}</textarea>
+      <div id="exos-${newSid}"></div>
+      <button class="btn-add-exo" onclick="addExo(${newSid})">＋ Ajouter un exercice</button>
+    </div>`;
     if(newWrap) newWrap.appendChild(newDiv);
-    
-    // Copy exos
-    sb.querySelectorAll('.exo-card').forEach(exoEl => {
-      const parts = exoEl.id.split('-'); const sourceEid = parts[parts.length-1];
+
+    // Copy exos with ALL data
+    sb.querySelectorAll('.exo-card').forEach(exoEl=>{
+      const parts=exoEl.id.split('-');const sourceEid=parts[parts.length-1];
       exoCounts[newSid]++;
-      const newEid = exoCounts[newSid];
-      setDetailCounts[newSid] = setDetailCounts[newSid]||{};
-      setDetailCounts[newSid][newEid] = 3;
-      const ename = $(`en-${sourceSid}-${sourceEid}`)?.value||'';
-      const method = $(`mth-${sourceSid}-${sourceEid}`)?.value||'Classique';
-      const sets = $(`es-${sourceSid}-${sourceEid}`)?.value||'';
-      const reps = $(`er-${sourceSid}-${sourceEid}`)?.value||'';
-      const load = $(`el-${sourceSid}-${sourceEid}`)?.value||'';
-      const rest = $(`ert-${sourceSid}-${sourceEid}`)?.value||'';
-      const tech = $(`etn-${sourceSid}-${sourceEid}`)?.value||'';
-      const mo = METHODS.map(m=>`<option${m===method?' selected':''}>${m}</option>`).join('');
-      const exoDiv = document.createElement('div');
-      exoDiv.className='exo-card'; exoDiv.id=`ex-${newSid}-${newEid}`;
-      exoDiv.innerHTML=`<div class="exo-top" style="margin-bottom:6px"><div class="exo-idx">${newEid}</div><select class="method-sel" id="mth-${newSid}-${newEid}" onchange="onMethodChange(${newSid},${newEid});updatePreview()">${mo}</select><button class="btn btn-danger btn-xs" style="margin-left:auto" onclick="removeExo(${newSid},${newEid})">✕</button></div><div style="margin-bottom:2px"><div class="plbl" style="color:var(--red2);font-weight:800;margin-bottom:4px">🏋️ Nom de l'exercice</div><input type="text" class="exo-name-inp" value="${ename}" id="en-${newSid}-${newEid}" oninput="updatePreview()"></div><div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px"><div class="exo-global" style="flex:1"><div><div class="plbl">Séries</div><input class="pinp" type="text" id="es-${newSid}-${newEid}" value="${sets}" onchange="syncSetCount(${newSid},${newEid})"></div><div><div class="plbl">Rép./Durée</div><input class="pinp" type="text" id="er-${newSid}-${newEid}" value="${reps}" oninput="updatePreview()"></div><div><div class="plbl">Charge</div><input class="pinp" type="text" id="el-${newSid}-${newEid}" value="${load}" oninput="updatePreview()"></div><div><div class="plbl">Repos</div><input class="pinp" type="text" id="ert-${newSid}-${newEid}" value="${rest}" oninput="syncRest(${newSid},${newEid});updatePreview()"></div></div><button class="detail-toggle" id="dtog-${newSid}-${newEid}" onclick="toggleDetail(${newSid},${newEid})" style="margin-top:14px">🔢 Détailler</button></div><div id="detail-wrap-${newSid}-${newEid}" style="display:none"><table class="set-detail-table" id="detail-tbl-${newSid}-${newEid}"><thead><tr><th>#</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody id="detail-tbody-${newSid}-${newEid}"></tbody></table><button class="btn-add-exo" style="margin-top:4px" onclick="addSetRow(${newSid},${newEid})">+ Série</button></div><input class="ti" type="text" id="etn-${newSid}-${newEid}" value="${tech}" placeholder="💡 Conseil technique..." oninput="updatePreview()">`;
+      const newEid=exoCounts[newSid];
+      setDetailCounts[newSid]=setDetailCounts[newSid]||{};
+      const ename=$(`en-${sourceSid}-${sourceEid}`)?.value||'';
+      const variant=$(`ev-${sourceSid}-${sourceEid}`)?.value||'';
+      const method=$(`mth-${sourceSid}-${sourceEid}`)?.value||'Classique';
+      const sets=$(`es-${sourceSid}-${sourceEid}`)?.value||'';
+      const reps=$(`er-${sourceSid}-${sourceEid}`)?.value||'';
+      const load=$(`el-${sourceSid}-${sourceEid}`)?.value||'';
+      const rest=$(`ert-${sourceSid}-${sourceEid}`)?.value||'';
+      const tech=$(`etn-${sourceSid}-${sourceEid}`)?.value||'';
+      const mo=METHODS.map(m=>`<option${m===method?' selected':''}>${m}</option>`).join('');
+
+      // Check if detail mode is active
+      const isDetail=$(`dtog-${sourceSid}-${sourceEid}`)?.classList.contains('on');
+      const detailDisplay=isDetail?'block':'none';
+      const detailBtnText=isDetail?'✅ Détail actif':'🔢 Détailler';
+      const detailBtnClass='detail-toggle'+(isDetail?' on':'');
+
+      const exoDiv=document.createElement('div');
+      exoDiv.className='exo-card';exoDiv.id=`ex-${newSid}-${newEid}`;
+      exoDiv.innerHTML=`<div class="exo-top" style="margin-bottom:6px"><div class="exo-idx">${newEid}</div><select class="method-sel" id="mth-${newSid}-${newEid}" onchange="onMethodChange(${newSid},${newEid});updatePreview()">${mo}</select><button class="exo-del-btn" onclick="removeExo(${newSid},${newEid})" title="Supprimer cet exercice">✕</button></div><div style="margin-bottom:2px"><div class="plbl" style="color:var(--red2);font-weight:800;margin-bottom:4px">🏋️ Nom de l'exercice</div><input type="text" class="exo-name-inp" value="${ename.replace(/"/g,'&quot;')}" id="en-${newSid}-${newEid}" oninput="updatePreview()"></div>
+      <div style="margin-bottom:4px"><input type="text" class="variant-inp" value="${variant.replace(/"/g,'&quot;')}" placeholder="Variante (ex: poulie corde, barre EZ, prise serrée...)" id="ev-${newSid}-${newEid}" list="dl-variants" oninput="updatePreview()" style="width:100%;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:5px 10px;font-size:11px;color:var(--muted);font-style:italic;outline:none"></div>
+      <div class="exo-classic-fields">
+      <div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px"><div class="exo-global" style="flex:1"><div><div class="plbl">Séries</div><input class="pinp" type="text" id="es-${newSid}-${newEid}" value="${sets}" onchange="syncSetCount(${newSid},${newEid})"></div><div><div class="plbl">Rép./Durée</div><input class="pinp" type="text" id="er-${newSid}-${newEid}" value="${reps}" oninput="updatePreview()"></div><div><div class="plbl">Charge</div><input class="pinp" type="text" id="el-${newSid}-${newEid}" value="${load}" oninput="updatePreview()"></div><div><div class="plbl">Repos</div><input class="pinp" type="text" id="ert-${newSid}-${newEid}" value="${rest}" oninput="syncRest(${newSid},${newEid});updatePreview()"></div></div>
+      <button class="${detailBtnClass}" id="dtog-${newSid}-${newEid}" onclick="toggleDetail(${newSid},${newEid})" style="margin-top:14px">${detailBtnText}</button></div>
+      <div id="detail-wrap-${newSid}-${newEid}" style="display:${detailDisplay}"><table class="set-detail-table" id="detail-tbl-${newSid}-${newEid}"><thead><tr><th>#</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody id="detail-tbody-${newSid}-${newEid}"></tbody></table><button class="btn-add-exo" style="margin-top:4px" onclick="addSetRow(${newSid},${newEid})">+ Série</button></div>
+      </div>
+      <input class="ti" type="text" id="etn-${newSid}-${newEid}" value="${tech.replace(/"/g,'&quot;')}" placeholder="💡 Conseil technique..." oninput="updatePreview()">`;
       $(`exos-${newSid}`)?.appendChild(exoDiv);
+
+      // Copy detail rows if detail mode was active
+      if(isDetail){
+        const sourceTbody=$(`detail-tbody-${sourceSid}-${sourceEid}`);
+        const newTbody=$(`detail-tbody-${newSid}-${newEid}`);
+        if(sourceTbody&&newTbody){
+          const rows=sourceTbody.querySelectorAll('tr');
+          let rowsHtml='';
+          rows.forEach((row,ri)=>{
+            const inputs=row.querySelectorAll('input');
+            const dr=inputs[0]?.value||'';
+            const dl=inputs[1]?.value||'';
+            const drt=inputs[2]?.value||'';
+            rowsHtml+=`<tr><td class="set-row-num">${ri+1}</td><td><input type="text" id="dr-${newSid}-${newEid}-${ri}" value="${dr}" oninput="updatePreview()"></td><td><input type="text" id="dl-${newSid}-${newEid}-${ri}" value="${dl}" oninput="updatePreview()"></td><td><input type="text" id="drt-${newSid}-${newEid}-${ri}" value="${drt}" oninput="updatePreview()"></td></tr>`;
+          });
+          newTbody.innerHTML=rowsHtml;
+          setDetailCounts[newSid][newEid]=rows.length;
+        }
+      }
+
+      // Copy custom method data (Drop Set, Rest-Pause, Circuit)
+      const k=`${sourceSid}-${sourceEid}`;
+      const nk=`${newSid}-${newEid}`;
+      if(method==='Drop Set'&&dropSetData[k]){
+        dropSetData[nk]=JSON.parse(JSON.stringify(dropSetData[k]));
+        onMethodChange(newSid,newEid);
+      } else if(method==='Rest-Pause'&&restPauseData[k]){
+        restPauseData[nk]=JSON.parse(JSON.stringify(restPauseData[k]));
+        onMethodChange(newSid,newEid);
+      } else if(method==='Circuit'&&circuitData[k]){
+        circuitData[nk]=JSON.parse(JSON.stringify(circuitData[k]));
+        onMethodChange(newSid,newEid);
+      }
     });
   });
-  
+
   renumberWeekSeances(newWid);
   updateBuilderSeanceTabs(newWid);
   const firstSb2=$(`seances-wrap-${newWid}`)?.querySelector('.sb');
@@ -2307,6 +2356,18 @@ function getMethodData(sid,eid){
   if(method==='Drop Set' && dropSetData[k]) return JSON.parse(JSON.stringify(dropSetData[k]));
   if(method==='Rest-Pause' && restPauseData[k]) return JSON.parse(JSON.stringify(restPauseData[k]));
   if(method==='Circuit' && circuitData[k]) return JSON.parse(JSON.stringify(circuitData[k]));
+  if((method==='Superset'||method==='Bi-Set'||method==='Tri-Set') && supersetData[k]) return JSON.parse(JSON.stringify(supersetData[k]));
+  if(method==='EMOM' && emomData[k]) return JSON.parse(JSON.stringify(emomData[k]));
+  if(method==='AMRAP' && amrapData[k]) return JSON.parse(JSON.stringify(amrapData[k]));
+  if(method==='Tabata' && tabataData[k]) return JSON.parse(JSON.stringify(tabataData[k]));
+  if(method==='Cluster Set' && clusterData[k]) return JSON.parse(JSON.stringify(clusterData[k]));
+  if(method==='Tempo'){
+    const te=$(`tempo-e-${sid}-${eid}`)?.value||'4';
+    const tpb=$(`tempo-pb-${sid}-${eid}`)?.value||'1';
+    const tc=$(`tempo-c-${sid}-${eid}`)?.value||'2';
+    const tpt=$(`tempo-pt-${sid}-${eid}`)?.value||'0';
+    return {tempo:`${te}-${tpb}-${tc}-${tpt}`};
+  }
   return null;
 }
 
@@ -2333,7 +2394,7 @@ function collectWeeks(){
           const n=setDetailCounts[sid]?.[eid]||3;
           setDetails=Array.from({length:n},(_,i)=>({reps:$(`dr-${sid}-${eid}-${i}`)?.value||'—',load:$(`dl-${sid}-${eid}-${i}`)?.value||'—',rest:$(`drt-${sid}-${eid}-${i}`)?.value||globalRest}));
         }
-        exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',methodData:getMethodData(sid,eid)});
+        exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',variant:$(`ev-${sid}-${eid}`)?.value.trim()||'',methodData:getMethodData(sid,eid)});
       });
       if(exos.length) seances.push({num:snum,name:sname,objective:sobj,warmup:$(`swarmup-${sid}`)?.value.trim()||'',exos});
     });
@@ -2422,7 +2483,7 @@ function renderAccordion(prog, withLog=false, openFirstWeek=true, useClassicAcco
             <table class="exo-table" style="margin:0"><thead><tr><th>#</th><th>Exercice</th><th>Séries</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>`;
         (s.exos||[]).forEach((e,ei)=>{
           if(!e.name) return;
-          h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.method&&e.method!=='Classique'?MT(e.method):''}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
+          h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.variant?' <span style="font-size:10px;color:var(--muted);font-style:italic">('+e.variant+')</span>':''}${e.method&&e.method!=='Classique'?MT(e.method):''}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
         });
         h+=`</tbody></table></div></div>`;
       });
@@ -2513,7 +2574,7 @@ function renderAccordion(prog, withLog=false, openFirstWeek=true, useClassicAcco
             md.stations.forEach((st,sti)=>{const p=st.type==='durée'?st.durée:st.reps;ctH+=`<tr><td style="color:var(--info);font-weight:700">${sti+1}</td><td>${st.name||'Station '+(sti+1)}</td><td>${p||'—'}${st.type==='durée'?' (durée)':''}</td><td>${st.load||'PDC'}</td></tr>`;});
             h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name||'Circuit'}</strong>${MT(e.method)}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>#</th><th>Station</th><th>Rép./Durée</th><th>Charge</th></tr></thead><tbody>${ctH}</tbody></table></td></tr>`;
           } else {
-            h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.method&&e.method!=='Classique'?MT(e.method):''}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
+            h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.variant?' <span style="font-size:10px;color:var(--muted);font-style:italic">('+e.variant+')</span>':''}${e.method&&e.method!=='Classique'?MT(e.method):''}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
           }
         });
         h+=`</tbody></table>`;
@@ -2541,6 +2602,15 @@ function switchAccSeanceTab(btn){
   weekContent.querySelectorAll('.seance-tab-content').forEach(c=>c.classList.toggle('active',parseInt(c.dataset.si)===si));
 }
 
+function getVariantSuggestions(){
+  const variants=new Set();
+  (S.programmes||[]).forEach(p=>{const ws=p.weeks||[];ws.forEach(w=>{(w.seances||[]).forEach(s=>{(s.exos||[]).forEach(e=>{if(e.variant)variants.add(e.variant);});});});});
+  // Add datalist to DOM
+  let dl=document.getElementById('dl-variants');
+  if(!dl){dl=document.createElement('datalist');dl.id='dl-variants';document.body.appendChild(dl);}
+  dl.innerHTML=[...variants].map(v=>'<option value="'+v+'">').join('');
+  return [...variants];
+}
 function getExoSuggestions(){
   const names=new Set();
   (S.programmes||[]).forEach(p=>{
@@ -2562,7 +2632,8 @@ function addExo(sid){
   const dlId=`dl-exo-${sid}-${eid}`;
   const suggestions=getExoSuggestions();
   const dlHtml=suggestions.length?`<datalist id="${dlId}">${suggestions.map(n=>`<option value="${n}">`).join('')}</datalist>`:'';
-  d.innerHTML=`${dlHtml}<div class="exo-top" style="margin-bottom:6px"><div class="exo-idx">${eid}</div><select class="method-sel" id="mth-${sid}-${eid}" onchange="onMethodChange(${sid},${eid});updatePreview()">${mo}</select><button class="btn btn-danger btn-xs" style="margin-left:auto" onclick="removeExo(${sid},${eid})">✕</button></div><div style="margin-bottom:2px"><div class="plbl" style="color:var(--red2);font-weight:800;margin-bottom:4px">🏋️ Nom de l'exercice</div><input type="text" class="exo-name-inp" placeholder="${pl}" id="en-${sid}-${eid}" list="${dlId}" oninput="updatePreview()"></div>
+  d.innerHTML=`${dlHtml}<div class="exo-top" style="margin-bottom:6px"><div class="exo-idx">${eid}</div><select class="method-sel" id="mth-${sid}-${eid}" onchange="onMethodChange(${sid},${eid});updatePreview()">${mo}</select><button class="exo-del-btn" onclick="removeExo(${sid},${eid})" title="Supprimer cet exercice">✕</button></div><div style="margin-bottom:2px"><div class="plbl" style="color:var(--red2);font-weight:800;margin-bottom:4px">🏋️ Nom de l'exercice</div><input type="text" class="exo-name-inp" placeholder="${pl}" id="en-${sid}-${eid}" list="${dlId}" oninput="updatePreview()"></div>
+  <div style="margin-bottom:4px"><input type="text" class="variant-inp" placeholder="Variante (ex: poulie corde, barre EZ, prise serrée...)" id="ev-${sid}-${eid}" list="dl-variants" oninput="updatePreview()" style="width:100%;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:5px 10px;font-size:11px;color:var(--muted);font-style:italic;outline:none"></div>
   <div class="exo-classic-fields">
   <div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px">
     <div class="exo-global" style="flex:1">
@@ -2579,9 +2650,16 @@ function addExo(sid){
   </div>
   </div>
   <input class="ti" type="text" id="etn-${sid}-${eid}" placeholder="💡 Conseil technique..." oninput="updatePreview()">`;
-  c.appendChild(d);renderSetRows(sid,eid);
+  c.appendChild(d);renderSetRows(sid,eid);renumberExos(sid);
 }
-function removeExo(sid,eid){const el=$(`ex-${sid}-${eid}`);if(el)el.remove();updatePreview();}
+function removeExo(sid,eid){const el=$(`ex-${sid}-${eid}`);if(el)el.remove();renumberExos(sid);updatePreview();}
+function renumberExos(sid){
+  const exoWrap=$(`exos-${sid}`);if(!exoWrap)return;
+  exoWrap.querySelectorAll('.exo-card').forEach((card,i)=>{
+    const idx=card.querySelector('.exo-idx');
+    if(idx) idx.textContent=i+1;
+  });
+}
 
 function syncSetCount(sid,eid){
   const n=parseInt($(`es-${sid}-${eid}`)?.value)||3;
@@ -2652,39 +2730,51 @@ function isDetailMode(sid,eid){const tog=$(`dtog-${sid}-${eid}`);return tog&&tog
 // ── MODE D'EXERCICE ADAPTATIF ──
 const METHOD_HINTS={
   'Classique':'',
-  'Superset A':'Enchaîner avec Superset B, pas de repos entre A et B',
-  'Superset B':'Repos après B seulement',
-  'Bi-Set':'2 exos enchaînés sans repos, repos à la fin',
-  'Tri-Set':'3 exos enchaînés sans repos, repos à la fin',
+  'Superset':'2 exercices enchaînés sans repos, repos après les deux',
+  'Bi-Set':'2 exercices même groupe musculaire enchaînés sans repos',
+  'Tri-Set':'3 exercices enchaînés sans repos, repos après les trois',
   'Circuit':'Enchaînement continu, repos en fin de tour',
   'Drop Set':'Série lourde → baisser la charge sans repos → repos à la fin',
   'Rest-Pause':'Série lourde → pause courte → relances → repos long',
-  'Pyramidal':'Monter la charge, baisser les reps à chaque série'
+  'Pyramidal':'Monter la charge, baisser les reps à chaque série',
+  'EMOM':'Every Minute On the Minute — exécuter les reps dans la minute, repos = temps restant',
+  'AMRAP':'As Many Rounds As Possible — max de tours dans le temps imparti'
 };
 // Which methods use a custom sub-form instead of classic detail
-const CUSTOM_METHODS=['Drop Set','Rest-Pause','Circuit'];
+const CUSTOM_METHODS=['Drop Set','Rest-Pause','Circuit','Superset','Bi-Set','Tri-Set','EMOM','AMRAP','Tabata','Cluster Set'];
 
 function onMethodChange(sid,eid){
   const method=$(`mth-${sid}-${eid}`)?.value||'Classique';
   const card=$(`ex-${sid}-${eid}`);if(!card)return;
-  // Show/hide hint
   let hintEl=card.querySelector('.method-hint');
-  if(!hintEl){
-    const nameBlock=card.querySelector('.exo-name-inp')?.parentElement;
-    if(nameBlock){hintEl=document.createElement('div');hintEl.className='method-hint';nameBlock.after(hintEl);}
-  }
-  if(hintEl){
-    const hint=METHOD_HINTS[method]||'';
-    hintEl.textContent=hint;
-    hintEl.style.display=hint?'block':'none';
-  }
-  // Show/hide custom method form vs classic fields
+  if(!hintEl){const nameBlock=card.querySelector('.exo-name-inp')?.parentElement;if(nameBlock){hintEl=document.createElement('div');hintEl.className='method-hint';nameBlock.after(hintEl);}}
+  const hints={'Classique':'','Superset':'2 exercices enchaînés sans repos','Bi-Set':'2 exercices même groupe musculaire enchaînés','Tri-Set':'3 exercices enchaînés sans repos','Circuit':'Enchaînement continu, repos en fin de tour','Drop Set':'Série lourde → baisser la charge sans repos','Rest-Pause':'Série lourde → pause courte → relances','Pyramidal':'Monter la charge, baisser les reps','EMOM':'Every Minute On the Minute — repos = temps restant','AMRAP':'As Many Rounds As Possible — max de tours','Tempo':'Contrôler la vitesse: excentrique-pause-concentrique-pause','Tabata':'20s effort / 10s repos × 8 rounds','Cluster Set':'Mini-séries lourdes avec micro-repos intra-set'};
+  if(hintEl){const h=hints[method]||'';hintEl.textContent=h;hintEl.style.display=h?'block':'none';}
+  // Tempo field (keeps classic fields visible)
+  let tempoWrap=card.querySelector('.tempo-wrap');
+  if(method==='Tempo'){
+    if(!tempoWrap){
+      tempoWrap=document.createElement('div');tempoWrap.className='tempo-wrap';
+      tempoWrap.innerHTML=`<div style="display:flex;gap:4px;align-items:flex-end;margin-bottom:6px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:var(--rs);padding:8px">
+        <div style="font-size:11px;font-weight:700;color:#a855f7;margin-right:4px">⏱ TEMPO</div>
+        <div><div class="plbl" style="font-size:9px">Excent.</div><input class="pinp" type="text" id="tempo-e-${sid}-${eid}" value="4" style="width:36px;text-align:center" oninput="updatePreview()"></div>
+        <div style="color:var(--muted);padding-bottom:6px">-</div>
+        <div><div class="plbl" style="font-size:9px">Pause ↓</div><input class="pinp" type="text" id="tempo-pb-${sid}-${eid}" value="1" style="width:36px;text-align:center" oninput="updatePreview()"></div>
+        <div style="color:var(--muted);padding-bottom:6px">-</div>
+        <div><div class="plbl" style="font-size:9px">Concent.</div><input class="pinp" type="text" id="tempo-c-${sid}-${eid}" value="2" style="width:36px;text-align:center" oninput="updatePreview()"></div>
+        <div style="color:var(--muted);padding-bottom:6px">-</div>
+        <div><div class="plbl" style="font-size:9px">Pause ↑</div><input class="pinp" type="text" id="tempo-pt-${sid}-${eid}" value="0" style="width:36px;text-align:center" oninput="updatePreview()"></div>
+      </div>`;
+      const cf=card.querySelector('.exo-classic-fields');if(cf)cf.before(tempoWrap);
+    }
+    tempoWrap.style.display='block';
+  } else {if(tempoWrap)tempoWrap.style.display='none';}
+  // Custom method form vs classic fields
   const customWrap=$(`method-custom-${sid}-${eid}`);
   const classicWrap=card.querySelector('.exo-classic-fields');
   if(CUSTOM_METHODS.includes(method)){
     if(classicWrap) classicWrap.style.display='none';
     if(!customWrap){
-      // Create custom wrap after classic fields
       const cw=document.createElement('div');cw.id=`method-custom-${sid}-${eid}`;cw.className='method-custom-wrap';
       if(classicWrap) classicWrap.after(cw); else card.appendChild(cw);
     }
@@ -2700,6 +2790,13 @@ function renderMethodCustom(sid,eid,method){
   if(method==='Drop Set') renderDropSetForm(sid,eid,wrap);
   else if(method==='Rest-Pause') renderRestPauseForm(sid,eid,wrap);
   else if(method==='Circuit') renderCircuitForm(sid,eid,wrap);
+  else if(method==='Superset') renderSupersetForm(sid,eid,wrap,2);
+  else if(method==='Bi-Set') renderSupersetForm(sid,eid,wrap,2);
+  else if(method==='Tri-Set') renderSupersetForm(sid,eid,wrap,3);
+  else if(method==='EMOM') renderEMOMForm(sid,eid,wrap);
+  else if(method==='AMRAP') renderAMRAPForm(sid,eid,wrap);
+  else if(method==='Tabata') renderTabataForm(sid,eid,wrap);
+  else if(method==='Cluster Set') renderClusterForm(sid,eid,wrap);
 }
 
 // ── DROP SET FORM ──
@@ -2902,6 +2999,274 @@ function setStationType(sid,eid,si,type){
   renderMethodCustom(sid,eid,'Circuit');updatePreview();
 }
 
+// ── SUPERSET / BI-SET / TRI-SET FORM ──
+if(typeof supersetData==='undefined') var supersetData={};
+
+function getSupersetKey(sid,eid){return `${sid}-${eid}`;}
+
+function initSupersetData(sid,eid,nExos){
+  const k=getSupersetKey(sid,eid);
+  if(!supersetData[k]||supersetData[k].exercises.length!==nExos){
+    const exos=[];
+    for(let i=0;i<nExos;i++) exos.push({name:'',variant:''});
+    supersetData[k]={
+      exercises:exos,
+      sets:[{exos:exos.map(()=>({reps:'10',load:''})),rest:"1'30"}],
+    };
+  }
+  return supersetData[k];
+}
+
+function renderSupersetForm(sid,eid,wrap,nExos){
+  const method=nExos===3?'Tri-Set':($(`mth-${sid}-${eid}`)?.value||'Superset');
+  const d=initSupersetData(sid,eid,nExos);
+  const labels=nExos===3?['A','B','C']:['A','B'];
+  const colors=nExos===3?['#c0152a','#3b82f6','#22c55e']:['#c0152a','#3b82f6'];
+  const dlId=`dl-ss-${sid}-${eid}`;
+  const suggestions=getExoSuggestions();
+  const dlHtml=suggestions.length?`<datalist id="${dlId}">${suggestions.map(n=>`<option value="${n}">`).join('')}</datalist>`:'';
+  const icon=method==='Tri-Set'?'🔗🔗':'🔗';
+
+  let h=`${dlHtml}<div class="ds-form">
+    <div class="ds-hd">${icon} Configuration ${method}</div>
+    <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">`;
+  // Exercise name inputs
+  d.exercises.forEach((ex,ei)=>{
+    h+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <span style="background:${colors[ei]};color:#fff;font-weight:800;font-size:11px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">${labels[ei]}</span>
+      <input type="text" value="${(ex.name||'').replace(/"/g,'&quot;')}" placeholder="Exercice ${labels[ei]}" list="${dlId}" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 10px;font-size:12px;color:var(--text);font-weight:700;outline:none" onchange="supersetData['${getSupersetKey(sid,eid)}'].exercises[${ei}].name=this.value;updatePreview()">
+      <input type="text" value="${(ex.variant||'').replace(/"/g,'&quot;')}" placeholder="Variante" style="width:100px;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:6px 8px;font-size:10px;color:var(--muted);font-style:italic;outline:none" onchange="supersetData['${getSupersetKey(sid,eid)}'].exercises[${ei}].variant=this.value;updatePreview()">
+    </div>`;
+  });
+  h+=`</div>`;
+
+  // Series with per-exercise reps/load
+  d.sets.forEach((set,si)=>{
+    h+=`<div class="ds-serie-block">
+      <div class="ds-serie-hd"><span class="ds-serie-num">Série ${si+1}</span>${d.sets.length>1?`<button class="btn btn-danger btn-xs" onclick="removeSupersetSerie(${sid},${eid},${si},${nExos})">✕</button>`:''}</div>`;
+    set.exos.forEach((exData,ei)=>{
+      h+=`<div style="display:flex;align-items:flex-end;gap:6px;margin-bottom:4px;padding-left:4px;border-left:3px solid ${colors[ei]}">
+        <span style="font-size:10px;font-weight:700;color:${colors[ei]};width:14px;flex-shrink:0">${labels[ei]}</span>
+        <div><div class="plbl">Rép.</div><input class="pinp" type="text" value="${exData.reps}" style="width:60px" onchange="supersetData['${getSupersetKey(sid,eid)}'].sets[${si}].exos[${ei}].reps=this.value;updatePreview()"></div>
+        <div><div class="plbl">Charge</div><input class="pinp" type="text" value="${exData.load}" style="width:70px" onchange="supersetData['${getSupersetKey(sid,eid)}'].sets[${si}].exos[${ei}].load=this.value;updatePreview()"></div>
+        ${ei<nExos-1?'<span style="font-size:9px;color:var(--warn);font-weight:700;padding-bottom:6px">→ enchaîner</span>':''}
+      </div>`;
+    });
+    h+=`<div style="display:flex;align-items:flex-end;gap:6px;margin-top:4px">
+      <div><div class="plbl">Repos après ${method}</div><input class="pinp" type="text" value="${set.rest}" style="width:80px" onchange="supersetData['${getSupersetKey(sid,eid)}'].sets[${si}].rest=this.value;updatePreview()"></div>
+    </div></div>`;
+  });
+  h+=`<button class="btn-add-exo" style="margin-top:6px" onclick="addSupersetSerie(${sid},${eid},${nExos})">+ Série</button></div>`;
+  wrap.innerHTML=h;
+}
+
+function addSupersetSerie(sid,eid,nExos){
+  const d=initSupersetData(sid,eid,nExos);
+  const lastSet=d.sets[d.sets.length-1];
+  d.sets.push({exos:lastSet.exos.map(e=>({reps:e.reps,load:e.load})),rest:lastSet.rest});
+  const method=nExos===3?'Tri-Set':($(`mth-${sid}-${eid}`)?.value||'Superset');
+  renderMethodCustom(sid,eid,method);updatePreview();
+}
+function removeSupersetSerie(sid,eid,si,nExos){
+  const d=initSupersetData(sid,eid,nExos);
+  d.sets.splice(si,1);
+  const method=nExos===3?'Tri-Set':($(`mth-${sid}-${eid}`)?.value||'Superset');
+  renderMethodCustom(sid,eid,method);updatePreview();
+}
+
+// ── EMOM (Every Minute On the Minute) ──
+if(typeof emomData==='undefined') var emomData={};
+
+function getEmomKey(sid,eid){return `${sid}-${eid}`;}
+
+function initEmomData(sid,eid){
+  const k=getEmomKey(sid,eid);
+  if(!emomData[k]) emomData[k]={
+    duration:10,
+    mode:'same', // 'same' = même exo chaque min, 'alternate' = alterner
+    exercises:[{name:'',reps:'10',load:''}]
+  };
+  return emomData[k];
+}
+
+function renderEMOMForm(sid,eid,wrap){
+  const d=initEmomData(sid,eid);
+  const dlId=`dl-emom-${sid}-${eid}`;
+  const suggestions=getExoSuggestions();
+  const dlHtml=suggestions.length?`<datalist id="${dlId}">${suggestions.map(n=>`<option value="${n}">`).join('')}</datalist>`:'';
+
+  let h=`${dlHtml}<div class="ds-form">
+    <div class="ds-hd">⏱ Configuration EMOM</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);align-items:flex-end">
+      <div><div class="plbl">Durée (min)</div><input class="pinp" type="number" min="1" max="60" value="${d.duration}" style="width:70px" onchange="emomData['${getEmomKey(sid,eid)}'].duration=parseInt(this.value)||10;updatePreview()"></div>
+      <div><div class="plbl">Mode</div><select class="method-sel" style="max-width:180px" onchange="emomData['${getEmomKey(sid,eid)}'].mode=this.value;renderMethodCustom(${sid},${eid},'EMOM');updatePreview()">
+        <option value="same"${d.mode==='same'?' selected':''}>Même exo chaque min</option>
+        <option value="alternate"${d.mode==='alternate'?' selected':''}>Alterner les exos</option>
+      </select></div>
+    </div>
+    <div class="plbl" style="margin-bottom:6px;font-weight:800;color:var(--warn)">⏱ Exercices par minute</div>`;
+
+  d.exercises.forEach((ex,ei)=>{
+    const minLabel=d.mode==='alternate'?`Min ${ei%2===0?'impaires':'paires'}`:'Chaque minute';
+    h+=`<div class="ct-station">
+      <div class="ct-station-hd">
+        <span class="ct-station-num" style="background:var(--warn)">${ei+1}</span>
+        <input type="text" class="ct-station-name" value="${(ex.name||'').replace(/"/g,'&quot;')}" placeholder="Exercice" list="${dlId}" onchange="emomData['${getEmomKey(sid,eid)}'].exercises[${ei}].name=this.value;updatePreview()">
+        ${d.exercises.length>1?`<button class="btn btn-danger btn-xs" onclick="removeEmomExo(${sid},${eid},${ei})">✕</button>`:''}
+      </div>
+      <div class="ct-station-fields">
+        <div><div class="plbl">Rép.</div><input class="pinp" type="text" value="${ex.reps||''}" style="width:60px" onchange="emomData['${getEmomKey(sid,eid)}'].exercises[${ei}].reps=this.value;updatePreview()"></div>
+        <div><div class="plbl">Charge</div><input class="pinp" type="text" value="${ex.load||''}" placeholder="—" style="width:70px" onchange="emomData['${getEmomKey(sid,eid)}'].exercises[${ei}].load=this.value;updatePreview()"></div>
+        <span style="font-size:9px;color:var(--muted);padding-bottom:6px">${minLabel}</span>
+      </div>
+    </div>`;
+  });
+  if(d.mode==='alternate') h+=`<button class="btn-add-exo" style="margin-top:6px" onclick="addEmomExo(${sid},${eid})">+ Exercice (alternance)</button>`;
+  h+=`</div>`;
+  wrap.innerHTML=h;
+}
+
+function addEmomExo(sid,eid){
+  const d=initEmomData(sid,eid);
+  d.exercises.push({name:'',reps:'10',load:''});
+  renderMethodCustom(sid,eid,'EMOM');updatePreview();
+}
+function removeEmomExo(sid,eid,ei){
+  const d=initEmomData(sid,eid);
+  d.exercises.splice(ei,1);
+  renderMethodCustom(sid,eid,'EMOM');updatePreview();
+}
+
+// ── AMRAP (As Many Rounds As Possible) ──
+if(typeof amrapData==='undefined') var amrapData={};
+
+function getAmrapKey(sid,eid){return `${sid}-${eid}`;}
+
+function initAmrapData(sid,eid){
+  const k=getAmrapKey(sid,eid);
+  if(!amrapData[k]) amrapData[k]={
+    duration:12,
+    exercises:[
+      {name:'',reps:'10',load:''},
+      {name:'',reps:'8',load:''},
+    ]
+  };
+  return amrapData[k];
+}
+
+function renderAMRAPForm(sid,eid,wrap){
+  const d=initAmrapData(sid,eid);
+  const dlId=`dl-amrap-${sid}-${eid}`;
+  const suggestions=getExoSuggestions();
+  const dlHtml=suggestions.length?`<datalist id="${dlId}">${suggestions.map(n=>`<option value="${n}">`).join('')}</datalist>`:'';
+
+  let h=`${dlHtml}<div class="ds-form">
+    <div class="ds-hd">🔥 Configuration AMRAP</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);align-items:flex-end">
+      <div><div class="plbl">Durée (min)</div><input class="pinp" type="number" min="1" max="60" value="${d.duration}" style="width:70px" onchange="amrapData['${getAmrapKey(sid,eid)}'].duration=parseInt(this.value)||12;updatePreview()"></div>
+      <div style="font-size:10px;color:var(--muted);padding-bottom:6px">Le coaché fait le max de tours possible</div>
+    </div>
+    <div class="plbl" style="margin-bottom:6px;font-weight:800;color:var(--red2)">🔄 Exercices du round</div>`;
+
+  d.exercises.forEach((ex,ei)=>{
+    h+=`<div class="ct-station">
+      <div class="ct-station-hd">
+        <span class="ct-station-num" style="background:var(--red)">${ei+1}</span>
+        <input type="text" class="ct-station-name" value="${(ex.name||'').replace(/"/g,'&quot;')}" placeholder="Exercice" list="${dlId}" onchange="amrapData['${getAmrapKey(sid,eid)}'].exercises[${ei}].name=this.value;updatePreview()">
+        ${d.exercises.length>1?`<button class="btn btn-danger btn-xs" onclick="removeAmrapExo(${sid},${eid},${ei})">✕</button>`:''}
+      </div>
+      <div class="ct-station-fields">
+        <div><div class="plbl">Rép.</div><input class="pinp" type="text" value="${ex.reps||''}" style="width:60px" onchange="amrapData['${getAmrapKey(sid,eid)}'].exercises[${ei}].reps=this.value;updatePreview()"></div>
+        <div><div class="plbl">Charge</div><input class="pinp" type="text" value="${ex.load||''}" placeholder="PDC" style="width:70px" onchange="amrapData['${getAmrapKey(sid,eid)}'].exercises[${ei}].load=this.value;updatePreview()"></div>
+      </div>
+    </div>`;
+  });
+  h+=`<button class="btn-add-exo" style="margin-top:6px" onclick="addAmrapExo(${sid},${eid})">+ Exercice</button></div>`;
+  wrap.innerHTML=h;
+}
+
+function addAmrapExo(sid,eid){
+  const d=initAmrapData(sid,eid);
+  d.exercises.push({name:'',reps:'10',load:''});
+  renderMethodCustom(sid,eid,'AMRAP');updatePreview();
+}
+function removeAmrapExo(sid,eid,ei){
+  const d=initAmrapData(sid,eid);
+  d.exercises.splice(ei,1);
+  renderMethodCustom(sid,eid,'AMRAP');updatePreview();
+}
+
+// ── TABATA ──
+if(typeof tabataData==='undefined') var tabataData={};
+function getTabataKey(sid,eid){return `${sid}-${eid}`;}
+function initTabataData(sid,eid){
+  const k=getTabataKey(sid,eid);
+  if(!tabataData[k]) tabataData[k]={work:20,rest:10,rounds:8,exercises:[{name:'',load:''}]};
+  return tabataData[k];
+}
+function renderTabataForm(sid,eid,wrap){
+  const d=initTabataData(sid,eid);
+  const dlId=`dl-tab-${sid}-${eid}`;
+  const suggestions=getExoSuggestions();
+  const dlHtml=suggestions.length?`<datalist id="${dlId}">${suggestions.map(n=>`<option value="${n}">`).join('')}</datalist>`:'';
+  const totalTime=Math.round((d.work+d.rest)*d.rounds/60*10)/10;
+  let h=`${dlHtml}<div class="ds-form">
+    <div class="ds-hd">⚡ Configuration Tabata</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:flex-end">
+      <div><div class="plbl">Travail (s)</div><input class="pinp" type="number" min="5" max="60" value="${d.work}" style="width:60px" onchange="tabataData['${getTabataKey(sid,eid)}'].work=parseInt(this.value)||20;renderMethodCustom(${sid},${eid},'Tabata');updatePreview()"></div>
+      <div><div class="plbl">Repos (s)</div><input class="pinp" type="number" min="5" max="60" value="${d.rest}" style="width:60px" onchange="tabataData['${getTabataKey(sid,eid)}'].rest=parseInt(this.value)||10;renderMethodCustom(${sid},${eid},'Tabata');updatePreview()"></div>
+      <div><div class="plbl">Rounds</div><input class="pinp" type="number" min="1" max="20" value="${d.rounds}" style="width:60px" onchange="tabataData['${getTabataKey(sid,eid)}'].rounds=parseInt(this.value)||8;renderMethodCustom(${sid},${eid},'Tabata');updatePreview()"></div>
+      <div style="font-size:10px;color:var(--muted);padding-bottom:6px">= ${totalTime} min</div>
+    </div>
+    <div class="plbl" style="margin-bottom:6px;font-weight:800;color:#f59e0b">⚡ Exercice(s)</div>`;
+  d.exercises.forEach((ex,ei)=>{
+    h+=`<div class="ct-station"><div class="ct-station-hd">
+      <span class="ct-station-num" style="background:#f59e0b">${ei+1}</span>
+      <input type="text" class="ct-station-name" value="${(ex.name||'').replace(/"/g,'&quot;')}" placeholder="Exercice" list="${dlId}" onchange="tabataData['${getTabataKey(sid,eid)}'].exercises[${ei}].name=this.value;updatePreview()">
+      ${d.exercises.length>1?`<button class="btn btn-danger btn-xs" onclick="tabataData['${getTabataKey(sid,eid)}'].exercises.splice(${ei},1);renderMethodCustom(${sid},${eid},'Tabata');updatePreview()">✕</button>`:''}
+    </div>
+    <div class="ct-station-fields"><div><div class="plbl">Charge</div><input class="pinp" type="text" value="${ex.load||''}" placeholder="PDC" style="width:70px" onchange="tabataData['${getTabataKey(sid,eid)}'].exercises[${ei}].load=this.value;updatePreview()"></div></div></div>`;
+  });
+  h+=`<button class="btn-add-exo" style="margin-top:6px" onclick="tabataData['${getTabataKey(sid,eid)}'].exercises.push({name:'',load:''});renderMethodCustom(${sid},${eid},'Tabata');updatePreview()">+ Exercice (alternance)</button></div>`;
+  wrap.innerHTML=h;
+}
+
+// ── CLUSTER SET ──
+if(typeof clusterData==='undefined') var clusterData={};
+function getClusterKey(sid,eid){return `${sid}-${eid}`;}
+function initClusterData(sid,eid){
+  const k=getClusterKey(sid,eid);
+  if(!clusterData[k]) clusterData[k]={sets:[{miniSets:3,reps:2,load:'',intraRest:'15s',interRest:"3'00"}]};
+  return clusterData[k];
+}
+function renderClusterForm(sid,eid,wrap){
+  const d=initClusterData(sid,eid);
+  let h=`<div class="ds-form">
+    <div class="ds-hd">🔩 Configuration Cluster Set</div>`;
+  d.sets.forEach((s,si)=>{
+    h+=`<div class="ds-serie-block">
+      <div class="ds-serie-hd"><span class="ds-serie-num">Cluster ${si+1}</span>${d.sets.length>1?`<button class="btn btn-danger btn-xs" onclick="clusterData['${getClusterKey(sid,eid)}'].sets.splice(${si},1);renderMethodCustom(${sid},${eid},'Cluster Set');updatePreview()">✕</button>`:''}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end">
+        <div><div class="plbl">Mini-séries</div><input class="pinp" type="number" min="1" max="10" value="${s.miniSets}" style="width:55px" onchange="clusterData['${getClusterKey(sid,eid)}'].sets[${si}].miniSets=parseInt(this.value)||3;updatePreview()"></div>
+        <div><div class="plbl">Rép./mini</div><input class="pinp" type="text" value="${s.reps}" style="width:55px" onchange="clusterData['${getClusterKey(sid,eid)}'].sets[${si}].reps=this.value;updatePreview()"></div>
+        <div><div class="plbl">Charge</div><input class="pinp" type="text" value="${s.load}" style="width:70px" onchange="clusterData['${getClusterKey(sid,eid)}'].sets[${si}].load=this.value;updatePreview()"></div>
+        <div><div class="plbl">Repos intra</div><input class="pinp" type="text" value="${s.intraRest}" style="width:55px" onchange="clusterData['${getClusterKey(sid,eid)}'].sets[${si}].intraRest=this.value;updatePreview()"></div>
+        <div><div class="plbl">Repos après</div><input class="pinp" type="text" value="${s.interRest}" style="width:65px" onchange="clusterData['${getClusterKey(sid,eid)}'].sets[${si}].interRest=this.value;updatePreview()"></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${s.reps} reps → ${s.intraRest} → ${s.reps} reps → ${s.intraRest} → ${s.reps} reps → ${s.interRest} repos</div>
+    </div>`;
+  });
+  h+=`<button class="btn-add-exo" style="margin-top:6px" onclick="addClusterSet(${sid},${eid})">+ Cluster</button></div>`;
+  wrap.innerHTML=h;
+}
+function addClusterSet(sid,eid){
+  const d=initClusterData(sid,eid);
+  d.sets.push({miniSets:3,reps:2,load:'',intraRest:'15s',interRest:"3'00"});
+  renderMethodCustom(sid,eid,'Cluster Set');updatePreview();
+}
+
+
+
 function collectSeances(){
   const seances=[];
   let num=0;
@@ -2921,7 +3286,7 @@ function collectSeances(){
         const n=setDetailCounts[sid]?.[eid]||3;
         setDetails=Array.from({length:n},(_,i)=>({reps:$(`dr-${sid}-${eid}-${i}`)?.value||'—',load:$(`dl-${sid}-${eid}-${i}`)?.value||'—',rest:$(`drt-${sid}-${eid}-${i}`)?.value||globalRest}));
       }
-      exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',methodData:getMethodData(sid,eid)});
+      exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',variant:$(`ev-${sid}-${eid}`)?.value.trim()||'',methodData:getMethodData(sid,eid)});
     });
     if(exos.length)seances.push({num,name:sname,objective:sobj,warmup:$(`swarmup-${sid}`)?.value.trim()||'',exos});
   });
@@ -3068,7 +3433,8 @@ function editProg(id){
         const dlId2=`dl-exo-${sid}-${eid}`;
         const suggestions2=getExoSuggestions();
         const dlHtml2=suggestions2.length?`<datalist id="${dlId2}">${suggestions2.map(n=>`<option value="${n}">`).join('')}</datalist>`:'';
-        d.innerHTML=`${dlHtml2}<div class="exo-top" style="margin-bottom:6px"><div class="exo-idx">${eid}</div><select class="method-sel" id="mth-${sid}-${eid}" onchange="onMethodChange(${sid},${eid});updatePreview()">${mo2}</select><button class="btn btn-danger btn-xs" style="margin-left:auto" onclick="removeExo(${sid},${eid})">✕</button></div><div style="margin-bottom:2px"><div class="plbl" style="color:var(--red2);font-weight:800;margin-bottom:4px">🏋️ Nom de l'exercice</div><input type="text" class="exo-name-inp" value="${(e.name||'').replace(/"/g,'&quot;')}" id="en-${sid}-${eid}" list="${dlId2}" oninput="updatePreview()"></div>
+        d.innerHTML=`${dlHtml2}<div class="exo-top" style="margin-bottom:6px"><div class="exo-idx">${eid}</div><select class="method-sel" id="mth-${sid}-${eid}" onchange="onMethodChange(${sid},${eid});updatePreview()">${mo2}</select><button class="exo-del-btn" onclick="removeExo(${sid},${eid})" title="Supprimer cet exercice">✕</button></div><div style="margin-bottom:2px"><div class="plbl" style="color:var(--red2);font-weight:800;margin-bottom:4px">🏋️ Nom de l'exercice</div><input type="text" class="exo-name-inp" value="${(e.name||'').replace(/"/g,'&quot;')}" id="en-${sid}-${eid}" list="${dlId2}" oninput="updatePreview()"></div>
+  <div style="margin-bottom:4px"><input type="text" class="variant-inp" value="${(e.variant||'').replace(/"/g,'&quot;')}" placeholder="Variante (ex: poulie corde, barre EZ, prise serrée...)" id="ev-${sid}-${eid}" list="dl-variants" oninput="updatePreview()" style="width:100%;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:5px 10px;font-size:11px;color:var(--muted);font-style:italic;outline:none"></div>
   <div class="exo-classic-fields">
   <div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:5px">
     <div class="exo-global" style="flex:1">
@@ -3096,6 +3462,30 @@ function editProg(id){
         } else if(e.methodData && e.method==='Circuit'){
           circuitData[getCircuitKey(sid,eid)]=JSON.parse(JSON.stringify(e.methodData));
           onMethodChange(sid,eid);
+        } else if(e.methodData && (e.method==='Superset'||e.method==='Bi-Set'||e.method==='Tri-Set')){
+          supersetData[getSupersetKey(sid,eid)]=JSON.parse(JSON.stringify(e.methodData));
+          onMethodChange(sid,eid);
+        } else if(e.methodData && e.method==='EMOM'){
+          emomData[getEmomKey(sid,eid)]=JSON.parse(JSON.stringify(e.methodData));
+          onMethodChange(sid,eid);
+        } else if(e.methodData && e.method==='AMRAP'){
+          amrapData[getAmrapKey(sid,eid)]=JSON.parse(JSON.stringify(e.methodData));
+          onMethodChange(sid,eid);
+        } else if(e.methodData && e.method==='Tabata'){
+          tabataData[getTabataKey(sid,eid)]=JSON.parse(JSON.stringify(e.methodData));
+          onMethodChange(sid,eid);
+        } else if(e.methodData && e.method==='Cluster Set'){
+          clusterData[getClusterKey(sid,eid)]=JSON.parse(JSON.stringify(e.methodData));
+          onMethodChange(sid,eid);
+        } else if(e.methodData && e.method==='Tempo'){
+          onMethodChange(sid,eid);
+          if(e.methodData.tempo){
+            const tp=e.methodData.tempo.split('-');
+            const te=$(`tempo-e-${sid}-${eid}`);if(te&&tp[0])te.value=tp[0];
+            const tpb=$(`tempo-pb-${sid}-${eid}`);if(tpb&&tp[1])tpb.value=tp[1];
+            const tc=$(`tempo-c-${sid}-${eid}`);if(tc&&tp[2])tc.value=tp[2];
+            const tpt=$(`tempo-pt-${sid}-${eid}`);if(tpt&&tp[3])tpt.value=tp[3];
+          }
         } else if(hasDetail){
           const tbody=$(`detail-tbody-${sid}-${eid}`);
           if(tbody){tbody.innerHTML=e.setDetails.map((sd,i)=>`<tr><td class="set-row-num">${i+1}</td><td><input type="text" id="dr-${sid}-${eid}-${i}" value="${sd.reps}" oninput="updatePreview()"></td><td><input type="text" id="dl-${sid}-${eid}-${i}" value="${sd.load}" oninput="updatePreview()"></td><td><input type="text" id="drt-${sid}-${eid}-${i}" value="${sd.rest}" oninput="updatePreview()"></td></tr>`).join('');}
@@ -3164,6 +3554,14 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
   s.exos.forEach((e,i)=>{
     if(!e||!e.name)return;
     e.id=e.id||`${s.num||0}-${i}`;
+    // Check for exercise replacement by coaché
+    const cid3=currentClient?.id;
+    const replKey=`${pid}-${e.id}`;
+    const repl=S.exoReplacements?.[cid3]?.[replKey];
+    if(repl){
+      e={...e,name:repl.newName,variant:repl.variant||e.variant,_replaced:true,_originalName:repl.oldName};
+    }
+    console.log('REPL CHECK:',{cid3,replKey,found:!!repl,allKeys:Object.keys(S.exoReplacements?.[cid3]||{})});
     // Custom method rendering
     if(e.method==='Drop Set' && e.methodData && e.methodData.sets){
       const md=e.methodData;
@@ -3174,7 +3572,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
           dsHtml+=`<tr class="ds-sub-row"><td><span style="color:var(--warn);font-size:10px">↘ drop ${di+1}</span></td><td>${dr.reps}</td><td>${dr.load||'—'}</td></tr>`;
         });
       });
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${dsHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${dsHtml}</tbody></table></td></tr>`;
     } else if(e.method==='Rest-Pause' && e.methodData && e.methodData.sets){
       const md=e.methodData;
       let rpHtml='';
@@ -3185,7 +3583,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
           rpHtml+=`<tr class="ds-sub-row"><td><span style="color:var(--info);font-size:10px">↩ relance ${ri+1}</span> ${r.reps}</td><td>=</td><td>${ri===st.relances.length-1?(md.restEnd||"2'00"):(st.pause||'15s')}</td></tr>`;
         });
       });
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpHtml}</tbody></table></td></tr>`;
     } else if(e.method==='Circuit' && e.methodData && e.methodData.stations){
       const md=e.methodData;
       let ctHtml=`<tr style="background:rgba(56,189,248,.05)"><td colspan="4" style="font-size:10px;color:var(--info);padding:4px 8px">🔄 ${md.tours} tours · Repos entre tours: ${md.reposTours||'—'} · Repos entre stations: ${md.reposStations||'0'}</td></tr>`;
@@ -3194,8 +3592,35 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
         ctHtml+=`<tr><td style="color:var(--info);font-weight:700">${si+1}</td><td>${st.name||'Station '+(si+1)}</td><td>${prescrit||'—'}${st.type==='durée'?' (durée)':''}</td><td>${st.load||'PDC'}</td></tr>`;
       });
       h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'Circuit'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>#</th><th>Station</th><th>Rép./Durée</th><th>Charge</th></tr></thead><tbody>${ctHtml}</tbody></table></td></tr>`;
+    } else if((e.method==='Superset'||e.method==='Bi-Set'||e.method==='Tri-Set') && e.methodData && e.methodData.exercises){
+      const md=e.methodData;
+      const labels=['A','B','C'];const colors2=['#c0152a','#3b82f6','#22c55e'];
+      let ssHtml='';
+      md.sets.forEach((set,si)=>{
+        set.exos.forEach((exD,ei)=>{
+          const exName=md.exercises[ei]?.name||'Exercice '+labels[ei];
+          const exVar=md.exercises[ei]?.variant?` (${md.exercises[ei].variant})`:'';
+          ssHtml+=`<tr${ei>0?' class="ds-sub-row"':''}><td${ei===0?' rowspan="'+set.exos.length+'" style="vertical-align:middle;font-weight:700"':' style="display:none"'}>${si+1}</td><td><span style="color:${colors2[ei]};font-weight:700">${labels[ei]}</span> ${exName}${exVar}</td><td>${exD.reps||'—'}</td><td>${exD.load||'—'}</td>${ei===0?`<td rowspan="${set.exos.length}" style="vertical-align:middle">${set.rest||"1'30"}</td>`:''}</tr>`;
+        });
+      });
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||e.method}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Série</th><th>Exercice</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${ssHtml}</tbody></table></td></tr>`;
+    } else if(e.method==='EMOM' && e.methodData){
+      const md=e.methodData;
+      let emHtml=`<tr style="background:rgba(245,158,11,.05)"><td colspan="3" style="font-size:10px;color:var(--warn);padding:4px 8px">⏱ ${md.duration} min · Mode: ${md.mode==='alternate'?'Alternance':'Même exo'} · Repos = temps restant dans la minute</td></tr>`;
+      md.exercises.forEach((ex,ei)=>{
+        const minInfo=md.mode==='alternate'?(md.exercises.length>1?`Min ${ei%2===0?'impaires':'paires'}`:'Chaque min'):'Chaque min';
+        emHtml+=`<tr><td style="color:var(--warn);font-weight:700">${ei+1}</td><td>${ex.name||'—'}</td><td>${ex.reps||'—'} rép. ${ex.load?'× '+ex.load:''} <span style="font-size:9px;color:var(--muted)">(${minInfo})</span></td></tr>`;
+      });
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'EMOM'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>#</th><th>Exercice</th><th>Prescription</th></tr></thead><tbody>${emHtml}</tbody></table></td></tr>`;
+    } else if(e.method==='AMRAP' && e.methodData){
+      const md=e.methodData;
+      let amHtml=`<tr style="background:rgba(192,21,42,.05)"><td colspan="3" style="font-size:10px;color:var(--red);padding:4px 8px">🔥 ${md.duration} min · Max de tours · Pas de repos programmé</td></tr>`;
+      md.exercises.forEach((ex,ei)=>{
+        amHtml+=`<tr><td style="color:var(--red);font-weight:700">${ei+1}</td><td>${ex.name||'—'}</td><td>${ex.reps||'—'} rép. ${ex.load?'× '+ex.load:''}</td></tr>`;
+      });
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'AMRAP'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>#</th><th>Exercice</th><th>Prescription</th></tr></thead><tbody>${amHtml}</tbody></table></td></tr>`;
     } else if(e.detail&&e.setDetails&&e.setDetails.length){
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
     } else {
       h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
     }
@@ -3211,7 +3636,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
             <button class="serie-check" id="chk-${pid}-${e.id}-${si}" onclick="toggleSerie('${pid}','${e.id}',${si},${restSecs})" type="button"></button>
             <div class="ds-log-content">
               <div class="ds-log-main">
-                <span class="serie-label">Série ${si+1} — ${st.reps} rép. @ ${st.load||'?'}</span>
+                <span class="serie-label">Série ${si+1} — ${st.reps} rép. × ${st.load||'?'}</span>
                 <div class="serie-log">
                   <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}" placeholder="Rép." oninput="autoSaveLogDraft()">
                   <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}" placeholder="Charge" oninput="autoSaveLogDraft()">
@@ -3219,7 +3644,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
               </div>`;
           st.drops.forEach((dr,di)=>{
             seriesHtml+=`<div class="ds-log-drop">
-                <span class="ds-log-drop-label">↘ drop ${di+1} — ${dr.reps} rép. @ ${dr.load||'?'}</span>
+                <span class="ds-log-drop-label">↘ drop ${di+1} — ${dr.reps} rép. × ${dr.load||'?'}</span>
                 <div class="serie-log">
                   <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}d${di}" placeholder="Rép." oninput="autoSaveLogDraft()">
                   <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}d${di}" placeholder="Charge" oninput="autoSaveLogDraft()">
@@ -3242,7 +3667,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
             <button class="serie-check" id="chk-${pid}-${e.id}-${si}" onclick="toggleSerie('${pid}','${e.id}',${si},${restSecs})" type="button"></button>
             <div class="ds-log-content">
               <div class="ds-log-main">
-                <span class="serie-label">Bloc ${si+1} — ${st.reps} rép. @ ${st.load||'?'}</span>
+                <span class="serie-label">Bloc ${si+1} — ${st.reps} rép. × ${st.load||'?'}</span>
                 <div class="serie-log">
                   <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}" placeholder="Rép." oninput="autoSaveLogDraft()">
                   <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}" placeholder="Charge" oninput="autoSaveLogDraft()">
@@ -3267,7 +3692,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
           </div>`;
         });
       } else if(e.method==='Circuit' && e.methodData && e.methodData.stations){
-        // Circuit log: one check per tour, showing all stations inside
+        // Circuit log
         const md=e.methodData;
         const restSecs=parseRestToSeconds(md.reposTours||"2'00");
         const nTours=parseInt(md.tours)||3;
@@ -3281,7 +3706,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
           md.stations.forEach((st,si)=>{
             const prescrit=st.type==='durée'?(st.durée||'30s'):(st.reps||'12')+' rép.';
             seriesHtml+=`<div class="ds-log-drop" style="border-color:var(--info)">
-                <span class="ds-log-drop-label" style="color:var(--info)">📍 ${st.name||'Station '+(si+1)} — ${prescrit} ${st.load?'@ '+st.load:'PDC'}</span>
+                <span class="ds-log-drop-label" style="color:var(--info)">📍 ${st.name||'Station '+(si+1)} — ${prescrit} ${st.load?'× '+st.load:'PDC'}</span>
                 <div class="serie-log">
                   <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${ti}s${si}" placeholder="${st.type==='durée'?'Durée':'Rép.'}" oninput="autoSaveLogDraft()">
                   ${st.load?`<input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${ti}s${si}" placeholder="Charge" oninput="autoSaveLogDraft()">`:''}
@@ -3295,12 +3720,76 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
             <button class="rest-timer-skip" onclick="skipTimer('${pid}','${e.id}',${ti})">⏭ Passer</button>
           </div>`;
         }
+      } else if((e.method==='Superset'||e.method==='Bi-Set'||e.method==='Tri-Set') && e.methodData && e.methodData.exercises){
+        // Superset/Bi-Set/Tri-Set log: each série = all exercises chained
+        const md=e.methodData;
+        const labels=['A','B','C'];const colors3=['#c0152a','#3b82f6','#22c55e'];
+        md.sets.forEach((set,si)=>{
+          const restSecs=parseRestToSeconds(set.rest||"1'30");
+          seriesHtml+=`<div class="serie-row ds-log-block">
+            <button class="serie-check" id="chk-${pid}-${e.id}-${si}" onclick="toggleSerie('${pid}','${e.id}',${si},${restSecs})" type="button"></button>
+            <div class="ds-log-content">
+              <div class="ds-log-main" style="margin-bottom:4px">
+                <span class="serie-label" style="font-weight:800">🔗 Série ${si+1}</span>
+              </div>`;
+          set.exos.forEach((exD,ei)=>{
+            const exName=md.exercises[ei]?.name||'Exercice '+labels[ei];
+            const exVar=md.exercises[ei]?.variant?' ('+md.exercises[ei].variant+')':'';
+            seriesHtml+=`<div class="ds-log-drop" style="border-color:${colors3[ei]}">
+                <span class="ds-log-drop-label" style="color:${colors3[ei]}">${labels[ei]} ${exName}${exVar} — ${exD.reps} rép. × ${exD.load||'?'}</span>
+                <div class="serie-log">
+                  <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}x${ei}" placeholder="Rép." oninput="autoSaveLogDraft()">
+                  <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}x${ei}" placeholder="Charge" oninput="autoSaveLogDraft()">
+                </div>
+              </div>
+              ${ei<set.exos.length-1?'<div style="text-align:center;font-size:9px;color:var(--warn);font-weight:700;padding:2px 0">↓ enchaîner sans repos</div>':''}`;
+          });
+          seriesHtml+=`</div></div>
+          <div class="rest-timer" id="timer-${pid}-${e.id}-${si}">
+            <div><div class="rest-timer-label">Repos</div><div class="rest-timer-count" id="tcount-${pid}-${e.id}-${si}">${formatRestDisplay(restSecs)||'—'}</div></div>
+            <div style="flex:1"><div class="rest-timer-bar"><div class="rest-timer-progress" id="tbar-${pid}-${e.id}-${si}"></div></div></div>
+            <button class="rest-timer-skip" onclick="skipTimer('${pid}','${e.id}',${si})">⏭ Passer</button>
+          </div>`;
+        });
+      } else if(e.method==='EMOM' && e.methodData){
+        const md=e.methodData;const nMin=parseInt(md.duration)||10;
+        for(let mi=0;mi<nMin;mi++){
+          const exIdx=md.mode==='alternate'?mi%md.exercises.length:0;
+          const ex=md.exercises[exIdx];
+          seriesHtml+=`<div class="serie-row ds-log-block">
+            <button class="serie-check" id="chk-${pid}-${e.id}-${mi}" onclick="toggleSerie('${pid}','${e.id}',${mi},60)" type="button"></button>
+            <div class="ds-log-content">
+              <div class="ds-log-main">
+                <span class="serie-label" style="color:var(--warn);font-weight:800">⏱ Min ${mi+1}/${nMin}</span>
+                <span class="serie-label"> — ${ex?.name||'Exercice'} ${ex?.reps||'10'} rép. ${ex?.load?'× '+ex.load:''}</span>
+              </div>
+              <div class="serie-log">
+                <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${mi}" placeholder="Rép." oninput="autoSaveLogDraft()">
+                <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${mi}" placeholder="Charge" oninput="autoSaveLogDraft()">
+              </div>
+            </div>
+          </div>`;
+        }
+      } else if(e.method==='AMRAP' && e.methodData){
+        const md=e.methodData;
+        seriesHtml+=`<div class="serie-row ds-log-block"><div class="ds-log-content" style="width:100%">
+          <div style="background:rgba(192,21,42,.06);border:1px solid rgba(192,21,42,.2);border-radius:var(--rs);padding:10px;margin-bottom:8px">
+            <div style="font-weight:800;color:var(--red);margin-bottom:6px">🔥 AMRAP — ${md.duration} min</div>`;
+        md.exercises.forEach((ex,ei)=>{
+          seriesHtml+=`<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:12px"><span style="color:var(--red);font-weight:700">${ei+1}.</span><span>${ex.name||'—'}</span><span style="color:var(--muted)">× ${ex.reps||'—'} ${ex.load?'× '+ex.load:''}</span></div>`;
+        });
+        seriesHtml+=`</div>
+          <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+            <div style="flex:1"><div class="plbl" style="color:var(--red);font-weight:800">Tours complets</div><input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-score" placeholder="Ex: 5" style="font-size:18px;text-align:center;padding:10px" oninput="autoSaveLogDraft()"></div>
+            <div style="flex:1"><div class="plbl" style="color:var(--red);font-weight:800">+ Reps suppl.</div><input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-score" placeholder="Ex: 3" style="font-size:18px;text-align:center;padding:10px" oninput="autoSaveLogDraft()"></div>
+          </div>
+        </div></div>`;
       } else {
         // Classic log
         const nseries=e.detail&&e.setDetails&&e.setDetails.length?e.setDetails.length:Math.max(1,parseInt(String(e.sets).replace(/[^0-9]/g,''))||3);
         for(let si=0;si<nseries;si++){
           const sd=e.detail&&e.setDetails?e.setDetails[si]:null;
-          const prescribed=sd?`${sd.reps} rép. @ ${sd.load}`:`${e.reps} rép. @ ${e.load}`;
+          const prescribed=sd?`${sd.reps} rép. × ${sd.load}`:`${e.reps} rép. × ${e.load}`;
           const restVal=sd?sd.rest:e.rest;
           const restSecs=parseRestToSeconds(restVal);
           seriesHtml+=`<div class="serie-row">
@@ -3319,6 +3808,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
         }
       }
       h+=`<tr class="exo-log-row"><td colspan="6">
+        <div style="display:flex;justify-content:flex-end;padding:2px 4px">${e._replaced?`<span style="font-size:10px;color:var(--info);margin-right:auto">🔄 ${e._originalName} → <strong>${e.name}</strong></span>`:''}<button class="exo-replace-btn" onclick="openReplaceExo('${pid}','${e.id}','${(e._originalName||e.name||'').replace(/'/g,"\\'")}')">🔄 ${e._replaced?'Modifier':'Remplacer'}</button></div>
         <div class="series-list">${seriesHtml}</div>
         <div style="padding:6px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <span style="font-size:10px;color:var(--red2);font-weight:800;text-transform:uppercase;letter-spacing:1px">Ressenti :</span>
@@ -3343,9 +3833,10 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
     const doneKey=`${effectivePid}_w${effectiveWeekIdx??'x'}_s${idx}`;
     const doneDate=S.doneSeances?.[cid]?.[doneKey];
     if(doneDate){
-      h+=`<div class="seance-done-banner">✅ Séance effectuée le ${doneDate}</div>`;
+      h+=`<div class="seance-done-banner">✅ Séance effectuée le ${doneDate} <button style="background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;text-decoration:underline;margin-left:8px" onclick="undoneSeance(${effectivePid},${idx},${effectiveWeekIdx})">Annuler</button></div>`;
     } else {
       h+=`<button class="save-seance-btn" onclick="saveSeanceLog(${effectivePid},${idx},${effectiveWeekIdx},'${pid}')">💾 Sauvegarder cette séance</button>`;
+      h+=`<button class="skip-seance-btn" onclick="skipSeance(${effectivePid},${idx},${effectiveWeekIdx})">⏭ Passer cette séance</button>`;
     }
   }
   h+='</div>';
@@ -4800,6 +5291,75 @@ function setFeel(pid,exoId,val){
   autoSaveLogDraft();
 }
 
+function openReplaceExo(pid,eid,oldName){
+  // Toggle inline replace mode on the exercise
+  const wrapper=document.getElementById(`replace-wrap-${pid}-${eid}`);
+  if(wrapper){
+    // Already open, close it
+    wrapper.remove();return;
+  }
+  // Find the exo-log-row and insert replace fields at the top
+  const btn=event.target;
+  const logRow=btn.closest('.exo-log-row')||btn.closest('td');
+  if(!logRow) return;
+  const replDiv=document.createElement('div');
+  replDiv.id=`replace-wrap-${pid}-${eid}`;
+  replDiv.style.cssText='background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.2);border-radius:6px;padding:8px 10px;margin:6px 4px';
+  replDiv.innerHTML=`
+    <div style="font-size:10px;color:var(--info);font-weight:700;margin-bottom:6px">🔄 Remplacer "${oldName}"</div>
+    <div style="margin-bottom:6px"><input type="text" id="repl-name-${pid}-${eid}" placeholder="Nouvel exercice" style="width:100%;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:6px 10px;font-size:13px;font-weight:700;color:var(--text);outline:none"></div>
+    <div style="display:flex;gap:6px;margin-bottom:6px">
+      <input type="text" id="repl-variant-${pid}-${eid}" placeholder="Variante (optionnel)" style="flex:1;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:5px 8px;font-size:11px;color:var(--muted);font-style:italic;outline:none">
+      <button style="background:var(--info);color:#fff;border:none;border-radius:var(--rs);padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer" onclick="confirmReplaceExo('${pid}','${eid}','${oldName.replace(/'/g,"\\'")}')">✅ OK</button>
+      <button style="background:var(--s3);color:var(--muted);border:none;border-radius:var(--rs);padding:5px 10px;font-size:11px;cursor:pointer" onclick="this.closest('[id^=replace-wrap]').remove()">✕</button>
+    </div>`;
+  // Insert at the top of the series-list
+  const seriesList=logRow.querySelector('.series-list');
+  if(seriesList) seriesList.before(replDiv);
+  else logRow.querySelector('td')?.prepend(replDiv);
+  document.getElementById(`repl-name-${pid}-${eid}`)?.focus();
+}
+
+function confirmReplaceExo(pid,eid,oldName){
+  const newName=document.getElementById(`repl-name-${pid}-${eid}`)?.value.trim();
+  if(!newName){showToast('Donne un nom d\'exercice');return;}
+  const newVariant=document.getElementById(`repl-variant-${pid}-${eid}`)?.value.trim()||'';
+  // Store replacement
+  if(!S.exoReplacements) S.exoReplacements={};
+  const cid=currentClient?.id;
+  if(!S.exoReplacements[cid]) S.exoReplacements[cid]={};
+  S.exoReplacements[cid][`${pid}-${eid}`]={oldName,newName,variant:newVariant};
+  console.log('REPL SAVE:',{cid,key:`${pid}-${eid}`,newName,data:S.exoReplacements[cid]});
+  saveState();
+  // Update the display inline without re-rendering
+  const replWrap=document.getElementById(`replace-wrap-${pid}-${eid}`);
+  if(replWrap){
+    replWrap.innerHTML=`<div style="font-size:11px;color:var(--info);font-weight:700">🔄 ${oldName} → <strong style="color:var(--text)">${newName}</strong>${newVariant?' <span style="font-style:italic;color:var(--muted)">('+newVariant+')</span>':''}</div>`;
+  }
+  // Update the replace button text
+  const btn=document.querySelector(`[onclick*="openReplaceExo('${pid}',${eid}"]`);
+  if(btn){btn.textContent='✅ Remplacé';btn.style.color='var(--info)';}
+  showToast(`🔄 ${oldName} → ${newName}`,true);
+}
+
+function skipSeance(progId,seanceIdx,weekIdx){
+  const cid=currentClient.id;
+  if(!S.doneSeances) S.doneSeances={};
+  if(!S.doneSeances[cid]) S.doneSeances[cid]={};
+  const doneKey=`${progId}_w${weekIdx??'x'}_s${seanceIdx}`;
+  S.doneSeances[cid][doneKey]='passée';
+  saveState();renderClientProg();
+  showToast('⏭ Séance marquée comme passée',false);
+}
+function undoneSeance(progId,seanceIdx,weekIdx){
+  const cid=currentClient.id;
+  if(!S.doneSeances?.[cid]) return;
+  const doneKey=`${progId}_w${weekIdx??'x'}_s${seanceIdx}`;
+  delete S.doneSeances[cid][doneKey];
+  saveState();renderClientProg();
+  showToast('↩ Séance remise à faire',false);
+}
+
 function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
   const prog=S.programmes.find(p=>p.id===progId);if(!prog)return;
   // Support week-based programmes
@@ -4831,7 +5391,13 @@ function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
     const note=$(`ln-${_dp}-${e.id}`)?.value||'';
     if(hasData||feel||note){
       const seriesStr=seriesData.filter(sd=>sd.reps||sd.load).map((sd,i)=>`S${i+1}:${sd.reps||'?'}r@${sd.load||'?'}`).join(' ');
-      entries.push({exo:e.name,series:seriesStr,seriesData,feel,note});
+      // Check for exercise replacement
+      const cid2=currentClient?.id;
+      const repl=S.exoReplacements?.[cid2]?.[`${progId}-${e.id}`];
+      const exoName=repl?repl.newName:e.name;
+      const exoVariant=repl?repl.variant:(e.variant||'');
+      const originalExo=repl?repl.oldName:null;
+      entries.push({exo:exoName,variant:exoVariant,originalExo,series:seriesStr,seriesData,feel,note});
     }
   });
   if(!entries.length){showToast('Remplis au moins un champ !');return;}
@@ -4900,7 +5466,7 @@ function showPostSeanceRecap(cid,seanceName,entries){
     h+=`</div>`;
   }
   if(avgFeel>0) h+=`<div style="font-size:12px;color:var(--muted);margin-bottom:8px">Ressenti moyen : ${feelEmoji[avgFeel]} ${['','Difficile','Moyen','Bien','Très bien','Au top'][avgFeel]}</div>`;
-  h+=`<button class="btn btn-red" style="width:100%;justify-content:center;padding:13px;font-size:14px;margin-top:8px" onclick="closeModal('modal')">💪 C'est noté !</button></div>`;
+  h+=`<button class="btn btn-red" style="width:100%;justify-content:center;padding:13px;font-size:14px;margin-top:8px" onclick="closeGenericModal()">💪 C'est noté !</button></div>`;
   showModal('',h);
 }
 
@@ -5314,7 +5880,6 @@ function renderClientProfil(){
   h+=`<div style="margin-top:16px;font-size:11px;color:var(--muted);text-align:center">Coach : ${S.coachName} · Fitness Park Aix-en-Provence</div>`;
   el.innerHTML=h;
 }
-
 </script>
 
 </body>
