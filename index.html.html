@@ -244,7 +244,7 @@ select option{background:var(--s2);}
 .tmpl-card-date{font-size:10px;color:var(--muted);margin-top:2px;font-style:italic;}
 
 /* PROGRAMME BUILDER */
-.builder-grid{display:grid;grid-template-columns:1fr 360px;gap:16px;}
+.builder-grid{display:grid;grid-template-columns:1fr;gap:16px;}
 @media(max-width:1100px){.builder-grid{grid-template-columns:1fr;}}
 .builder-scroll{max-height:calc(100vh - 220px);overflow-y:auto;padding-right:2px;}
 .builder-scroll::-webkit-scrollbar{width:3px;}
@@ -596,6 +596,29 @@ a.contact-link:hover{text-decoration:underline;}
 .skip-seance-btn:hover{border-color:var(--warn);color:var(--warn);}
 .exo-replace-btn{background:none;border:1px solid var(--border);border-radius:var(--rs);color:var(--muted);font-size:10px;font-weight:700;padding:3px 8px;cursor:pointer;transition:all .15s;}
 .exo-replace-btn:hover{border-color:var(--info);color:var(--info);}
+
+/* ── WIZARD ── */
+.wiz-num-btn{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;width:48px;height:48px;cursor:pointer;transition:all .15s;}
+.wiz-num-btn:hover{border-color:var(--red);}
+.wiz-num-btn.active{background:var(--red-dim);border-color:var(--red);color:var(--red);}
+.wiz-seance-row{margin-bottom:2px;}
+.wiz-seance-num{background:var(--red);color:#fff;font-weight:800;font-size:11px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wiz-seance-input{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:7px 10px;font-size:13px;font-weight:700;color:var(--text);outline:none;width:100%;}
+.wiz-seance-input:focus{border-color:var(--red);}
+.wiz-presets{display:flex;gap:3px;flex-wrap:wrap;padding-left:28px;}
+.wiz-preset-btn{background:var(--s2);border:1px solid var(--border);border-radius:3px;color:var(--muted);font-size:9px;font-weight:700;padding:2px 8px;cursor:pointer;transition:all .12s;}
+.wiz-preset-btn:hover{border-color:var(--red);color:var(--text);}
+.wiz-preset-btn.active{background:var(--red-dim);border-color:var(--red);color:var(--red);}
+
+/* ── DICTIONNAIRE PERF ── */
+.dict-exo-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px;overflow:hidden;}
+.dict-exo-hd{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;cursor:pointer;transition:background .15s;}
+.dict-exo-hd:hover{background:var(--s3);}
+.dict-exo-body{padding:0 10px 8px;}
+.dict-session{border-left:3px solid var(--red);padding:6px 0 6px 10px;margin-bottom:4px;}
+.dict-session-hd{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px;}
+.dict-series-row{display:flex;gap:4px;flex-wrap:wrap;}
+.dict-serie{font-size:10px;background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:2px 6px;font-family:'Oswald',sans-serif;color:var(--red);}
 
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:998;}
 .sidebar-overlay.active{display:block;}
@@ -1187,10 +1210,10 @@ a.contact-link:hover{text-decoration:underline;}
         <div class="ph"><div><div class="pt">Créer un <span>programme</span></div><div class="ps">Clique sur "Détailler" pour varier reps/charge par série</div></div></div>
         <div class="builder-grid">
           <div class="panel">
-            <div class="panel-hd"><div class="panel-title" id="builder-title">Nouveau programme</div><button class="btn btn-ghost btn-xs" onclick="showTemplateList()" style="margin-left:auto">📂 Partir d'un template</button></div>
+            <div class="panel-hd"><div class="panel-title" id="builder-title">Nouveau programme</div><button class="btn btn-ghost btn-xs" onclick="openProgramWizard()" style="margin-left:auto">🧙 Assistant</button><button class="btn btn-ghost btn-xs" onclick="showTemplateList()">📂 Template</button></div>
             <div class="panel-body">
               <input type="hidden" id="editing-prog-id">
-              <div class="field"><label class="flabel">Coaché</label><select id="b-client" onchange="updatePreview()"><option value="">— Choisir —</option></select></div>
+              <div class="field"><label class="flabel">Coaché</label><div style="display:flex;gap:6px;align-items:center"><select id="b-client" onchange="updatePreview()" style="flex:1"><option value="">— Choisir —</option></select><button class="btn btn-ghost btn-xs" onclick="const cid=parseInt($('b-client')?.value);if(cid)openExoDictionary(cid);else showToast('Sélectionne un coaché');" style="flex-shrink:0">📖 Perfs</button></div></div>
               <div class="field"><label class="flabel">Nom du programme</label><input type="text" id="b-name" placeholder="ex : Full Body 8 semaines" oninput="updatePreview()"></div>
               <div class="row2">
                 <div class="field"><label class="flabel">Objectif</label>
@@ -1216,26 +1239,10 @@ a.contact-link:hover{text-decoration:underline;}
               <div class="divider"></div>
               <div class="field"><label class="flabel">📝 Conseils & notes</label><textarea id="b-notes" rows="3" placeholder="Alimentation, récupération, motivations..."></textarea></div>
               <button class="btn btn-red" style="width:100%;justify-content:center;padding:13px;font-size:14px" id="builder-submit-btn" onclick="saveProg()">📤 Envoyer le programme</button>
+              <div id="builder-client-history" style="margin-top:14px"></div>
             </div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:16px">
-          <div class="panel" style="height:fit-content">
-            <div class="panel-hd"><div class="panel-title">Aperçu</div></div>
-            <div id="prog-preview" style="padding:12px"><div class="empty"><div class="ei">👁</div><div class="et">Aperçu live</div></div></div>
-          </div>
-          <div class="panel" id="builder-logs-panel" style="display:none;height:fit-content">
-            <div class="panel-hd" style="display:flex;justify-content:space-between;align-items:center">
-              <div class="panel-title">📋 Historique coaché</div>
-              <select id="builder-logs-week-filter" onchange="renderBuilderLogs()" style="font-size:11px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:3px 6px;color:var(--text)">
-                <option value="">Toutes les séances</option>
-              </select>
-            </div>
-            <div class="builder-logs-panel" id="builder-logs-body">
-              <div class="blog-empty">Sélectionne un coaché pour voir son historique</div>
-            </div>
-          </div>
-          </div>
-        </div>
+          </div><!-- end builder-grid -->
       </div>
 
       <!-- PROSPECTS -->
@@ -3267,6 +3274,139 @@ function addClusterSet(sid,eid){
 
 
 
+// ══════════════════════════════════════════════════
+// ── WIZARD CRÉATION PROGRAMME ──
+// ══════════════════════════════════════════════════
+function openProgramWizard(){
+  const presets=['Push','Pull','Legs','Upper','Lower','Full Body','Pecs','Dos','Épaules','Bras','Abdos'];
+  let h=`<div style="max-width:480px" id="wizard-wrap">
+    <div style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px">🧙 Assistant de création</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Définis la structure de ton programme en quelques clics</div>
+
+    <div class="wizard-step" id="wiz-step-1">
+      <div class="plbl" style="font-weight:800;color:var(--red2);margin-bottom:8px">Étape 1 — Combien de séances par semaine ?</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        ${[2,3,4,5,6].map(n=>`<button class="wiz-num-btn${n===4?' active':''}" onclick="wizSetNbSeances(${n})">${n}</button>`).join('')}
+      </div>
+      <input type="hidden" id="wiz-nb-seances" value="4">
+    </div>
+
+    <div class="wizard-step" id="wiz-step-2">
+      <div class="plbl" style="font-weight:800;color:var(--red2);margin-bottom:8px">Étape 2 — Nom de chaque séance</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px">Clique un type prédéfini ou tape un nom libre</div>
+      <div id="wiz-seances-list"></div>
+    </div>
+
+    <div class="wizard-step" id="wiz-step-3" style="margin-top:12px">
+      <div class="plbl" style="font-weight:800;color:var(--red2);margin-bottom:8px">Étape 3 — Nombre de semaines</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        ${[4,6,8,10,12].map(n=>`<button class="wiz-num-btn${n===8?' active':''}" onclick="wizSetNbWeeks(${n})">${n}</button>`).join('')}
+      </div>
+      <input type="hidden" id="wiz-nb-weeks" value="8">
+    </div>
+
+    <button class="btn btn-red" style="width:100%;justify-content:center;padding:14px;font-size:14px;margin-top:14px" onclick="applyWizard()">🚀 Créer la structure du programme</button>
+  </div>`;
+  showModal('',h);
+  wizSetNbSeances(4);
+}
+
+function wizSetNbSeances(n){
+  $('wiz-nb-seances').value=n;
+  // Update active button
+  document.querySelectorAll('#wiz-step-1 .wiz-num-btn').forEach(b=>{
+    b.classList.toggle('active',parseInt(b.textContent)===n);
+  });
+  // Build séance name inputs
+  const presets=['Push','Pull','Legs','Upper','Lower','Full Body','Pecs','Dos','Épaules','Bras','Abdos'];
+  const defaults=['Push','Pull','Legs','Upper','Full Body','Épaules'];
+  let h='';
+  for(let i=0;i<n;i++){
+    h+=`<div class="wiz-seance-row">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        <span class="wiz-seance-num">${i+1}</span>
+        <input type="text" class="wiz-seance-input" id="wiz-sname-${i}" placeholder="Nom de la séance ${i+1}" value="${defaults[i]||''}" onfocus="this.select()">
+      </div>
+      <div class="wiz-presets" style="margin-bottom:10px">
+        ${presets.map(p=>`<button class="wiz-preset-btn" onclick="document.getElementById('wiz-sname-${i}').value='${p}';this.parentElement.querySelectorAll('.wiz-preset-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${p}</button>`).join('')}
+      </div>
+    </div>`;
+  }
+  $('wiz-seances-list').innerHTML=h;
+  // Auto-highlight matching presets
+  for(let i=0;i<n;i++){
+    const val=$(`wiz-sname-${i}`)?.value;
+    if(val){
+      const btns=document.querySelectorAll(`#wiz-seances-list .wiz-seance-row:nth-child(${i+1}) .wiz-preset-btn`);
+      btns.forEach(b=>{if(b.textContent===val)b.classList.add('active');});
+    }
+  }
+}
+
+function wizSetNbWeeks(n){
+  $('wiz-nb-weeks').value=n;
+  document.querySelectorAll('#wiz-step-3 .wiz-num-btn').forEach(b=>{
+    b.classList.toggle('active',parseInt(b.textContent)===n);
+  });
+}
+
+function applyWizard(){
+  const nbSeances=parseInt($('wiz-nb-seances')?.value)||4;
+  const nbWeeks=parseInt($('wiz-nb-weeks')?.value)||8;
+  // Collect séance names
+  const seanceNames=[];
+  for(let i=0;i<nbSeances;i++){
+    const name=$(`wiz-sname-${i}`)?.value.trim()||`Séance ${i+1}`;
+    seanceNames.push(name);
+  }
+  // Clear builder
+  clearBuilder();
+  // Set durée
+  const durSel=$('b-dur');
+  if(durSel){
+    const durStr=nbWeeks+' semaines';
+    let found=false;
+    for(let o of durSel.options){if(o.text===durStr){o.selected=true;found=true;break;}}
+    if(!found){durSel.value='custom';toggleCustomDur();$('b-dur-custom').value=durStr;}
+  }
+  // Create weeks with named séances
+  for(let w=0;w<nbWeeks;w++){
+    addWeek(`Semaine ${w+1}`);
+    const wid=weekCount;
+    // Clear default séances
+    const wrap=$(`seances-wrap-${wid}`);
+    if(wrap){
+      wrap.querySelectorAll('.sb').forEach(sb=>{
+        const sid2=sb.id.replace('sb-','');
+        delete exoCounts[parseInt(sid2)];delete setDetailCounts[parseInt(sid2)];sb.remove();
+      });
+      const staleTab=wrap.previousElementSibling;
+      if(staleTab&&staleTab.classList.contains('builder-seance-tabs'))staleTab.remove();
+    }
+    // Add named séances
+    seanceNames.forEach(sname=>{
+      addSeanceToWeek(wid);
+      const sid=seanceCount;
+      const nameInp=$(`sn-${sid}`);
+      if(nameInp) nameInp.value=sname;
+    });
+    renumberWeekSeances(wid);
+    updateBuilderSeanceTabs(wid);
+    const firstSb=wrap?.querySelector('.sb');
+    if(firstSb) switchBuilderSeance(wid,firstSb.id.replace('sb-',''));
+  }
+  // Switch to first week
+  switchWeekBuilder(1);
+  // Set programme name suggestion
+  const nameInp=$('b-name');
+  if(nameInp&&!nameInp.value){
+    nameInp.value=seanceNames.join(' / ')+' — '+nbWeeks+' sem.';
+  }
+  closeGenericModal();
+  updatePreview();
+  showToast(`🧙 Programme créé : ${nbWeeks} semaines × ${nbSeances} séances !`,true);
+}
+
 function collectSeances(){
   const seances=[];
   let num=0;
@@ -3294,17 +3434,48 @@ function collectSeances(){
 }
 
 function updatePreview(){
-  const clientId=parseInt($('b-client')?.value);
-  const name=$('b-name')?.value.trim();
-  const c=S.clients.find(x=>x.id===clientId);
-  const weeks=collectWeeks();
-  if(!weeks.length&&!name){$('prog-preview').innerHTML=`<div class="empty"><div class="ei">👁</div><div class="et">Aperçu live</div></div>`;return;}
-  let h=renderProgHeader({name:name||'Sans titre',obj:$('b-obj')?.value||'',dur:$('b-dur')?.value||'',weeks,notes:''},c);
-  // Use accordion for preview
-  const previewProg={weeks,id:'preview'};
-  h+=renderAccordion(previewProg, false, true, true);
-  $('prog-preview').innerHTML=h;
-  renderBuilderLogs();
+  collectWeeks();
+  const clientId=parseInt($('b-client')?.value)||0;
+  const histDiv=$('builder-client-history');
+  if(!histDiv) return;
+  if(!clientId){histDiv.innerHTML='';return;}
+  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>b.date>a.date?1:-1);
+  if(!logs.length){histDiv.innerHTML='<div style="text-align:center;padding:12px;color:var(--muted);font-size:11px">Aucun historique pour ce coaché</div>';return;}
+  // Collect unique séance names
+  const seanceNames=[...new Set(logs.map(l=>l.seanceName).filter(Boolean))].sort();
+  const currentFilter=$('builder-hist-filter')?.value||'';
+  const feelMap=['','😓','😐','🙂','💪','🔥'];
+  let h=`<div style="border-top:1px solid var(--border);padding-top:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;color:var(--red);letter-spacing:1px">📋 HISTORIQUE COACHÉ</div>
+      <select id="builder-hist-filter" onchange="updatePreview()" style="font-size:11px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:4px 8px;color:var(--text);max-width:160px">
+        <option value="">8 dernières séances</option>
+        ${seanceNames.map(n=>`<option value="${n}"${n===currentFilter?' selected':''}>${n}</option>`).join('')}
+      </select>
+    </div>`;
+  // Filter logs
+  const filtered=currentFilter?logs.filter(l=>l.seanceName===currentFilter):logs;
+  const toShow=filtered.slice(0,currentFilter?20:8);
+  if(!toShow.length){h+=`<div style="text-align:center;padding:12px;color:var(--muted);font-size:11px">Aucune séance "${currentFilter}" trouvée</div>`;}
+  toShow.forEach(log=>{
+    const entries=log.entries||[];
+    h+=`<div style="margin-bottom:6px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden">
+      <div style="padding:6px 10px;background:var(--s3);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <span style="font-weight:700;font-size:11px">🗓 ${log.date} — ${log.seanceName||''}</span>
+        <span style="font-size:9px;color:var(--muted)">${entries.length} exos · ${log.progName||''}</span>
+      </div>
+      <div style="padding:6px 10px;display:none">`;
+    entries.forEach(e=>{
+      const mBadge=e.method&&e.method!=='Classique'?`<span style="font-size:8px;padding:1px 4px;border-radius:2px;background:var(--red-dim);color:var(--red);font-weight:700;margin-left:3px">${e.method}</span>`:'';
+      const vStr=e.variant?` <span style="font-size:9px;color:var(--muted);font-style:italic">(${e.variant})</span>`:'';
+      const series=e.seriesData&&e.seriesData.length?e.seriesData.map((sd,si)=>`S${si+1}:${sd.reps||'?'}×${sd.load||'?'}`).join(' '):(e.series||'');
+      h+=`<div style="font-size:10px;padding:3px 0;border-bottom:1px solid var(--s3)"><strong>${e.exo}</strong>${vStr}${mBadge} <span style="color:var(--muted)">${series}</span> ${e.feel?feelMap[e.feel]:''}</div>`;
+    });
+    h+=`</div></div>`;
+  });
+  if(filtered.length>toShow.length) h+=`<div style="text-align:center;font-size:10px;color:var(--muted);padding:4px">... et ${filtered.length-toShow.length} séances de plus</div>`;
+  h+=`</div>`;
+  histDiv.innerHTML=h;
 }
 
 function renderBuilderLogs(){
@@ -3335,12 +3506,15 @@ function renderBuilderLogs(){
         <span style="color:var(--muted);font-size:10px">${entries.length} exo${entries.length>1?'s':''}</span>
       </div>
       <div class="blog-entry-body">
-        ${entries.length?entries.map(e=>`
-          <div class="blog-exo-row">
-            <div class="blog-exo-name">${e.exo} ${e.feel?'<span class="blog-exo-feel">'+feelMap[e.feel]+'</span>':''}</div>
-            <div class="blog-exo-series">${e.series||'—'}</div>
+        ${entries.length?entries.map(e=>{
+          const mBadge=e.method&&e.method!=='Classique'?`<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:var(--red-dim);color:var(--red);font-weight:700;margin-left:4px">${e.method}</span>`:'';
+          const vStr=e.variant?` <span style="font-size:10px;color:var(--muted);font-style:italic">(${e.variant})</span>`:'';
+          const detailSeries=e.seriesData&&e.seriesData.length?e.seriesData.map((sd,si)=>`S${si+1}: ${sd.reps||'?'}×${sd.load||'?'}`).join(' | '):(e.series||'—');
+          return `<div class="blog-exo-row">
+            <div class="blog-exo-name">${e.exo}${vStr}${mBadge} ${e.feel?'<span class="blog-exo-feel">'+feelMap[e.feel]+'</span>':''}</div>
+            <div class="blog-exo-series">${detailSeries}</div>
             ${e.note?`<div style="font-size:10px;color:var(--muted);font-style:italic">💬 ${e.note}</div>`:''}
-          </div>`).join(''):'<div class="blog-empty">Aucune donnée</div>'}
+          </div>`;}).join(''):'<div class="blog-empty">Aucune donnée</div>'}
       </div>
     </div>`;
   }).join('');
@@ -3561,7 +3735,6 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
     if(repl){
       e={...e,name:repl.newName,variant:repl.variant||e.variant,_replaced:true,_originalName:repl.oldName};
     }
-    console.log('REPL CHECK:',{cid3,replKey,found:!!repl,allKeys:Object.keys(S.exoReplacements?.[cid3]||{})});
     // Custom method rendering
     if(e.method==='Drop Set' && e.methodData && e.methodData.sets){
       const md=e.methodData;
@@ -3897,7 +4070,7 @@ function renderProgs(){
     const wk=weekNum(p.startDate,p.dur);
     const unlockedCount=p.weeks?p.weeks.filter(w=>w.unlocked).length:0;
     const totalWeeks=p.weeks?p.weeks.length:0;
-    return `<div class="prog-card"><div class="pc-hd"><div><div class="pc-name">${p.name}</div><div class="pc-meta">${p.obj} · ${p.dur} · ${p.date}${totalWeeks?` · <strong style="color:var(--red)">${unlockedCount}/${totalWeeks} sem. débloquées</strong>`:''}</div></div><div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">${avatarHTML(c||{},28)}<span style="font-size:12px;font-weight:800">${c?.prenom||'?'} ${c?.nom||''}</span><button class="btn btn-ghost btn-xs" onclick="editProg(${p.id})">✏️ Modifier</button><button class="btn btn-ghost btn-xs" onclick="exportProgPDF(${p.id})">📄 PDF</button><button class="btn btn-ghost btn-xs" onclick="copyProgTo(${p.id})">📋 Copier</button><button class="btn btn-ghost btn-xs" onclick="saveAsTemplate(${p.id})">📂 Template</button><button class="btn btn-danger btn-xs" onclick="deleteProg(${p.id})">🗑</button></div></div>
+    return `<div class="prog-card"><div class="pc-hd"><div><div class="pc-name">${p.name}</div><div class="pc-meta">${p.obj} · ${p.dur} · ${p.date}${totalWeeks?` · <strong style="color:var(--red)">${unlockedCount}/${totalWeeks} sem. débloquées</strong>`:''}</div></div><div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">${avatarHTML(c||{},28)}<span style="font-size:12px;font-weight:800">${c?.prenom||'?'} ${c?.nom||''}</span><button class="btn btn-ghost btn-xs" onclick="editProg(${p.id})">✏️ Modifier</button><button class="btn btn-ghost btn-xs" onclick="exportProgPDF(${p.id})">📄 PDF</button><button class="btn btn-ghost btn-xs" onclick="exportProgWithLogsPDF(${p.id})">📊 PDF+Logs</button><button class="btn btn-ghost btn-xs" onclick="copyProgTo(${p.id})">📋 Copier</button><button class="btn btn-ghost btn-xs" onclick="saveAsTemplate(${p.id})">📂 Template</button><button class="btn btn-danger btn-xs" onclick="deleteProg(${p.id})">🗑</button></div></div>
     <div class="pc-body">
       <div style="margin-bottom:8px;font-size:11px;color:var(--muted)">Total : <strong style="color:var(--red)">${total} exercices</strong></div>
       ${renderAccordion(p,false,true)}
@@ -3979,8 +4152,13 @@ function exportProgPDF(id){
   });
   
   if(p.notes){html+=`<div style="margin-top:16px;padding:12px;background:#fff8e0;border:1px solid #f0d060;border-radius:6px"><strong>📝 Notes du coach :</strong><br>${p.notes}</div>`;}
-  html+=`<div class="footer">Programme généré par CoachSpace · Robin Coaching France · robin.coaching@gmail.com · 07 70 00 19 71</div>`;
-  html+=`</body></html>`;
+  html+=`<div class="footer">Programme généré par CoachSpace · Robin Coaching France · robin.coaching@gmail.com · 07 70 00 19 71</div>
+  <div style="text-align:center;margin-top:16px;padding:16px" class="no-print">
+    <button onclick="window.print()" style="background:#c0152a;color:white;border:none;border-radius:6px;padding:12px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:Arial,sans-serif">📄 Enregistrer en PDF</button>
+    <div style="font-size:10px;color:#999;margin-top:6px">Choisis "Enregistrer au format PDF" dans la boîte d'impression</div>
+  </div>
+  <style>.no-print{display:block}@media print{.no-print{display:none!important;}}</style>
+  </body></html>`;
   
   // Mobile-friendly: use Blob URL instead of window.open
   const blob = new Blob([html], {type:'text/html'});
@@ -4008,6 +4186,132 @@ function exportProgPDF(id){
     }
     setTimeout(()=>URL.revokeObjectURL(url), 5000);
   }
+}
+
+function exportProgWithLogsPDF(id){
+  const p=S.programmes.find(x=>x.id===id);if(!p)return;
+  const c=S.clients.find(x=>x.id===p.clientId);
+  const weeks=p.weeks||[];
+  const logs=Object.values(S.logs[p.clientId]||{}).sort((a,b)=>a.date>b.date?1:-1);
+
+  // Match logs to séances
+  function findLog(weekIdx,seanceIdx,seanceName){
+    return logs.find(l=>l.progId===id && l.weekIdx===weekIdx && l.seanceName===seanceName)
+      || logs.find(l=>l.progId===id && l.seanceName===seanceName && l.weekName?.includes('Semaine '+(weekIdx+1)));
+  }
+
+  let html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>${p.name} — Bilan complet</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Arial',sans-serif;font-size:11px;color:#1a1a1a;padding:20px;max-width:850px;margin:0 auto;}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #c0152a;padding-bottom:12px;margin-bottom:16px;}
+    .ttl{font-size:20px;font-weight:900;color:#c0152a;letter-spacing:1px;}
+    .sub{font-size:11px;color:#666;margin-top:3px;}
+    .ci{text-align:right;font-size:10px;color:#666;}.cn{font-size:13px;font-weight:800;}
+    .cb{background:#f8f8f8;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px;margin-bottom:16px;display:flex;gap:20px;font-size:10px;}
+    .cb strong{font-size:12px;}
+    .wb{margin-bottom:16px;break-inside:avoid;}
+    .wt{font-size:13px;font-weight:800;background:#c0152a;color:white;padding:5px 10px;border-radius:4px;margin-bottom:8px;}
+    .sb2{border:1px solid #ddd;border-radius:4px;margin-bottom:8px;overflow:hidden;break-inside:avoid;}
+    .st2{background:#f0f0f0;padding:5px 10px;font-weight:800;font-size:11px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;}
+    .done-tag{font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;}
+    .done-yes{background:#dcfce7;color:#16a34a;}
+    .done-no{background:#fee2e2;color:#dc2626;}
+    .done-skip{background:#fef3c7;color:#d97706;}
+    table{width:100%;border-collapse:collapse;}
+    th{background:#333;color:white;padding:4px 6px;font-size:9px;text-align:left;}
+    td{padding:4px 6px;font-size:10px;border-bottom:1px solid #f0f0f0;}
+    .log-row td{background:#f0fdf4;}
+    .log-label{font-size:9px;font-weight:700;color:#16a34a;padding:3px 6px;background:#dcfce7;border-bottom:1px solid #bbf7d0;}
+    .mb{font-size:9px;padding:1px 5px;border-radius:3px;background:#ffe0e0;color:#c0152a;font-weight:700;}
+    .warm{padding:4px 10px;font-size:10px;color:#92400e;background:#fffbeb;border-bottom:1px solid #fde68a;white-space:pre-line;}
+    .ft{margin-top:20px;border-top:1px solid #ddd;padding-top:8px;text-align:center;font-size:9px;color:#999;}
+    .summ{background:#f8f8f8;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:16px;}
+    .summ-title{font-size:12px;font-weight:800;color:#c0152a;margin-bottom:6px;}
+    .summ-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+    .summ-card{text-align:center;padding:8px;background:white;border-radius:4px;border:1px solid #eee;}
+    .summ-val{font-size:16px;font-weight:900;color:#c0152a;}
+    .summ-lbl{font-size:8px;color:#999;text-transform:uppercase;}
+    @media print{body{padding:10px;}.wb{break-inside:avoid;}}
+  </style></head><body>
+  <div class="hdr"><div><div class="ttl">${p.name} — Bilan complet</div><div class="sub">${p.obj||'—'} · ${p.dur||'—'} · Créé le ${p.date||'—'}</div></div>
+  <div class="ci"><div class="cn">Robin Clement</div><div>Coach Sportif · BPJEPS</div><div>Fitness Park Aix-en-Provence</div></div></div>
+  <div class="cb"><div><strong>${c?.prenom||''} ${c?.nom||''}</strong></div>${c?.age?`<div>Âge: ${c.age}</div>`:''}${c?.poids?`<div>Poids: ${c.poids}kg</div>`:''}${c?.obj?`<div>Objectif: ${c.obj}</div>`:''}</div>`;
+
+  // Global stats
+  let totalDone=0,totalSkipped=0,totalPlanned=0,totalVol=0;
+  const doneSeances=S.doneSeances?.[p.clientId]||{};
+
+  weeks.forEach((w,wi)=>{
+    (w.seances||[]).forEach((s,si)=>{
+      totalPlanned++;
+      const dk=`${id}_w${wi}_s${si}`;
+      if(doneSeances[dk]==='passée') totalSkipped++;
+      else if(doneSeances[dk]) totalDone++;
+    });
+  });
+  logs.filter(l=>l.progId===id).forEach(l=>{(l.entries||[]).forEach(e=>{(e.seriesData||[]).forEach(sd=>{totalVol+=(parseFloat(sd.reps)||0)*(parseFloat(sd.load)||0);});});});
+
+  html+=`<div class="summ"><div class="summ-title">📊 Résumé du programme</div><div class="summ-grid">
+    <div class="summ-card"><div class="summ-val">${totalDone}</div><div class="summ-lbl">Séances faites</div></div>
+    <div class="summ-card"><div class="summ-val">${totalSkipped}</div><div class="summ-lbl">Passées</div></div>
+    <div class="summ-card"><div class="summ-val">${totalPlanned-totalDone-totalSkipped}</div><div class="summ-lbl">Restantes</div></div>
+    <div class="summ-card"><div class="summ-val">${totalVol>1000?(totalVol/1000).toFixed(1)+'t':Math.round(totalVol)+'kg'}</div><div class="summ-lbl">Volume total</div></div>
+  </div></div>`;
+
+  // Each week
+  weeks.forEach((w,wi)=>{
+    html+=`<div class="wb"><div class="wt">📅 ${w.name||'Semaine '+(wi+1)}</div>`;
+    (w.seances||[]).forEach((s,si)=>{
+      const dk=`${id}_w${wi}_s${si}`;
+      const doneDate=doneSeances[dk];
+      const isDone=doneDate&&doneDate!=='passée';
+      const isSkipped=doneDate==='passée';
+      const statusTag=isDone?`<span class="done-tag done-yes">✅ ${doneDate}</span>`:isSkipped?`<span class="done-tag done-skip">⏭ Passée</span>`:`<span class="done-tag done-no">❌ Non faite</span>`;
+
+      html+=`<div class="sb2"><div class="st2"><span>${s.name||'Séance '+(si+1)}</span>${statusTag}</div>`;
+      if(s.warmup) html+=`<div class="warm">🔥 ${s.warmup}</div>`;
+      if(s.objective) html+=`<div style="padding:3px 10px;font-size:9px;color:#666;background:#fafafa;border-bottom:1px solid #eee">🎯 ${s.objective}</div>`;
+
+      // Prescription table
+      html+=`<table><thead><tr><th>#</th><th>Exercice</th><th>Méthode</th><th>Séries</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>`;
+      (s.exos||[]).forEach((e,ei)=>{
+        const varStr=e.variant?' ('+e.variant+')':'';
+        html+=`<tr><td>${ei+1}</td><td><strong>${e.name}</strong>${varStr}${e.tech?'<br><span style="font-size:9px;color:#888">💡 '+e.tech+'</span>':''}</td><td><span class="mb">${e.method||'Classique'}</span></td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
+        if(e.detail&&e.setDetails){
+          e.setDetails.forEach((sd,sdi)=>{html+=`<tr><td></td><td colspan="6" style="font-size:9px;color:#666">Série ${sdi+1}: ${sd.reps} rép. × ${sd.load} — repos ${sd.rest}</td></tr>`;});
+        }
+      });
+
+      // Actual log data if séance was done
+      const log=logs.find(l=>l.progId===id && l.weekIdx===wi && (l.seanceName===s.name||l.seanceIdx===si));
+      if(log&&log.entries&&log.entries.length){
+        html+=`<tr><td colspan="7" class="log-label">📊 DONNÉES RÉELLES — ${log.date||''}</td></tr>`;
+        log.entries.forEach((entry,eni)=>{
+          const seriesStr=(entry.seriesData||[]).map((sd,sdi)=>`S${sdi+1}: ${sd.reps||'?'}×${sd.load||'?'}`).join(' | ');
+          html+=`<tr class="log-row"><td>${eni+1}</td><td><strong>${entry.exo||'—'}</strong>${entry.variant?' ('+entry.variant+')':''}</td><td colspan="5" style="font-size:10px">${seriesStr}${entry.feel?'  '+['','😓','😐','🙂','💪','🔥'][entry.feel]:''}</td></tr>`;
+        });
+      }
+      html+=`</tbody></table></div>`;
+    });
+    html+=`</div>`;
+  });
+
+  if(p.notes) html+=`<div style="margin-top:12px;padding:10px;background:#fff8e0;border:1px solid #f0d060;border-radius:6px;font-size:10px"><strong>📝 Notes :</strong> ${p.notes}</div>`;
+  html+=`<div class="ft">Bilan complet généré le ${new Date().toLocaleDateString('fr-FR')} · Robin Coaching France · CoachSpace</div>
+  <div style="text-align:center;margin-top:16px;padding:16px" class="no-print">
+    <button onclick="window.print()" style="background:#c0152a;color:white;border:none;border-radius:6px;padding:12px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:Arial,sans-serif">📄 Enregistrer en PDF</button>
+    <div style="font-size:10px;color:#999;margin-top:6px">Choisis "Enregistrer au format PDF" dans la boîte d'impression</div>
+  </div>
+  <style>.no-print{display:block}@media print{.no-print{display:none!important;}}</style>
+  </body></html>`;
+
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const isMobile=/iPhone|iPad|Android/i.test(navigator.userAgent);
+  if(isMobile){const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),3000);}
+  else{const win=window.open(url,'_blank');if(win)setTimeout(()=>{win.focus();win.print();},600);setTimeout(()=>URL.revokeObjectURL(url),5000);}
 }
 
 function copyProgTo(id){
@@ -4307,6 +4611,7 @@ function renderSuiviDashboard(cid){
     <div style="margin-left:auto;display:flex;gap:6px">
       <button class="btn btn-info btn-xs" onclick="openMesure(${c.id})">+ Mesures</button>
       <button class="btn btn-ghost btn-xs" onclick="showNotifModal(${c.id})">🔔 Notifier</button>
+      <button class="btn btn-ghost btn-xs" onclick="openExoDictionary(${c.id})">📖 Dictionnaire</button>
       <button class="btn btn-ghost btn-xs" onclick="exportAnalysisPDF(${c.id})">📄 PDF Bilan</button>
     </div>
   </div>`;
@@ -4391,13 +4696,15 @@ function renderSuiviDashboard(cid){
           <span style="color:var(--muted);font-size:10px">${entries.length} exo${entries.length>1?'s':''} ▾</span>
         </div>
         <div class="blog-entry-body" id="${uid}">
-          ${entries.length?entries.map(e=>`
-            <div class="blog-exo-row">
-              <div class="blog-exo-name">${e.exo} ${e.feel?`<span>${feelMap2[e.feel]}</span>`:''}</div>
+          ${entries.length?entries.map(e=>{
+            const mBadge2=e.method&&e.method!=='Classique'?`<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:var(--red-dim);color:var(--red);font-weight:700;margin-left:4px">${e.method}</span>`:'';
+            const vStr2=e.variant?` <span style="font-size:10px;color:var(--muted);font-style:italic">(${e.variant})</span>`:'';
+            return `<div class="blog-exo-row">
+              <div class="blog-exo-name">${e.exo}${vStr2}${mBadge2} ${e.feel?`<span>${feelMap2[e.feel]}</span>`:''}</div>
               <div class="blog-exo-series">${e.series||'—'}</div>
               ${e.note?`<div style="font-size:10px;color:var(--muted);font-style:italic">💬 ${e.note}</div>`:''}
-              ${e.seriesData?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${e.seriesData.map((sd,si)=>sd.reps||sd.load?`<span style="font-size:10px;background:var(--s2);border:1px solid var(--s3);border-radius:3px;padding:1px 5px">S${si+1}: ${sd.reps||'?'}r${sd.load?' @ '+sd.load:''}${sd.done?' ✓':''}</span>`:'').join('')}</div>`:''}
-            </div>`).join(''):'<div class="blog-empty">Aucune donnée enregistrée</div>'}
+              ${e.seriesData?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${e.seriesData.map((sd,si)=>sd.reps||sd.load?`<span style="font-size:10px;background:var(--s2);border:1px solid var(--s3);border-radius:3px;padding:1px 5px">S${si+1}: ${sd.reps||'?'}r${sd.load?' × '+sd.load:''}${sd.done?' ✓':''}</span>`:'').join('')}</div>`:''}
+            </div>`;}).join(''):'<div class="blog-empty">Aucune donnée enregistrée</div>'}
         </div>
       </div>`;
     });
@@ -5329,7 +5636,6 @@ function confirmReplaceExo(pid,eid,oldName){
   const cid=currentClient?.id;
   if(!S.exoReplacements[cid]) S.exoReplacements[cid]={};
   S.exoReplacements[cid][`${pid}-${eid}`]={oldName,newName,variant:newVariant};
-  console.log('REPL SAVE:',{cid,key:`${pid}-${eid}`,newName,data:S.exoReplacements[cid]});
   saveState();
   // Update the display inline without re-rendering
   const replWrap=document.getElementById(`replace-wrap-${pid}-${eid}`);
@@ -5397,7 +5703,7 @@ function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
       const exoName=repl?repl.newName:e.name;
       const exoVariant=repl?repl.variant:(e.variant||'');
       const originalExo=repl?repl.oldName:null;
-      entries.push({exo:exoName,variant:exoVariant,originalExo,series:seriesStr,seriesData,feel,note});
+      entries.push({exo:exoName,variant:exoVariant,originalExo,method:e.method||'Classique',methodData:e.methodData||null,series:seriesStr,seriesData,feel,note});
     }
   });
   if(!entries.length){showToast('Remplis au moins un champ !');return;}
@@ -5471,6 +5777,115 @@ function showPostSeanceRecap(cid,seanceName,entries){
 }
 
 // ── EXPORT PDF ANALYSE PROGRESSION ──
+
+// ── DICTIONNAIRE DE PERFORMANCE PAR EXERCICE ──
+function openExoDictionary(clientId){
+  const c=S.clients.find(x=>x.id===clientId);if(!c)return;
+  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>a.date>b.date?1:-1);
+  if(!logs.length){showToast('Aucun historique pour ce coaché');return;}
+
+  // Collect all unique exercise names
+  const exoMap={};
+  logs.forEach(log=>{
+    (log.entries||[]).forEach(e=>{
+      if(!e.exo)return;
+      const key=e.exo+(e.variant?' ('+e.variant+')':'');
+      if(!exoMap[key]) exoMap[key]={name:e.exo,variant:e.variant||'',sessions:[]};
+      const seriesData=e.seriesData||[];
+      let vol=0,maxLoad=0,totalReps=0;
+      seriesData.forEach(sd=>{
+        const r=parseFloat(sd.reps)||0;const l=parseFloat(sd.load)||0;
+        totalReps+=r;vol+=r*l;if(l>maxLoad)maxLoad=l;
+      });
+      exoMap[key].sessions.push({
+        date:log.date,seance:log.seanceName||'',prog:log.progName||'',
+        method:e.method||'Classique',
+        seriesData,vol,maxLoad,totalReps,
+        feel:e.feel||0
+      });
+    });
+  });
+
+  const exoNames=Object.keys(exoMap).sort();
+  const feelEmoji=['','😓','😐','🙂','💪','🔥'];
+
+  let h=`<div style="max-width:550px;max-height:80vh;overflow-y:auto">
+    <div style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px">📖 Dictionnaire de performance</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">${c.prenom} ${c.nom} · ${exoNames.length} exercices · ${logs.length} séances</div>
+    <input type="text" id="dict-search" placeholder="🔍 Rechercher un exercice..." oninput="filterDictionary()" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px;font-size:13px;color:var(--text);outline:none;margin-bottom:12px">
+    <div id="dict-results">`;
+
+  exoNames.forEach(key=>{
+    const data=exoMap[key];
+    const sessions=data.sessions;
+    const lastSession=sessions[sessions.length-1];
+    const firstSession=sessions[0];
+    // Progression
+    let progLabel='',progColor='var(--muted)';
+    if(sessions.length>=2){
+      const firstVol=firstSession.vol;const lastVol=lastSession.vol;
+      if(lastVol>firstVol){progLabel='↑';progColor='#22c55e';}
+      else if(lastVol<firstVol){progLabel='↓';progColor='#ef4444';}
+      else{progLabel='=';progColor='var(--muted)';}
+    }
+
+    h+=`<div class="dict-exo-card" data-name="${key.toLowerCase()}">
+      <div class="dict-exo-hd" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.dict-arrow').textContent=this.nextElementSibling.style.display==='none'?'▶':'▼'">
+        <div>
+          <span style="font-weight:800;font-size:13px">${data.name}</span>
+          ${data.variant?`<span style="font-size:10px;color:var(--muted);font-style:italic"> (${data.variant})</span>`:''}
+          <span style="font-size:10px;color:${progColor};font-weight:700;margin-left:4px">${progLabel}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:10px;color:var(--muted)">${sessions.length} séance${sessions.length>1?'s':''}</span>
+          <span style="font-size:10px;font-weight:700;color:var(--red)">${lastSession.maxLoad}kg max</span>
+          <span class="dict-arrow" style="font-size:10px;color:var(--muted)">▶</span>
+        </div>
+      </div>
+      <div class="dict-exo-body" style="display:none">`;
+
+    sessions.forEach((sess,si)=>{
+      const prevSess=si>0?sessions[si-1]:null;
+      let volDiff='';
+      if(prevSess&&prevSess.vol>0){
+        const pct=Math.round(((sess.vol-prevSess.vol)/prevSess.vol)*100);
+        if(pct>0) volDiff=`<span style="color:#22c55e;font-size:9px;font-weight:700">+${pct}%</span>`;
+        else if(pct<0) volDiff=`<span style="color:#ef4444;font-size:9px;font-weight:700">${pct}%</span>`;
+      }
+      const methodBadge=sess.method&&sess.method!=='Classique'?`<span style="font-size:8px;padding:1px 4px;border-radius:2px;background:var(--red-dim);color:var(--red);font-weight:700">${sess.method}</span>`:'';
+      h+=`<div class="dict-session">
+        <div class="dict-session-hd">
+          <span style="font-weight:700;color:var(--text);font-size:11px">🗓 ${sess.date}</span>
+          <span style="font-size:9px;color:var(--muted)">${sess.seance}</span>
+          ${methodBadge}
+          ${volDiff}
+          ${sess.feel?`<span>${feelEmoji[sess.feel]}</span>`:''}
+        </div>
+        <div class="dict-series-row">
+          ${sess.seriesData.map((sd,sdi)=>`<span class="dict-serie">S${sdi+1}: <strong>${sd.reps||'?'}</strong>×<strong>${sd.load||'?'}</strong></span>`).join('')}
+        </div>
+        <div style="display:flex;gap:10px;font-size:9px;color:var(--muted);margin-top:2px">
+          <span>Vol: ${sess.vol>1000?(sess.vol/1000).toFixed(1)+'t':sess.vol+'kg'}</span>
+          <span>Max: ${sess.maxLoad}kg</span>
+          <span>Reps: ${sess.totalReps}</span>
+        </div>
+      </div>`;
+    });
+
+    h+=`</div></div>`;
+  });
+
+  h+=`</div></div>`;
+  showModal('',h);
+}
+
+function filterDictionary(){
+  const q=($('dict-search')?.value||'').toLowerCase();
+  document.querySelectorAll('.dict-exo-card').forEach(card=>{
+    card.style.display=card.dataset.name.includes(q)?'':'none';
+  });
+}
+
 function exportAnalysisPDF(clientId){
   const c=S.clients.find(x=>x.id===clientId);if(!c)return;
   const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>a.date>b.date?1:-1);
@@ -5561,7 +5976,19 @@ function renderClientJournal(){
   if(!entries.length){el.innerHTML=`<div class="empty"><div class="ei">📓</div><div class="et">Aucun journal</div><div class="es">Remplis et sauvegarde une séance depuis "Mon programme"</div></div>`;return;}
   let h=`<div style="font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:16px">Mon <span style="color:var(--red)">journal</span></div>`;
   entries.forEach(log=>{
-    h+=`<div class="log-hist"><div class="lh-hd"><div class="lh-date">🗓 ${log.date} — ${log.seanceName||''}</div><div class="lh-prog">${log.progName}</div></div><div class="lh-body">${(log.entries||[]).map(e=>`<div class="lh-exo-row"><span style="font-weight:700">${e.exo}</span><span style="color:var(--muted);font-family:'Oswald',sans-serif;font-size:11px">${e.series||''}</span><span>${e.feel?['','😓','😐','🙂','💪','🔥'][e.feel]:''}</span></div>${e.note?`<div style="font-size:10px;color:var(--muted);font-style:italic;padding:2px 0">"${e.note}"</div>`:''}`).join('')}</div></div>`;
+    h+=`<div class="log-hist"><div class="lh-hd"><div class="lh-date">🗓 ${log.date} — ${log.seanceName||''}</div><div class="lh-prog">${log.progName}</div></div><div class="lh-body">${(log.entries||[]).map(e=>{
+      const methodBadge=e.method&&e.method!=='Classique'?`<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:var(--red-dim);color:var(--red);font-weight:700;margin-left:4px">${e.method}</span>`:'';
+      const variantStr=e.variant?` <span style="font-size:10px;color:var(--muted);font-style:italic">(${e.variant})</span>`:'';
+      const replStr=e.originalExo?`<span style="font-size:9px;color:var(--info);margin-left:4px">🔄 était: ${e.originalExo}</span>`:'';
+      // Detailed series display
+      let seriesDetail='';
+      if(e.seriesData&&e.seriesData.length){
+        seriesDetail=e.seriesData.map((sd,si)=>`<span style="font-size:10px;color:var(--muted)">S${si+1}: ${sd.reps||'?'}×${sd.load||'?'}</span>`).join(' <span style="color:var(--s3)">|</span> ');
+      } else {
+        seriesDetail=`<span style="color:var(--muted);font-family:'Oswald',sans-serif;font-size:11px">${e.series||''}</span>`;
+      }
+      return `<div class="lh-exo-row"><div><span style="font-weight:700">${e.exo}</span>${variantStr}${methodBadge}${replStr}</div><div>${seriesDetail}</div><span>${e.feel?['','😓','😐','🙂','💪','🔥'][e.feel]:''}</span></div>${e.note?`<div style="font-size:10px;color:var(--muted);font-style:italic;padding:2px 0">"${e.note}"</div>`:''}`;
+    }).join('')}</div></div>`;
   });
   el.innerHTML=h;
 }
