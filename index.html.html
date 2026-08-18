@@ -2403,7 +2403,7 @@ function collectWeeks(){
         }
         exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',variant:$(`ev-${sid}-${eid}`)?.value.trim()||'',methodData:getMethodData(sid,eid)});
       });
-      if(exos.length) seances.push({num:snum,name:sname,objective:sobj,warmup:$(`swarmup-${sid}`)?.value.trim()||'',exos});
+      if(exos.length||sname) seances.push({num:snum,name:sname,objective:sobj,warmup:$(`swarmup-${sid}`)?.value.trim()||'',exos});
     });
     if(seances.length) weeks.push({id:parseInt(wid),name:wname,seances,unlocked:parseInt(wid)===1,unlockedDate:parseInt(wid)===1?new Date().toISOString().split('T')[0]:null,feedback:''});
   });
@@ -3428,7 +3428,7 @@ function collectSeances(){
       }
       exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',variant:$(`ev-${sid}-${eid}`)?.value.trim()||'',methodData:getMethodData(sid,eid)});
     });
-    if(exos.length)seances.push({num,name:sname,objective:sobj,warmup:$(`swarmup-${sid}`)?.value.trim()||'',exos});
+    if(exos.length||sname)seances.push({num,name:sname,objective:sobj,warmup:$(`swarmup-${sid}`)?.value.trim()||'',exos});
   });
   return seances;
 }
@@ -3457,25 +3457,85 @@ function updatePreview(){
   const filtered=currentFilter?logs.filter(l=>l.seanceName===currentFilter):logs;
   const toShow=filtered.slice(0,currentFilter?20:8);
   if(!toShow.length){h+=`<div style="text-align:center;padding:12px;color:var(--muted);font-size:11px">Aucune séance "${currentFilter}" trouvée</div>`;}
-  toShow.forEach(log=>{
+  toShow.forEach((log,li)=>{
     const entries=log.entries||[];
     h+=`<div style="margin-bottom:6px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden">
-      <div style="padding:6px 10px;background:var(--s3);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+      <div style="padding:6px 10px;background:var(--s3);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openLogInNewTab(${clientId},'${(log.date||'').replace(/'/g,"\\'")}','${(log.seanceName||'').replace(/'/g,"\\'")}')">
         <span style="font-weight:700;font-size:11px">🗓 ${log.date} — ${log.seanceName||''}</span>
-        <span style="font-size:9px;color:var(--muted)">${entries.length} exos · ${log.progName||''}</span>
+        <span style="font-size:9px;color:var(--muted)">${entries.length} exos · <span style="color:var(--info)">ouvrir ↗</span></span>
       </div>
-      <div style="padding:6px 10px;display:none">`;
-    entries.forEach(e=>{
-      const mBadge=e.method&&e.method!=='Classique'?`<span style="font-size:8px;padding:1px 4px;border-radius:2px;background:var(--red-dim);color:var(--red);font-weight:700;margin-left:3px">${e.method}</span>`:'';
-      const vStr=e.variant?` <span style="font-size:9px;color:var(--muted);font-style:italic">(${e.variant})</span>`:'';
-      const series=e.seriesData&&e.seriesData.length?e.seriesData.map((sd,si)=>`S${si+1}:${sd.reps||'?'}×${sd.load||'?'}`).join(' '):(e.series||'');
-      h+=`<div style="font-size:10px;padding:3px 0;border-bottom:1px solid var(--s3)"><strong>${e.exo}</strong>${vStr}${mBadge} <span style="color:var(--muted)">${series}</span> ${e.feel?feelMap[e.feel]:''}</div>`;
-    });
-    h+=`</div></div>`;
+    </div>`;
   });
   if(filtered.length>toShow.length) h+=`<div style="text-align:center;font-size:10px;color:var(--muted);padding:4px">... et ${filtered.length-toShow.length} séances de plus</div>`;
   h+=`</div>`;
   histDiv.innerHTML=h;
+}
+
+function openLogInNewTab(clientId,date,seanceName){
+  const logs=Object.values(S.logs[clientId]||{});
+  const log=logs.find(l=>l.date===date&&l.seanceName===seanceName);
+  if(!log){showToast('Séance non trouvée');return;}
+  const c=S.clients.find(x=>x.id===clientId);
+  const feelMap2=['','😓','😐','🙂','💪','🔥'];
+  let totalVol=0,totalReps=0,maxLoad=0;
+  (log.entries||[]).forEach(e=>{(e.seriesData||[]).forEach(sd=>{const r=parseFloat(sd.reps)||0;const l=parseFloat(sd.load)||0;totalReps+=r;totalVol+=r*l;if(l>maxLoad)maxLoad=l;});});
+
+  let html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>${log.seanceName} — ${log.date} — ${c?.prenom||''}</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:Arial,sans-serif;background:#121212;color:#e5e5e5;padding:20px;max-width:600px;margin:0 auto;}
+    .hdr{border-bottom:3px solid #c0152a;padding-bottom:12px;margin-bottom:16px;}
+    .ttl{font-size:22px;font-weight:900;color:#c0152a;}
+    .sub{font-size:12px;color:#999;margin-top:4px;}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+    .stat{background:#1e1e1e;border:1px solid #333;border-radius:8px;padding:10px;text-align:center;}
+    .sv{font-size:20px;font-weight:900;color:#c0152a;}
+    .sl{font-size:9px;color:#888;text-transform:uppercase;margin-top:2px;}
+    .exo{background:#1e1e1e;border:1px solid #333;border-radius:8px;padding:12px;margin-bottom:8px;}
+    .en{font-size:14px;font-weight:800;margin-bottom:4px;}
+    .mb{font-size:9px;padding:1px 5px;border-radius:3px;background:#2a0a0e;color:#c0152a;font-weight:700;}
+    .var{font-size:10px;color:#888;font-style:italic;}
+    .series{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+    .serie{background:#252525;border:1px solid #333;border-radius:6px;padding:6px 10px;text-align:center;}
+    .sn{font-size:8px;color:#888;}
+    .sr{font-size:16px;font-weight:900;color:#c0152a;}
+    .sc{font-size:11px;font-weight:700;color:#e5e5e5;}
+    .note{font-size:10px;color:#888;font-style:italic;margin-top:4px;}
+    .ft{margin-top:20px;text-align:center;font-size:9px;color:#555;}
+  </style></head><body>
+  <div class="hdr">
+    <div class="ttl">${log.seanceName||'Séance'}</div>
+    <div class="sub">🗓 ${log.date} · ${c?.prenom||''} ${c?.nom||''} · ${log.progName||''}</div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="sv">${totalVol>1000?(totalVol/1000).toFixed(1)+'t':Math.round(totalVol)+'kg'}</div><div class="sl">Volume</div></div>
+    <div class="stat"><div class="sv">${totalReps}</div><div class="sl">Reps totales</div></div>
+    <div class="stat"><div class="sv">${maxLoad}kg</div><div class="sl">Charge max</div></div>
+  </div>`;
+
+  (log.entries||[]).forEach(e=>{
+    const mb=e.method&&e.method!=='Classique'?`<span class="mb">${e.method}</span> `:'';
+    const vr=e.variant?`<span class="var">(${e.variant})</span>`:'';
+    html+=`<div class="exo"><div class="en">${e.exo} ${vr} ${mb}${e.feel?feelMap2[e.feel]:''}</div>`;
+    if(e.seriesData&&e.seriesData.length){
+      html+=`<div class="series">`;
+      e.seriesData.forEach((sd,si)=>{
+        html+=`<div class="serie"><div class="sn">S${si+1}</div><div class="sr">${sd.reps||'?'}</div><div class="sc">${sd.load||'?'}</div></div>`;
+      });
+      html+=`</div>`;
+    } else if(e.series){
+      html+=`<div style="font-size:11px;color:#888;margin-top:4px">${e.series}</div>`;
+    }
+    if(e.note) html+=`<div class="note">💬 ${e.note}</div>`;
+    html+=`</div>`;
+  });
+
+  html+=`<div class="ft">CoachSpace · Robin Coaching France</div></body></html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  window.open(url,'_blank');
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
 }
 
 function renderBuilderLogs(){
@@ -5974,23 +6034,97 @@ function renderClientJournal(){
   const logs=S.logs[currentClient.id]||{};
   const entries=Object.values(logs).sort((a,b)=>b.date>a.date?1:-1);
   if(!entries.length){el.innerHTML=`<div class="empty"><div class="ei">📓</div><div class="et">Aucun journal</div><div class="es">Remplis et sauvegarde une séance depuis "Mon programme"</div></div>`;return;}
-  let h=`<div style="font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:16px">Mon <span style="color:var(--red)">journal</span></div>`;
-  entries.forEach(log=>{
-    h+=`<div class="log-hist"><div class="lh-hd"><div class="lh-date">🗓 ${log.date} — ${log.seanceName||''}</div><div class="lh-prog">${log.progName}</div></div><div class="lh-body">${(log.entries||[]).map(e=>{
-      const methodBadge=e.method&&e.method!=='Classique'?`<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:var(--red-dim);color:var(--red);font-weight:700;margin-left:4px">${e.method}</span>`:'';
-      const variantStr=e.variant?` <span style="font-size:10px;color:var(--muted);font-style:italic">(${e.variant})</span>`:'';
-      const replStr=e.originalExo?`<span style="font-size:9px;color:var(--info);margin-left:4px">🔄 était: ${e.originalExo}</span>`:'';
-      // Detailed series display
-      let seriesDetail='';
-      if(e.seriesData&&e.seriesData.length){
-        seriesDetail=e.seriesData.map((sd,si)=>`<span style="font-size:10px;color:var(--muted)">S${si+1}: ${sd.reps||'?'}×${sd.load||'?'}</span>`).join(' <span style="color:var(--s3)">|</span> ');
-      } else {
-        seriesDetail=`<span style="color:var(--muted);font-family:'Oswald',sans-serif;font-size:11px">${e.series||''}</span>`;
-      }
-      return `<div class="lh-exo-row"><div><span style="font-weight:700">${e.exo}</span>${variantStr}${methodBadge}${replStr}</div><div>${seriesDetail}</div><span>${e.feel?['','😓','😐','🙂','💪','🔥'][e.feel]:''}</span></div>${e.note?`<div style="font-size:10px;color:var(--muted);font-style:italic;padding:2px 0">"${e.note}"</div>`:''}`;
-    }).join('')}</div></div>`;
-  });
+  // Unique séance names for filter
+  const seanceNames=[...new Set(entries.map(l=>l.seanceName).filter(Boolean))].sort();
+  let h=`<div style="font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:12px">Mon <span style="color:var(--red)">journal</span></div>
+  <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+    <select id="journal-filter" onchange="filterJournal()" style="font-size:11px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:5px 10px;color:var(--text)">
+      <option value="">Toutes les séances (${entries.length})</option>
+      ${seanceNames.map(n=>`<option value="${n}">${n} (${entries.filter(l=>l.seanceName===n).length})</option>`).join('')}
+    </select>
+  </div>
+  <div id="journal-list"></div>`;
   el.innerHTML=h;
+  filterJournal();
+}
+
+function filterJournal(){
+  const filter=$('journal-filter')?.value||'';
+  const logs=S.logs[currentClient.id]||{};
+  const entries=Object.values(logs).sort((a,b)=>b.date>a.date?1:-1);
+  const filtered=filter?entries.filter(l=>l.seanceName===filter):entries;
+  const feelMap=['','😓','😐','🙂','💪','🔥'];
+  const listDiv=$('journal-list');if(!listDiv)return;
+  if(!filtered.length){listDiv.innerHTML='<div style="text-align:center;padding:12px;color:var(--muted)">Aucune séance trouvée</div>';return;}
+  let h='';
+  filtered.forEach((log,li)=>{
+    const nExos=(log.entries||[]).length;
+    const totalVol=(log.entries||[]).reduce((a,e)=>{return a+(e.seriesData||[]).reduce((b,sd)=>b+(parseFloat(sd.reps)||0)*(parseFloat(sd.load)||0),0);},0);
+    h+=`<div class="log-hist" style="cursor:pointer" onclick="openJournalDetail(${li},'${filter.replace(/'/g,"\\'")}')">
+      <div class="lh-hd">
+        <div class="lh-date">🗓 ${log.date} — ${log.seanceName||''}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:9px;color:var(--muted)">${nExos} exos · ${totalVol>1000?(totalVol/1000).toFixed(1)+'t':Math.round(totalVol)+'kg'}</span>
+          <span style="font-size:12px;color:var(--muted)">▶</span>
+        </div>
+      </div>
+      <div class="lh-body" style="max-height:60px;overflow:hidden">
+        ${(log.entries||[]).map(e=>`<span style="font-size:10px;font-weight:700;margin-right:6px">${e.exo}</span>`).join('')}
+      </div>
+    </div>`;
+  });
+  listDiv.innerHTML=h;
+}
+
+function openJournalDetail(logIdx,filter){
+  const logs=S.logs[currentClient.id]||{};
+  const entries=Object.values(logs).sort((a,b)=>b.date>a.date?1:-1);
+  const filtered=filter?entries.filter(l=>l.seanceName===filter):entries;
+  const log=filtered[logIdx];
+  if(!log) return;
+  const feelMap=['','😓','😐','🙂','💪','🔥'];
+  let totalVol=0,totalReps=0,maxLoad=0;
+  (log.entries||[]).forEach(e=>{(e.seriesData||[]).forEach(sd=>{const r=parseFloat(sd.reps)||0;const l=parseFloat(sd.load)||0;totalReps+=r;totalVol+=r*l;if(l>maxLoad)maxLoad=l;});});
+
+  let h=`<div style="max-width:500px;max-height:80vh;overflow-y:auto">
+    <div style="font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;margin-bottom:2px">🗓 ${log.date}</div>
+    <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:4px">${log.seanceName||''}</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:12px">${log.progName||''}</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px">
+      <div style="background:var(--s2);border-radius:var(--rs);padding:8px;text-align:center"><div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700">${totalVol>1000?(totalVol/1000).toFixed(1)+'t':Math.round(totalVol)+'kg'}</div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Volume</div></div>
+      <div style="background:var(--s2);border-radius:var(--rs);padding:8px;text-align:center"><div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700">${totalReps}</div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Reps</div></div>
+      <div style="background:var(--s2);border-radius:var(--rs);padding:8px;text-align:center"><div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700">${maxLoad}kg</div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Max</div></div>
+    </div>`;
+
+  (log.entries||[]).forEach((e,ei)=>{
+    const methodBadge=e.method&&e.method!=='Classique'?`<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:var(--red-dim);color:var(--red);font-weight:700;margin-left:4px">${e.method}</span>`:'';
+    const variantStr=e.variant?` <span style="font-size:10px;color:var(--muted);font-style:italic">(${e.variant})</span>`:'';
+    const replStr=e.originalExo?`<div style="font-size:9px;color:var(--info)">🔄 Remplacé : ${e.originalExo}</div>`:'';
+    h+=`<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div><strong style="font-size:13px">${e.exo}</strong>${variantStr}${methodBadge}</div>
+        <span>${e.feel?feelMap[e.feel]:''}</span>
+      </div>
+      ${replStr}`;
+    if(e.seriesData&&e.seriesData.length){
+      h+=`<div style="display:flex;gap:4px;flex-wrap:wrap">`;
+      e.seriesData.forEach((sd,si)=>{
+        h+=`<div style="background:var(--s1);border:1px solid var(--border);border-radius:4px;padding:4px 8px;text-align:center">
+          <div style="font-size:8px;color:var(--muted)">S${si+1}</div>
+          <div style="font-family:'Oswald',sans-serif;font-size:13px;color:var(--red);font-weight:700">${sd.reps||'?'}</div>
+          <div style="font-size:10px;font-weight:700">${sd.load||'?'}</div>
+        </div>`;
+      });
+      h+=`</div>`;
+    } else if(e.series){
+      h+=`<div style="font-size:11px;color:var(--muted)">${e.series}</div>`;
+    }
+    if(e.note) h+=`<div style="font-size:10px;color:var(--muted);font-style:italic;margin-top:4px">💬 ${e.note}</div>`;
+    h+=`</div>`;
+  });
+
+  h+=`</div>`;
+  showModal('',h);
 }
 
 function renderClientRes(){
