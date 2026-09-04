@@ -505,11 +505,12 @@ a.contact-link:hover{text-decoration:underline;}
 .sd-analytics-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:12px;}
 .sd-ac-title{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;color:var(--muted);margin-bottom:8px;}
 .sd-exo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;}
-.sd-exo-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;}
+.sd-exo-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;overflow:visible;}
 .sd-exo-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
 .sd-exo-name{font-size:13px;font-weight:800;color:var(--text);}
 .sd-exo-verdict{font-size:10px;font-weight:700;}
 .sd-exo-metrics{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;margin-top:6px;}
+.sd-exo-card svg{overflow:visible;}
 .sd-em{display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:2px 0;}
 .sd-em-l{color:var(--muted);}
 .sd-em-v{font-weight:700;color:var(--text);}
@@ -2776,6 +2777,12 @@ function onMethodChange(sid,eid){
     }
     tempoWrap.style.display='block';
   } else {if(tempoWrap)tempoWrap.style.display='none';}
+  // Hide name field for Superset/Bi-Set/Tri-Set (names are in the form)
+  const nameBlock=card.querySelector('.exo-name-inp')?.parentElement;
+  const variantBlock=card.querySelector('.variant-inp')?.parentElement;
+  const isSupersetType=['Superset','Bi-Set','Tri-Set'].includes(method);
+  if(nameBlock) nameBlock.style.display=isSupersetType?'none':'';
+  if(variantBlock) variantBlock.style.display=isSupersetType?'none':'';
   // Custom method form vs classic fields
   const customWrap=$(`method-custom-${sid}-${eid}`);
   const classicWrap=card.querySelector('.exo-classic-fields');
@@ -3041,7 +3048,7 @@ function renderSupersetForm(sid,eid,wrap,nExos){
   d.exercises.forEach((ex,ei)=>{
     h+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
       <span style="background:${colors[ei]};color:#fff;font-weight:800;font-size:11px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">${labels[ei]}</span>
-      <input type="text" value="${(ex.name||'').replace(/"/g,'&quot;')}" placeholder="Exercice ${labels[ei]}" list="${dlId}" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 10px;font-size:12px;color:var(--text);font-weight:700;outline:none" onchange="supersetData['${getSupersetKey(sid,eid)}'].exercises[${ei}].name=this.value;updatePreview()">
+      <input type="text" value="${(ex.name||'').replace(/"/g,'&quot;')}" placeholder="Exercice ${labels[ei]}" list="${dlId}" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 10px;font-size:12px;color:var(--text);font-weight:700;outline:none" onchange="supersetData['${getSupersetKey(sid,eid)}'].exercises[${ei}].name=this.value;updateSupersetName(${sid},${eid});updatePreview()">
       <input type="text" value="${(ex.variant||'').replace(/"/g,'&quot;')}" placeholder="Variante" style="width:100px;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:6px 8px;font-size:10px;color:var(--muted);font-style:italic;outline:none" onchange="supersetData['${getSupersetKey(sid,eid)}'].exercises[${ei}].variant=this.value;updatePreview()">
     </div>`;
   });
@@ -3079,6 +3086,15 @@ function removeSupersetSerie(sid,eid,si,nExos){
   d.sets.splice(si,1);
   const method=nExos===3?'Tri-Set':($(`mth-${sid}-${eid}`)?.value||'Superset');
   renderMethodCustom(sid,eid,method);updatePreview();
+}
+
+function updateSupersetName(sid,eid){
+  // Set method name as fallback for display
+  const k=getSupersetKey(sid,eid);
+  const d=supersetData[k];if(!d)return;
+  const method=$(`mth-${sid}-${eid}`)?.value||'Superset';
+  const nameInp=$(`en-${sid}-${eid}`);
+  if(nameInp) nameInp.value=method;
 }
 
 // ── EMOM (Every Minute On the Minute) ──
@@ -3786,7 +3802,8 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
   if(s.warmup){h+=`<div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--warn);white-space:pre-line;line-height:1.6">🔥 <strong>Échauffement</strong>\n${s.warmup}</div>`;}
   h+=`<table class="exo-table"><thead><tr><th>#</th><th>Exercice</th><th>Séries</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>`;
   s.exos.forEach((e,i)=>{
-    if(!e||!e.name)return;
+    if(!e)return;
+    if(!e.name&&!e.methodData)return;
     e.id=e.id||`${s.num||0}-${i}`;
     // Check for exercise replacement by coaché
     const cid3=currentClient?.id;
@@ -4777,11 +4794,18 @@ function renderSuiviDashboard(cid){
 function renderAdvancedAnalytics(clientId){
   const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>a.date>b.date?1:-1);
   if(logs.length<1) return '';
+
+  // ── NORMALIZATION COEFFICIENTS ──
+  const FEEL_COEFF={1:1.15,2:1.05,3:1.00,4:0.97,5:0.95}; // bad day = you would've done more
+  const METHOD_COEFF={'Classique':1.00,'Superset':1.10,'Bi-Set':1.10,'Tri-Set':1.15,'Circuit':1.20,'Drop Set':1.05,'Rest-Pause':1.05,'EMOM':1.10,'AMRAP':1.15,'Tabata':1.20,'Cluster Set':1.03,'Tempo':1.05,'Pyramidal':1.00};
+  const POS_COEFF_PER_SLOT=0.03; // +3% per position in séance
+
   const exoData={};
   logs.forEach(log=>{
-    (log.entries||[]).forEach(e=>{
+    const allEntries=log.entries||[];
+    allEntries.forEach((e,exoPosition)=>{
       if(!e.exo||!e.seriesData) return;
-      let vol=0,maxLoad=0,totalReps=0,totalSeries=0,totalRestSec=0,hasData=false;
+      let vol=0,maxLoad=0,totalReps=0,totalSeries=0,hasData=false;
       const loads=[];
       e.seriesData.forEach(s=>{
         const r=parseFloat(s.reps)||0;
@@ -4792,28 +4816,72 @@ function renderAdvancedAnalytics(clientId){
         if(l>0) loads.push({r,l});
       });
       if(!hasData) return;
-      // Estimated 1RM (Epley formula): best single set
+      // Estimated 1RM (Epley formula)
       let est1RM=0;
       loads.forEach(({r,l})=>{
         if(r>0&&r<=30&&l>0){const e1rm=l*(1+r/30);if(e1rm>est1RM) est1RM=e1rm;}
       });
-      // Intensity = weighted avg load (sum(reps*load)/totalReps)
       const intensity=totalReps>0?vol/totalReps:0;
-      // Tonnage per set
       const tonnagePerSet=totalSeries>0?vol/totalSeries:0;
-      if(!exoData[e.exo]) exoData[e.exo]=[];
-      exoData[e.exo].push({
-        date:log.date,volume:vol,maxLoad,totalReps,totalSeries,
-        est1RM:Math.round(est1RM*10)/10,
+      // Context coefficients
+      const feelCoeff=FEEL_COEFF[e.feel||3]||1.00;
+      const methodCoeff=METHOD_COEFF[e.method||'Classique']||1.00;
+      const posCoeff=1+(exoPosition*POS_COEFF_PER_SLOT);
+      const contextCoeff=feelCoeff*methodCoeff*posCoeff;
+      // Normalized metrics
+      const volNorm=Math.round(vol*contextCoeff);
+      const est1RMNorm=Math.round(est1RM*contextCoeff*10)/10;
+      const _exoKey=e.exo+(e.variant?` (${e.variant})`:"");if(!exoData[_exoKey]) exoData[_exoKey]=[];
+      exoData[_exoKey].push({
+        date:log.date,seance:log.seanceName||'',
+        volume:vol,volNorm,maxLoad,totalReps,totalSeries,
+        est1RM:Math.round(est1RM*10)/10,est1RMNorm,
         intensity:Math.round(intensity*10)/10,
-        tonnagePerSet:Math.round(tonnagePerSet*10)/10
+        tonnagePerSet:Math.round(tonnagePerSet*10)/10,
+        feel:e.feel||0,method:e.method||'Classique',position:exoPosition+1,
+        contextCoeff:Math.round(contextCoeff*100)/100
       });
     });
   });
   const exoNames=Object.keys(exoData).filter(k=>exoData[k].length>=1);
   if(!exoNames.length) return '';
 
-  // ── SESSION-LEVEL ANALYTICS ──
+  // ── SESSION PERFORMANCE SCORES ──
+  let sessionScoresH='';
+  if(logs.length>=2){
+    const sessionScores=logs.map(log=>{
+      const entries=log.entries||[];
+      let totalVol=0,totalReps=0,avgFeel=0,feelCount=0;
+      entries.forEach(e=>{
+        (e.seriesData||[]).forEach(sd=>{totalVol+=(parseFloat(sd.reps)||0)*(parseFloat(sd.load)||0);totalReps+=parseFloat(sd.reps)||0;});
+        if(e.feel){avgFeel+=e.feel;feelCount++;}
+      });
+      const feel=feelCount?Math.round(avgFeel/feelCount):3;
+      const feelBonus=FEEL_COEFF[feel]||1;
+      return{date:log.date,seance:log.seanceName||'',vol:totalVol,reps:totalReps,feel,nExos:entries.length,score:Math.round(totalVol*feelBonus)};
+    }).filter(d=>d.vol>0);
+
+    if(sessionScores.length>=2){
+      const maxScore=Math.max(...sessionScores.map(s=>s.score));
+      const feelEmojis=['','😓','😐','🙂','💪','🔥'];
+      sessionScoresH=`<div style="margin-bottom:16px">
+        <div style="font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;color:var(--red);margin-bottom:8px;letter-spacing:1px">📊 SCORES DE PERFORMANCE PAR SÉANCE</div>
+        <div style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto">`;
+      sessionScores.slice(-10).forEach(s=>{
+        const pct=maxScore?Math.round(s.score/maxScore*100):0;
+        sessionScoresH+=`<div style="display:flex;align-items:center;gap:6px;font-size:10px">
+          <span style="width:55px;flex-shrink:0;color:var(--muted)">${s.date}</span>
+          <span style="width:50px;flex-shrink:0;font-weight:700">${s.seance}</span>
+          <div style="flex:1;background:var(--s3);border-radius:3px;height:14px;overflow:hidden"><div style="height:100%;background:${pct>70?'var(--red)':pct>40?'var(--warn)':'var(--muted)'};width:${pct}%;border-radius:3px;transition:width .3s"></div></div>
+          <span style="width:45px;text-align:right;font-weight:700;font-family:'Oswald',sans-serif">${s.score>1000?(s.score/1000).toFixed(1)+'t':s.score}</span>
+          <span>${feelEmojis[s.feel]||''}</span>
+        </div>`;
+      });
+      sessionScoresH+=`</div></div>`;
+    }
+  }
+
+  // ── SESSION-LEVEL VOLUME CHART ──
   let sessionH='';
   if(logs.length>=2){
     const sessionData=logs.map(log=>{
@@ -4828,6 +4896,7 @@ function renderAdvancedAnalytics(clientId){
     }).filter(d=>d.volume>0||d.reps>0);
 
     if(sessionData.length>=2){
+      sessionH+=sessionScoresH;
       const W=300,H=70,P=6;
       const vols=sessionData.map(d=>d.volume);
       const mnV=Math.min(...vols),mxV=Math.max(...vols),rangeV=mxV-mnV||1;
@@ -4869,32 +4938,35 @@ function renderAdvancedAnalytics(clientId){
     const rmDiff=hasTrend?last.est1RM-first.est1RM:0;
     const intDiff=hasTrend?last.intensity-first.intensity:0;
 
-    // Smart verdict
+    // Smart verdict using normalized metrics
+    const rmNormDiff=hasTrend?last.est1RMNorm-first.est1RMNorm:0;
+    const volNormDiff=hasTrend?last.volNorm-first.volNorm:0;
+    const volNormPct=hasTrend&&first.volNorm?((volNormDiff/first.volNorm)*100).toFixed(0):'—';
     let verdict='',vColor='var(--muted)';
     if(!hasTrend){verdict='📊 1 séance';vColor='var(--muted)';}
-    else if(volDiff>0&&rmDiff>=0){verdict='📈 Progression globale';vColor='#22c55e';}
-    else if(volDiff>0&&rmDiff<0){verdict='📈 Volume ↑ (endurance)';vColor='#22c55e';}
-    else if(volDiff<=0&&rmDiff>0){verdict='💪 Force ↑ (intensité)';vColor='#3b82f6';}
-    else if(volDiff<=0&&loadDiff>0){verdict='💪 Charge ↑ (reps ajustées)';vColor='#3b82f6';}
-    else if(Math.abs(volDiff)<first.volume*0.05){verdict='➡️ Stable';vColor='var(--muted)';}
+    else if(volNormDiff>0&&rmNormDiff>=0){verdict='📈 Progression globale';vColor='#22c55e';}
+    else if(volNormDiff>0&&rmNormDiff<0){verdict='📈 Volume ↑ (endurance)';vColor='#22c55e';}
+    else if(volNormDiff<=0&&rmNormDiff>0){verdict='💪 Force ↑ (intensité)';vColor='#3b82f6';}
+    else if(volNormDiff<=0&&loadDiff>0){verdict='💪 Charge ↑';vColor='#3b82f6';}
+    else if(Math.abs(volNormDiff)<(first.volNorm||1)*0.05){verdict='➡️ Stable';vColor='var(--muted)';}
     else{verdict='📉 En baisse';vColor='#ef4444';}
 
-    // Chart (only if 2+ entries)
+    // Chart using normalized data
     let chartHtml='';
     if(hasTrend){
-      const W=280,H=60,P=6;
-      const vols=data.map(d=>d.volume),rms=data.map(d=>d.est1RM);
+      const W=280,H=80,P=10;
+      const vols=data.map(d=>d.volNorm),rms=data.map(d=>d.est1RMNorm);
       const mnV=Math.min(...vols),mxV=Math.max(...vols),rV=mxV-mnV||1;
       const mnR=Math.min(...rms),mxR=Math.max(...rms),rR=mxR-mnR||1;
       const ptsV=data.map((d,i)=>[P+(i/Math.max(data.length-1,1)*(W-P*2)),H-P-((d.volume-mnV)/rV*(H-P*2))]);
       const ptsR=data.map((d,i)=>[P+(i/Math.max(data.length-1,1)*(W-P*2)),H-P-((d.est1RM-mnR)/rR*(H-P*2))]);
-      chartHtml=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;border-radius:4px;background:var(--s1)">
+      chartHtml=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;border-radius:4px;background:var(--s1);overflow:visible">
         <polyline points="${ptsV.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round"/>
         <polyline points="${ptsR.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="4 3" opacity=".35" stroke-linecap="round"/>
-        ${ptsV.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="${col}"><title>${data[i].date}\nVol: ${data[i].volume}kg\n1RM: ${data[i].est1RM}kg\nMax: ${data[i].maxLoad}kg\nInt: ${data[i].intensity}kg\nReps: ${data[i].totalReps}\nSéries: ${data[i].totalSeries}</title></circle>`).join('')}
+        ${ptsV.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="${col}"><title>${data[i].date}\nVol norm: ${data[i].volNorm}kg\n1RM norm: ${data[i].est1RMNorm}kg\nVol brut: ${data[i].volume}kg\nMax: ${data[i].maxLoad}kg\nCoeff: ×${data[i].contextCoeff}\n${['','😓','😐','🙂','💪','🔥'][data[i].feel]} ${data[i].method} #${data[i].position}</title></circle>`).join('')}
       </svg>
       <div style="display:flex;gap:3px;font-size:9px;color:var(--muted);margin-top:2px;justify-content:space-between">
-        <span>━ volume</span><span style="opacity:.5">┄ 1RM estimé</span>
+        <span>━ vol. normalisé</span><span style="opacity:.5">┄ 1RM normalisé</span>
       </div>`;
     }
 
@@ -4904,12 +4976,13 @@ function renderAdvancedAnalytics(clientId){
         <span class="sd-exo-verdict" style="color:${vColor}">${verdict}</span>
       </div>
       ${chartHtml}
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;margin-bottom:6px">${last.method&&last.method!=='Classique'?`<span style="font-size:8px;padding:1px 5px;border-radius:3px;background:var(--red-dim);color:var(--red);font-weight:700">${last.method}</span>`:''}<span style="font-size:8px;padding:1px 5px;border-radius:3px;background:var(--s3);color:var(--muted)">${['','😓','😐','🙂','💪','🔥'][last.feel||0]} Ressenti</span><span style="font-size:8px;padding:1px 5px;border-radius:3px;background:var(--s3);color:var(--muted)">Pos #${last.position||'?'}</span><span style="font-size:8px;padding:1px 5px;border-radius:3px;background:var(--s3);color:var(--muted)">×${last.contextCoeff}</span></div>
       <div class="sd-exo-metrics">
-        <div class="sd-em"><span class="sd-em-l">Volume</span><span class="sd-em-v" ${hasTrend?`style="color:${volDiff>=0?'#22c55e':'#ef4444'}"`:''}>${last.volume}kg ${hasTrend?`<small>(${volDiff>=0?'+':''}${volPct}%)</small>`:''}</span></div>
-        <div class="sd-em"><span class="sd-em-l">1RM estimé</span><span class="sd-em-v" ${hasTrend?`style="color:${rmDiff>=0?'#22c55e':'#ef4444'}"`:''}>${last.est1RM}kg ${hasTrend?`<small>(${rmDiff>=0?'+':''}${rmDiff.toFixed(1)})</small>`:''}</span></div>
+        <div class="sd-em"><span class="sd-em-l">Vol. normalisé</span><span class="sd-em-v" ${hasTrend?`style="color:${volNormDiff>=0?'#22c55e':'#ef4444'}"`:''}>${last.volNorm}kg ${hasTrend?`<small>(${volNormDiff>=0?'+':''}${volNormPct}%)</small>`:''}</span></div>
+        <div class="sd-em"><span class="sd-em-l">1RM normalisé</span><span class="sd-em-v" ${hasTrend?`style="color:${rmNormDiff>=0?'#22c55e':'#ef4444'}"`:''}>${last.est1RMNorm}kg ${hasTrend?`<small>(${rmNormDiff>=0?'+':''}${rmNormDiff.toFixed(1)})</small>`:''}</span></div>
+        <div class="sd-em"><span class="sd-em-l">Vol. brut</span><span class="sd-em-v">${last.volume}kg</span></div>
+        <div class="sd-em"><span class="sd-em-l">1RM brut</span><span class="sd-em-v">${last.est1RM}kg</span></div>
         <div class="sd-em"><span class="sd-em-l">Charge max</span><span class="sd-em-v" ${hasTrend?`style="color:${loadDiff>=0?'#22c55e':'#ef4444'}"`:''}>${last.maxLoad}kg ${hasTrend?`<small>(${loadDiff>=0?'+':''}${loadDiff})</small>`:''}</span></div>
-        <div class="sd-em"><span class="sd-em-l">Intensité moy.</span><span class="sd-em-v" ${hasTrend?`style="color:${intDiff>=0?'#22c55e':'#ef4444'}"`:''}>${last.intensity}kg ${hasTrend?`<small>(${intDiff>=0?'+':''}${intDiff.toFixed(1)})</small>`:''}</span></div>
-        <div class="sd-em"><span class="sd-em-l">Tonnage/série</span><span class="sd-em-v">${last.tonnagePerSet}kg</span></div>
         <div class="sd-em"><span class="sd-em-l">Reps totales</span><span class="sd-em-v">${last.totalReps} <small>(${last.totalSeries}s)</small></span></div>
       </div>
     </div>`;
@@ -4942,8 +5015,8 @@ function renderExoProgressChart(clientId){
         totalVol+=reps*load;
       });
       if(!hasData) return;
-      if(!exoData[e.exo]) exoData[e.exo]=[];
-      exoData[e.exo].push({date:log.date,volume:totalVol,maxLoad,totalReps,nSeries:e.seriesData.length});
+      const _exoKey=e.exo+(e.variant?` (${e.variant})`:"");if(!exoData[_exoKey]) exoData[_exoKey]=[];
+      exoData[_exoKey].push({date:log.date,volume:totalVol,maxLoad,totalReps,nSeries:e.seriesData.length});
     });
   });
   const exoNames=Object.keys(exoData).filter(k=>exoData[k].length>=1);
@@ -5763,7 +5836,25 @@ function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
       const exoName=repl?repl.newName:e.name;
       const exoVariant=repl?repl.variant:(e.variant||'');
       const originalExo=repl?repl.oldName:null;
-      entries.push({exo:exoName,variant:exoVariant,originalExo,method:e.method||'Classique',methodData:e.methodData||null,series:seriesStr,seriesData,feel,note});
+      // For Superset/Bi-Set/Tri-Set: create separate entries per exercise
+      if(['Superset','Bi-Set','Tri-Set'].includes(e.method) && e.methodData && e.methodData.exercises){
+        const md=e.methodData;
+        md.exercises.forEach((ssEx,ssIdx)=>{
+          if(!ssEx.name) return;
+          // Collect series data for this specific exercise from the superset log inputs
+          const ssSeriesData=[];
+          (md.sets||[]).forEach((set,si)=>{
+            const rInp=$(`slog-r-${_dp}-${e.id}-${si}x${ssIdx}`);
+            const lInp=$(`slog-l-${_dp}-${e.id}-${si}x${ssIdx}`);
+            const r=rInp?.value||'';const l=lInp?.value||'';
+            if(r||l) ssSeriesData.push({reps:r,load:l,done:true});
+          });
+          const ssSeriesStr=ssSeriesData.map((sd,i)=>`S${i+1}:${sd.reps||'?'}r×${sd.load||'?'}`).join(' ');
+          entries.push({exo:ssEx.name,variant:ssEx.variant||'',method:e.method,supersetGroup:e.id,series:ssSeriesStr,seriesData:ssSeriesData,feel,note});
+        });
+      } else {
+        entries.push({exo:exoName,variant:exoVariant,originalExo,method:e.method||'Classique',methodData:e.methodData||null,series:seriesStr,seriesData,feel,note});
+      }
     }
   });
   if(!entries.length){showToast('Remplis au moins un champ !');return;}
@@ -5958,8 +6049,8 @@ function exportAnalysisPDF(clientId){
       e.seriesData.forEach(s=>{const r=parseFloat(s.reps)||0;const l=parseFloat(s.load)||0;totalReps+=r;totalSeries++;vol+=r*l;if(l>maxLoad)maxLoad=l;if(r>0&&l>0)loads.push({r,l});});
       if(!totalReps&&!maxLoad) return;
       let est1RM=0;loads.forEach(({r,l})=>{if(r>0&&r<=30&&l>0){const e1=l*(1+r/30);if(e1>est1RM)est1RM=e1;}});
-      if(!exoData[e.exo])exoData[e.exo]=[];
-      exoData[e.exo].push({date:log.date,volume:vol,maxLoad,totalReps,totalSeries,est1RM:Math.round(est1RM*10)/10,intensity:totalReps>0?Math.round(vol/totalReps*10)/10:0});
+      const _ek2=e.exo+(e.variant?` (${e.variant})`:"");if(!exoData[_ek2])exoData[_ek2]=[];
+      exoData[_exoKey].push({date:log.date,volume:vol,maxLoad,totalReps,totalSeries,est1RM:Math.round(est1RM*10)/10,intensity:totalReps>0?Math.round(vol/totalReps*10)/10:0});
     });
   });
   let totalVolAll=0,totalRepsAll=0,totalSeriesAll=0;
