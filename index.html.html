@@ -505,12 +505,12 @@ a.contact-link:hover{text-decoration:underline;}
 .sd-analytics-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:12px;}
 .sd-ac-title{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;color:var(--muted);margin-bottom:8px;}
 .sd-exo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;}
-.sd-exo-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;overflow:visible;}
+.sd-exo-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;overflow:hidden;}
 .sd-exo-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
 .sd-exo-name{font-size:13px;font-weight:800;color:var(--text);}
 .sd-exo-verdict{font-size:10px;font-weight:700;}
 .sd-exo-metrics{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;margin-top:6px;}
-.sd-exo-card svg{overflow:visible;}
+
 .sd-em{display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:2px 0;}
 .sd-em-l{color:var(--muted);}
 .sd-em-v{font-weight:700;color:var(--text);}
@@ -1893,8 +1893,8 @@ function openClientDetail(id){
   const c=S.clients.find(x=>x.id===id);if(!c)return;
   const progs=S.programmes.filter(p=>p.clientId===id);
   const logs=S.logs[id]||{};
-  const logEntries=Object.values(logs).sort((a,b)=>b.date>a.date?1:-1);
-  const bilans=((S.bilans&&S.bilans[id])||[]).sort((a,b)=>b.date>a.date?1:-1);
+  const logEntries=Object.values(logs).sort((a,b)=>parseDateFR(b.date)-parseDateFR(a.date));
+  const bilans=((S.bilans&&S.bilans[id])||[]).sort((a,b)=>parseDateFR(b.date)-parseDateFR(a.date));
   let h=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;flex-wrap:wrap">
     <div style="display:flex;align-items:center;gap:12px">${avatarHTML(c,48)}<div>
       <div style="font-family:'Oswald',sans-serif;font-size:24px;font-weight:700;letter-spacing:1px">${c.prenom} <span style="color:var(--red)">${c.nom}</span></div>
@@ -3449,13 +3449,14 @@ function collectSeances(){
   return seances;
 }
 
+function parseDateFR(d){if(!d)return new Date(0);const p=d.split('/');return new Date(p[2],p[1]-1,p[0]);}
 function updatePreview(){
   collectWeeks();
   const clientId=parseInt($('b-client')?.value)||0;
   const histDiv=$('builder-client-history');
   if(!histDiv) return;
   if(!clientId){histDiv.innerHTML='';return;}
-  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>b.date>a.date?1:-1);
+  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>parseDateFR(b.date)-parseDateFR(a.date));
   if(!logs.length){histDiv.innerHTML='<div style="text-align:center;padding:12px;color:var(--muted);font-size:11px">Aucun historique pour ce coaché</div>';return;}
   // Collect unique séance names
   const seanceNames=[...new Set(logs.map(l=>l.seanceName).filter(Boolean))].sort();
@@ -3561,7 +3562,7 @@ function renderBuilderLogs(){
   const filter=$('builder-logs-week-filter');
   if(!panel||!body) return;
   if(!clientId){ panel.style.display='none'; return; }
-  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>b.date>a.date?1:-1);
+  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>parseDateFR(b.date)-parseDateFR(a.date));
   if(!logs.length){ panel.style.display='none'; return; }
   panel.style.display='';
   // Populate week filter
@@ -4036,21 +4037,33 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
         </div></div>`;
       } else {
         // Classic log
+        const isUnilateral=(e.name||'').toLowerCase().includes('unilatéral')||(e.name||'').toLowerCase().includes('unilateral')||(e.variant||'').toLowerCase().includes('unilatéral');
         const nseries=e.detail&&e.setDetails&&e.setDetails.length?e.setDetails.length:Math.max(1,parseInt(String(e.sets).replace(/[^0-9]/g,''))||3);
         for(let si=0;si<nseries;si++){
           const sd=e.detail&&e.setDetails?e.setDetails[si]:null;
           const prescribed=sd?`${sd.reps} rép. × ${sd.load}`:`${e.reps} rép. × ${e.load}`;
           const restVal=sd?sd.rest:e.rest;
           const restSecs=parseRestToSeconds(restVal);
-          seriesHtml+=`<div class="serie-row">
-            <button class="serie-check" id="chk-${pid}-${e.id}-${si}" onclick="toggleSerie('${pid}','${e.id}',${si},${restSecs})" type="button"></button>
-            <span class="serie-label" id="slbl-${pid}-${e.id}-${si}">Série ${si+1} — ${prescribed}</span>
-            <div class="serie-log">
-              <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}" placeholder="Rép." oninput="autoSaveLogDraft()">
-              <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}" placeholder="Charge" oninput="autoSaveLogDraft()">
-            </div>
-          </div>
-          <div class="rest-timer" id="timer-${pid}-${e.id}-${si}">
+          if(isUnilateral){
+            seriesHtml+=`<div class="serie-row">
+              <button class="serie-check" id="chk-${pid}-${e.id}-${si}" onclick="toggleSerie('${pid}','${e.id}',${si},${restSecs})" type="button"></button>
+              <span class="serie-label" id="slbl-${pid}-${e.id}-${si}">Série ${si+1} — ${prescribed}</span>
+              <div class="serie-log" style="flex-direction:column;gap:4px">
+                <div style="display:flex;gap:4px;align-items:center"><span style="font-size:9px;font-weight:700;color:var(--info);width:14px">G</span><input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}" placeholder="Rép. G" oninput="autoSaveLogDraft()"><input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}" placeholder="Charge" oninput="autoSaveLogDraft()"></div>
+                <div style="display:flex;gap:4px;align-items:center"><span style="font-size:9px;font-weight:700;color:var(--warn);width:14px">D</span><input class="serie-log-inp" type="text" id="slog-r2-${pid}-${e.id}-${si}" placeholder="Rép. D" oninput="autoSaveLogDraft()"><input class="serie-log-inp" type="text" id="slog-l2-${pid}-${e.id}-${si}" placeholder="Charge" oninput="autoSaveLogDraft()"></div>
+              </div>
+            </div>`;
+          } else {
+            seriesHtml+=`<div class="serie-row">
+              <button class="serie-check" id="chk-${pid}-${e.id}-${si}" onclick="toggleSerie('${pid}','${e.id}',${si},${restSecs})" type="button"></button>
+              <span class="serie-label" id="slbl-${pid}-${e.id}-${si}">Série ${si+1} — ${prescribed}</span>
+              <div class="serie-log">
+                <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${si}" placeholder="Rép." oninput="autoSaveLogDraft()">
+                <input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${si}" placeholder="Charge" oninput="autoSaveLogDraft()">
+              </div>
+            </div>`;
+          }
+          seriesHtml+=`<div class="rest-timer" id="timer-${pid}-${e.id}-${si}">
             <div><div class="rest-timer-label">Repos</div><div class="rest-timer-count" id="tcount-${pid}-${e.id}-${si}">${formatRestDisplay(restSecs)||'—'}</div></div>
             <div style="flex:1"><div class="rest-timer-bar"><div class="rest-timer-progress" id="tbar-${pid}-${e.id}-${si}"></div></div></div>
             <button class="rest-timer-skip" onclick="skipTimer('${pid}','${e.id}',${si})">⏭ Passer</button>
@@ -4269,7 +4282,7 @@ function exportProgWithLogsPDF(id){
   const p=S.programmes.find(x=>x.id===id);if(!p)return;
   const c=S.clients.find(x=>x.id===p.clientId);
   const weeks=p.weeks||[];
-  const logs=Object.values(S.logs[p.clientId]||{}).sort((a,b)=>a.date>b.date?1:-1);
+  const logs=Object.values(S.logs[p.clientId]||{}).sort((a,b)=>parseDateFR(a.date)-parseDateFR(b.date));
 
   // Match logs to séances
   function findLog(weekIdx,seanceIdx,seanceName){
@@ -4676,7 +4689,7 @@ function renderSuiviDashboard(cid){
   const el=$('suivi-dashboard');if(!el)return;
   const c=S.clients.find(x=>x.id===cid);if(!c){el.innerHTML='';return;}
   const logs=S.logs[cid]||{};
-  const logEntries=Object.values(logs).sort((a,b)=>b.date>a.date?1:-1);
+  const logEntries=Object.values(logs).sort((a,b)=>parseDateFR(b.date)-parseDateFR(a.date));
   const measurements=c.measurements||[];
 
   let h=`<div class="sd-header">
@@ -4698,6 +4711,18 @@ function renderSuiviDashboard(cid){
   let totalSeances=0,doneSeances=0;
   cProgsAll.forEach(p=>{p.weeks.forEach((w,wi)=>{(w.seances||[]).forEach((_,si)=>{totalSeances++;if(S.doneSeances?.[cid]?.[`${p.id}_w${wi}_s${si}`])doneSeances++;});});});
   const completionPct=totalSeances?Math.round(doneSeances/totalSeances*100):0;
+
+  // ── BILAN MI-PARCOURS REMINDER ──
+  if(completionPct>=40&&completionPct<=60){
+    h+=`<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:24px">📋</span>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:12px;color:var(--warn)">Bilan mi-parcours recommandé !</div>
+        <div style="font-size:10px;color:var(--muted)">Le programme est à ${completionPct}% — c'est le moment idéal pour faire un point avec ${c.prenom}.</div>
+      </div>
+      <button class="btn btn-ghost btn-xs" onclick="exportAnalysisPDF(${cid})" style="border-color:var(--warn);color:var(--warn)">📄 Faire le bilan</button>
+    </div>`;
+  }
 
   // Streak
   const logDates=[...new Set(logEntries.map(l=>l.date))].sort().reverse();
@@ -4792,7 +4817,7 @@ function renderSuiviDashboard(cid){
 
 // ── ADVANCED ANALYTICS ENGINE ──
 function renderAdvancedAnalytics(clientId){
-  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>a.date>b.date?1:-1);
+  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>parseDateFR(a.date)-parseDateFR(b.date));
   if(logs.length<1) return '';
 
   // ── NORMALIZATION COEFFICIENTS ──
@@ -4954,13 +4979,13 @@ function renderAdvancedAnalytics(clientId){
     // Chart using normalized data
     let chartHtml='';
     if(hasTrend){
-      const W=280,H=80,P=10;
+      const W=280,H=90,P=14;
       const vols=data.map(d=>d.volNorm),rms=data.map(d=>d.est1RMNorm);
       const mnV=Math.min(...vols),mxV=Math.max(...vols),rV=mxV-mnV||1;
       const mnR=Math.min(...rms),mxR=Math.max(...rms),rR=mxR-mnR||1;
       const ptsV=data.map((d,i)=>[P+(i/Math.max(data.length-1,1)*(W-P*2)),H-P-((d.volume-mnV)/rV*(H-P*2))]);
       const ptsR=data.map((d,i)=>[P+(i/Math.max(data.length-1,1)*(W-P*2)),H-P-((d.est1RM-mnR)/rR*(H-P*2))]);
-      chartHtml=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;border-radius:4px;background:var(--s1);overflow:visible">
+      chartHtml=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;border-radius:4px;background:var(--s1)">
         <polyline points="${ptsV.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round"/>
         <polyline points="${ptsR.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="4 3" opacity=".35" stroke-linecap="round"/>
         ${ptsV.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="${col}"><title>${data[i].date}\nVol norm: ${data[i].volNorm}kg\n1RM norm: ${data[i].est1RMNorm}kg\nVol brut: ${data[i].volume}kg\nMax: ${data[i].maxLoad}kg\nCoeff: ×${data[i].contextCoeff}\n${['','😓','😐','🙂','💪','🔥'][data[i].feel]} ${data[i].method} #${data[i].position}</title></circle>`).join('')}
@@ -4998,7 +5023,7 @@ function renderAdvancedAnalytics(clientId){
 }
 
 function renderExoProgressChart(clientId){
-  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>a.date>b.date?1:-1);
+  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>parseDateFR(a.date)-parseDateFR(b.date));
   if(logs.length<2) return '';
   // Collect per-exercise: volume (reps×charge), max load, total reps
   const exoData={};
@@ -5471,7 +5496,7 @@ function renderClientProg(){
     if(!progs.length){el.innerHTML=`<div class="empty"><div class="ei">📋</div><div class="et">Pas encore de programme</div><div class="es">Ton coach va bientôt t'envoyer un programme !</div></div>`;return;}
     const logs=S.logs[cid]||{};
     const logCount=Object.keys(logs).length;
-    const lastLog=logCount?Object.values(logs).sort((a,b)=>b.date>a.date?1:-1)[0]:null;
+    const lastLog=logCount?Object.values(logs).sort((a,b)=>parseDateFR(b.date)-parseDateFR(a.date))[0]:null;
     const now=new Date();
     const hour=now.getHours();
     const greeting=hour<12?'Bonjour':hour<18?'Bon après-midi':'Bonsoir';
@@ -5568,22 +5593,52 @@ function renderClientProg(){
     h+=`</div>`;
 
     // Separator
-    h+=`<div class="ch-divider"><span>MON PROGRAMME COMPLET</span></div>`;
-
-    // Full programme below
+    // Separate active vs completed programmes
+    const activeProgs=[];const completedProgs=[];
     progs.forEach(prog=>{
-      try{
-        const wk=weekNum(prog.startDate,prog.dur);
-        h+=renderProgHeader(prog,null);
-        if(wk) h+=`<div class="week-badge">📅 Semaine ${wk.current} sur ${wk.total}</div>`;
-        h+=renderAccordion(prog, true, true);
-        if(prog.notes) h+=`<div style="background:var(--red-dim);border:1px solid rgba(192,21,42,.2);border-radius:var(--rs);padding:12px;margin-top:10px;font-size:12px;line-height:1.7"><div style="font-size:9px;letter-spacing:2px;color:var(--red2);font-weight:800;margin-bottom:5px">📝 CONSEILS DE ${(S.coachName||'Coach').toUpperCase()}</div>${prog.notes}</div>`;
-      if(prog.changelog&&prog.changelog.length) h+=renderChangelog(prog);
-      }catch(pe){
-        h+=`<div class="alert" style="color:var(--warn)">⚠️ Erreur affichage programme "${prog.name||''}" : ${pe.message}</div>`;
-        console.error('prog render error',pe);
-      }
+      const weeks=prog.weeks||[];
+      const totalSeances=weeks.reduce((a,w)=>(w.seances||[]).length+a,0);
+      let doneCount=0;
+      weeks.forEach((w,wi)=>{(w.seances||[]).forEach((_,si)=>{
+        const dk=`${prog.id}_w${wi}_s${si}`;
+        if(S.doneSeances?.[cid]?.[dk]) doneCount++;
+      });});
+      if(totalSeances>0&&doneCount>=totalSeances) completedProgs.push(prog);
+      else activeProgs.push(prog);
     });
+
+    if(activeProgs.length){
+      h+=`<div class="ch-divider"><span>MON PROGRAMME</span></div>`;
+      activeProgs.forEach(prog=>{
+        try{
+          const wk=weekNum(prog.startDate,prog.dur);
+          h+=renderProgHeader(prog,null);
+          if(wk) h+=`<div class="week-badge">📅 Semaine ${wk.current} sur ${wk.total}</div>`;
+          h+=renderAccordion(prog, true, true);
+          if(prog.notes) h+=`<div style="background:var(--red-dim);border:1px solid rgba(192,21,42,.2);border-radius:var(--rs);padding:12px;margin-top:10px;font-size:12px;line-height:1.7"><div style="font-size:9px;letter-spacing:2px;color:var(--red2);font-weight:800;margin-bottom:5px">📝 CONSEILS DE ${(S.coachName||'Coach').toUpperCase()}</div>${prog.notes}</div>`;
+          if(prog.changelog&&prog.changelog.length) h+=renderChangelog(prog);
+        }catch(pe){
+          h+=`<div class="alert" style="color:var(--warn)">⚠️ Erreur : ${pe.message}</div>`;
+        }
+      });
+    }
+
+    if(completedProgs.length){
+      h+=`<div class="ch-divider" style="margin-top:20px"><span>📁 PROGRAMMES TERMINÉS (${completedProgs.length})</span></div>`;
+      h+=`<div id="completed-progs-toggle" style="text-align:center;margin-bottom:10px"><button class="btn btn-ghost btn-xs" onclick="document.getElementById('completed-progs-list').style.display=document.getElementById('completed-progs-list').style.display==='none'?'block':'none';this.textContent=this.textContent.includes('Voir')?'Masquer les programmes terminés':'Voir les programmes terminés'">Voir les programmes terminés</button></div>`;
+      h+=`<div id="completed-progs-list" style="display:none;opacity:.7">`;
+      completedProgs.forEach(prog=>{
+        try{
+          h+=`<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><strong>${prog.name}</strong><span style="font-size:10px;color:var(--muted);margin-left:6px">${prog.obj||''} · ${prog.dur||''}</span></div>
+              <span style="font-size:9px;padding:2px 6px;background:#dcfce7;color:#16a34a;border-radius:3px;font-weight:700">✅ Terminé</span>
+            </div>
+          </div>`;
+        }catch(pe){}
+      });
+      h+=`</div>`;
+    }
     el.innerHTML=h;
     // Init swipe for all prog seance tabs
     progs.forEach(prog=>{
@@ -5815,16 +5870,54 @@ function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
   if(!S.logs[cid])S.logs[cid]={};
   const entries=[];
   s.exos.forEach(e=>{
-    const nseries=e.detail&&e.setDetails&&e.setDetails.length?e.setDetails.length:Math.max(1,parseInt(String(e.sets).replace(/[^0-9]/g,''))||3);
     const seriesData=[];
     let hasData=false;
     const _dp=displayPid||progId;
-    for(let si=0;si<nseries;si++){
-      const r=$(`slog-r-${_dp}-${e.id}-${si}`)?.value||'';
-      const l=$(`slog-l-${_dp}-${e.id}-${si}`)?.value||'';
-      const checked=$(`chk-${_dp}-${e.id}-${si}`)?.classList.contains('checked')||false;
-      if(r||l||checked){hasData=true;}
-      seriesData.push({reps:r,load:l,done:checked});
+    // Special handling for Drop Set: collect drops per serie
+    if(e.method==='Drop Set' && e.methodData && e.methodData.sets){
+      e.methodData.sets.forEach((st,si)=>{
+        const r=$(`slog-r-${_dp}-${e.id}-${si}`)?.value||'';
+        const l=$(`slog-l-${_dp}-${e.id}-${si}`)?.value||'';
+        const checked=$(`chk-${_dp}-${e.id}-${si}`)?.classList.contains('checked')||false;
+        if(r||l||checked) hasData=true;
+        const drops=[];
+        st.drops.forEach((dr,di)=>{
+          const dr2=$(`slog-r-${_dp}-${e.id}-${si}d${di}`)?.value||'';
+          const dl=$(`slog-l-${_dp}-${e.id}-${si}d${di}`)?.value||'';
+          drops.push({reps:dr2,load:dl});
+        });
+        seriesData.push({reps:r,load:l,done:checked,drops});
+      });
+    }
+    // Special handling for Rest-Pause: collect relances per serie
+    else if(e.method==='Rest-Pause' && e.methodData && e.methodData.sets){
+      e.methodData.sets.forEach((st,si)=>{
+        const r=$(`slog-r-${_dp}-${e.id}-${si}`)?.value||'';
+        const l=$(`slog-l-${_dp}-${e.id}-${si}`)?.value||'';
+        const checked=$(`chk-${_dp}-${e.id}-${si}`)?.classList.contains('checked')||false;
+        if(r||l||checked) hasData=true;
+        const relances=[];
+        (st.relances||[]).forEach((rl,ri)=>{
+          const rr=$(`slog-r-${_dp}-${e.id}-${si}r${ri}`)?.value||'';
+          relances.push({reps:rr});
+        });
+        seriesData.push({reps:r,load:l,done:checked,relances});
+      });
+    }
+    // Standard collection for other methods
+    else {
+      const nseries2=e.detail&&e.setDetails&&e.setDetails.length?e.setDetails.length:Math.max(1,parseInt(String(e.sets).replace(/[^0-9]/g,''))||3);
+      for(let si=0;si<nseries2;si++){
+        const r=$(`slog-r-${_dp}-${e.id}-${si}`)?.value||'';
+        const l=$(`slog-l-${_dp}-${e.id}-${si}`)?.value||'';
+        const checked=$(`chk-${_dp}-${e.id}-${si}`)?.classList.contains('checked')||false;
+        if(r||l||checked) hasData=true;
+        // Unilateral data
+        const r2=$(`slog-r2-${_dp}-${e.id}-${si}`)?.value||'';
+        const l2=$(`slog-l2-${_dp}-${e.id}-${si}`)?.value||'';
+        if(r2||l2) seriesData.push({reps:r,load:l,done:checked,repsR:r2,loadR:l2});
+        else seriesData.push({reps:r,load:l,done:checked});
+      }
     }
     const feel=feels[`${_dp}-${e.id}`]||null;
     const note=$(`ln-${_dp}-${e.id}`)?.value||'';
@@ -5880,7 +5973,7 @@ function showPostSeanceRecap(cid,seanceName,entries){
       if(l>maxLoad) maxLoad=l;
     });
   });
-  const allLogs=Object.values(S.logs[cid]||{}).sort((a,b)=>a.date>b.date?1:-1);
+  const allLogs=Object.values(S.logs[cid]||{}).sort((a,b)=>parseDateFR(a.date)-parseDateFR(b.date));
   let progressions=[];
   entries.forEach(e=>{
     if(!e.exo) return;
@@ -5932,7 +6025,7 @@ function showPostSeanceRecap(cid,seanceName,entries){
 // ── DICTIONNAIRE DE PERFORMANCE PAR EXERCICE ──
 function openExoDictionary(clientId){
   const c=S.clients.find(x=>x.id===clientId);if(!c)return;
-  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>a.date>b.date?1:-1);
+  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>parseDateFR(a.date)-parseDateFR(b.date));
   if(!logs.length){showToast('Aucun historique pour ce coaché');return;}
 
   // Collect all unique exercise names
@@ -6013,7 +6106,14 @@ function openExoDictionary(clientId){
           ${sess.feel?`<span>${feelEmoji[sess.feel]}</span>`:''}
         </div>
         <div class="dict-series-row">
-          ${sess.seriesData.map((sd,sdi)=>`<span class="dict-serie">S${sdi+1}: <strong>${sd.reps||'?'}</strong>×<strong>${sd.load||'?'}</strong></span>`).join('')}
+          ${sess.seriesData.map((sd,sdi)=>{
+            let dropHtml='';
+            if(sd.drops&&sd.drops.length){dropHtml=sd.drops.map((dr,di)=>`<span class="dict-serie" style="background:rgba(245,158,11,.1);color:var(--warn);border-color:rgba(245,158,11,.3)">↘${di+1}: <strong>${dr.reps||'?'}</strong>×<strong>${dr.load||'?'}</strong></span>`).join('');}
+            if(sd.relances&&sd.relances.length){dropHtml=sd.relances.map((rl,ri)=>`<span class="dict-serie" style="background:rgba(56,189,248,.1);color:var(--info);border-color:rgba(56,189,248,.3)">↩${ri+1}: <strong>${rl.reps||'?'}</strong></span>`).join('');}
+            let uniHtml='';
+            if(sd.repsR){uniHtml=` <span style="font-size:8px;color:var(--muted)">(D:${sd.repsR}×${sd.loadR||sd.load||'?'})</span>`;}
+            return `<span class="dict-serie">S${sdi+1}: <strong>${sd.reps||'?'}</strong>×<strong>${sd.load||'?'}</strong>${uniHtml}</span>${dropHtml}`;
+          }).join('')}
         </div>
         <div style="display:flex;gap:10px;font-size:9px;color:var(--muted);margin-top:2px">
           <span>Vol: ${sess.vol>1000?(sess.vol/1000).toFixed(1)+'t':sess.vol+'kg'}</span>
@@ -6039,7 +6139,7 @@ function filterDictionary(){
 
 function exportAnalysisPDF(clientId){
   const c=S.clients.find(x=>x.id===clientId);if(!c)return;
-  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>a.date>b.date?1:-1);
+  const logs=Object.values(S.logs[clientId]||{}).sort((a,b)=>parseDateFR(a.date)-parseDateFR(b.date));
   if(logs.length<1){showToast('Pas assez de données');return;}
   const exoData={};
   logs.forEach(log=>{
@@ -6123,7 +6223,7 @@ function exportAnalysisPDF(clientId){
 function renderClientJournal(){
   const el=$('cl-journal-view');if(!el)return;
   const logs=S.logs[currentClient.id]||{};
-  const entries=Object.values(logs).sort((a,b)=>b.date>a.date?1:-1);
+  const entries=Object.values(logs).sort((a,b)=>parseDateFR(b.date)-parseDateFR(a.date));
   if(!entries.length){el.innerHTML=`<div class="empty"><div class="ei">📓</div><div class="et">Aucun journal</div><div class="es">Remplis et sauvegarde une séance depuis "Mon programme"</div></div>`;return;}
   // Unique séance names for filter
   const seanceNames=[...new Set(entries.map(l=>l.seanceName).filter(Boolean))].sort();
@@ -6142,7 +6242,7 @@ function renderClientJournal(){
 function filterJournal(){
   const filter=$('journal-filter')?.value||'';
   const logs=S.logs[currentClient.id]||{};
-  const entries=Object.values(logs).sort((a,b)=>b.date>a.date?1:-1);
+  const entries=Object.values(logs).sort((a,b)=>parseDateFR(b.date)-parseDateFR(a.date));
   const filtered=filter?entries.filter(l=>l.seanceName===filter):entries;
   const feelMap=['','😓','😐','🙂','💪','🔥'];
   const listDiv=$('journal-list');if(!listDiv)return;
@@ -6169,7 +6269,7 @@ function filterJournal(){
 
 function openJournalDetail(logIdx,filter){
   const logs=S.logs[currentClient.id]||{};
-  const entries=Object.values(logs).sort((a,b)=>b.date>a.date?1:-1);
+  const entries=Object.values(logs).sort((a,b)=>parseDateFR(b.date)-parseDateFR(a.date));
   const filtered=filter?entries.filter(l=>l.seanceName===filter):entries;
   const log=filtered[logIdx];
   if(!log) return;
