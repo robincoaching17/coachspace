@@ -2130,7 +2130,7 @@ function duplicateWeek(sourceWid){
     const hasWarmup=swarmup.length>0;
     const newDiv=document.createElement('div');
     newDiv.className='sb';newDiv.id=`sb-${newSid}`;newDiv.dataset.wid=newWid;
-    newDiv.innerHTML=`<div class="sb-hd"><div class="sb-num sb-num-${newWid}">-</div><input class="sb-ni" type="text" id="sn-${newSid}" value="${sname.replace(/"/g,'&quot;')}" oninput="updatePreview();updateBuilderSeanceTabs(${newWid})"><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${newSid},${newWid})">✕</button></div>
+    newDiv.innerHTML=`<div class="sb-hd"><div class="sb-num sb-num-${newWid}">-</div><input class="sb-ni" type="text" id="sn-${newSid}" value="${sname.replace(/"/g,'&quot;')}" oninput="updatePreview();updateBuilderSeanceTabs(${newWid})" onblur="checkGlobalRename(this,${newWid})"><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${newSid},${newWid})">✕</button></div>
     <div class="sb-body">
       <div class="sb-warmup-wrap"><div class="sb-warmup-toggle" onclick="toggleWarmup(${newSid})">🔥 Échauffement <span class="sb-warmup-arrow" id="warmup-arrow-${newSid}">${hasWarmup?'▼':'▶'}</span></div><div class="sb-warmup-body" id="warmup-body-${newSid}" style="display:${hasWarmup?'block':'none'}"><textarea class="sb-warmup-ta" id="swarmup-${newSid}" rows="4" oninput="updatePreview()">${swarmup.replace(/</g,'&lt;')}</textarea></div></div>
       <textarea class="sb-obj" id="sobj-${newSid}" rows="1" oninput="updatePreview()">${sobj}</textarea>
@@ -2263,7 +2263,7 @@ function addSeanceToWeek(wid){
   div.className='sb'; div.id=`sb-${sid}`; div.dataset.wid=wid;
   div.innerHTML=`<div class="sb-hd">
     <div class="sb-num sb-num-${wid}">-</div>
-    <input class="sb-ni" type="text" id="sn-${sid}" placeholder="${names[(sid-1)%names.length]}" oninput="updatePreview();updateBuilderSeanceTabs(${wid})">
+    <input class="sb-ni" type="text" id="sn-${sid}" placeholder="${names[(sid-1)%names.length]}" oninput="updatePreview();updateBuilderSeanceTabs(${wid})" onblur="checkGlobalRename(this,${wid})">
     <button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${sid},${wid})">✕</button>
   </div>
   <div class="sb-body">
@@ -3450,6 +3450,48 @@ function collectSeances(){
 }
 
 function parseDateFR(d){if(!d)return new Date(0);const p=d.split('/');return new Date(p[2],p[1]-1,p[0]);}
+
+function checkGlobalRename(input,wid){
+  const newName=input.value.trim();
+  if(!newName) return;
+  const sid=input.id.replace('sn-','');
+  // Store old name on focus, check on blur
+  if(!input._oldName){input._oldName=newName;return;}
+  const oldName=input._oldName;
+  if(oldName===newName){return;}
+  input._oldName=newName;
+  // Find all séances with the old name in OTHER weeks
+  const allWraps=document.querySelectorAll('[id^="seances-wrap-"]');
+  let matchCount=0;
+  const toRename=[];
+  allWraps.forEach(wrap=>{
+    const weekId=wrap.id.replace('seances-wrap-','');
+    if(parseInt(weekId)===wid) return;
+    wrap.querySelectorAll('.sb-ni').forEach(ni=>{
+      if(ni.value.trim()===oldName){matchCount++;toRename.push(ni);}
+    });
+  });
+  if(matchCount>0){
+    const ok=confirm(`Renommer "${oldName}" → "${newName}" dans les ${matchCount} autres semaines aussi ?`);
+    if(ok){
+      toRename.forEach(ni=>{ni.value=newName;ni._oldName=newName;});
+      // Update all tabs
+      allWraps.forEach(wrap=>{
+        const weekId=parseInt(wrap.id.replace('seances-wrap-',''));
+        updateBuilderSeanceTabs(weekId);
+      });
+      updatePreview();
+      showToast(`✅ "${newName}" renommé dans ${matchCount+1} semaines`,true);
+    }
+  }
+}
+
+// Store old name on focus for all séance name inputs
+document.addEventListener('focusin',e=>{
+  if(e.target.classList.contains('sb-ni')&&!e.target._oldName){
+    e.target._oldName=e.target.value.trim();
+  }
+});
 function updatePreview(){
   collectWeeks();
   const clientId=parseInt($('b-client')?.value)||0;
@@ -3668,7 +3710,7 @@ function editProg(id){
       const sid=seanceCount; exoCounts[sid]=0; setDetailCounts[sid]={};
       const wrapS=$(`seances-wrap-${wid}`);
       const div=document.createElement('div'); div.className='sb'; div.id=`sb-${sid}`;
-      div.innerHTML=`<div class="sb-hd"><div class="sb-num sb-num-${wid}">-</div><input class="sb-ni" type="text" id="sn-${sid}" value="${(s.name||'').replace(/"/g,'&quot;')}" oninput="updatePreview();updateBuilderSeanceTabs(${wid})"><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${sid},${wid})">✕</button></div><div class="sb-body"><div class="sb-warmup-wrap"><div class="sb-warmup-toggle" onclick="toggleWarmup(${sid})">🔥 Échauffement <span class="sb-warmup-arrow" id="warmup-arrow-${sid}">▶</span></div><div class="sb-warmup-body" id="warmup-body-${sid}" style="display:${s.warmup?'block':'none'}"><textarea class="sb-warmup-ta" id="swarmup-${sid}" rows="4" oninput="updatePreview()">${s.warmup||''}</textarea></div></div><textarea class="sb-obj" id="sobj-${sid}" rows="1" oninput="updatePreview()">${s.objective||''}</textarea><div id="exos-${sid}"></div><button class="btn-add-exo" onclick="addExo(${sid})">＋ Ajouter un exercice</button></div>`;
+      div.innerHTML=`<div class="sb-hd"><div class="sb-num sb-num-${wid}">-</div><input class="sb-ni" type="text" id="sn-${sid}" value="${(s.name||'').replace(/"/g,'&quot;')}" oninput="updatePreview();updateBuilderSeanceTabs(${wid})" onblur="checkGlobalRename(this,${wid})"><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();removeSeanceFromWeek(${sid},${wid})">✕</button></div><div class="sb-body"><div class="sb-warmup-wrap"><div class="sb-warmup-toggle" onclick="toggleWarmup(${sid})">🔥 Échauffement <span class="sb-warmup-arrow" id="warmup-arrow-${sid}">▶</span></div><div class="sb-warmup-body" id="warmup-body-${sid}" style="display:${s.warmup?'block':'none'}"><textarea class="sb-warmup-ta" id="swarmup-${sid}" rows="4" oninput="updatePreview()">${s.warmup||''}</textarea></div></div><textarea class="sb-obj" id="sobj-${sid}" rows="1" oninput="updatePreview()">${s.objective||''}</textarea><div id="exos-${sid}"></div><button class="btn-add-exo" onclick="addExo(${sid})">＋ Ajouter un exercice</button></div>`;
       div.classList.add('sb-active');
       wrapS?.appendChild(div);
       (s.exos||[]).forEach(e=>{
@@ -4160,7 +4202,7 @@ function renderProgs(){
     const wk=weekNum(p.startDate,p.dur);
     const unlockedCount=p.weeks?p.weeks.filter(w=>w.unlocked).length:0;
     const totalWeeks=p.weeks?p.weeks.length:0;
-    return `<div class="prog-card"><div class="pc-hd"><div><div class="pc-name">${p.name}</div><div class="pc-meta">${p.obj} · ${p.dur} · ${p.date}${totalWeeks?` · <strong style="color:var(--red)">${unlockedCount}/${totalWeeks} sem. débloquées</strong>`:''}</div></div><div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">${avatarHTML(c||{},28)}<span style="font-size:12px;font-weight:800">${c?.prenom||'?'} ${c?.nom||''}</span><button class="btn btn-ghost btn-xs" onclick="editProg(${p.id})">✏️ Modifier</button><button class="btn btn-ghost btn-xs" onclick="exportProgPDF(${p.id})">📄 PDF</button><button class="btn btn-ghost btn-xs" onclick="exportProgWithLogsPDF(${p.id})">📊 PDF+Logs</button><button class="btn btn-ghost btn-xs" onclick="copyProgTo(${p.id})">📋 Copier</button><button class="btn btn-ghost btn-xs" onclick="saveAsTemplate(${p.id})">📂 Template</button><button class="btn btn-danger btn-xs" onclick="deleteProg(${p.id})">🗑</button></div></div>
+    return `<div class="prog-card"><div class="pc-hd"><div><div class="pc-name">${p.name}</div><div class="pc-meta">${p.obj} · ${p.dur} · ${p.date}${totalWeeks?` · <strong style="color:var(--red)">${unlockedCount}/${totalWeeks} sem. débloquées</strong>`:''}</div></div><div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">${avatarHTML(c||{},28)}<span style="font-size:12px;font-weight:800">${c?.prenom||'?'} ${c?.nom||''}</span><button class="btn btn-ghost btn-xs" onclick="editProg(${p.id})">✏️ Modifier</button><button class="btn btn-ghost btn-xs" onclick="exportProgPDF(${p.id})">📄 PDF</button><button class="btn btn-ghost btn-xs" onclick="exportProgWithLogsPDF(${p.id})">📊 PDF+Logs</button><button class="btn btn-info btn-xs" onclick="openMesure(${p.clientId})">📏 Bilan</button><button class="btn btn-ghost btn-xs" onclick="copyProgTo(${p.id})">📋 Copier</button><button class="btn btn-ghost btn-xs" onclick="saveAsTemplate(${p.id})">📂 Template</button><button class="btn btn-danger btn-xs" onclick="deleteProg(${p.id})">🗑</button></div></div>
     <div class="pc-body">
       <div style="margin-bottom:8px;font-size:11px;color:var(--muted)">Total : <strong style="color:var(--red)">${total} exercices</strong></div>
       ${renderAccordion(p,false,true)}
@@ -4720,7 +4762,7 @@ function renderSuiviDashboard(cid){
         <div style="font-weight:700;font-size:12px;color:var(--warn)">Bilan mi-parcours recommandé !</div>
         <div style="font-size:10px;color:var(--muted)">Le programme est à ${completionPct}% — c'est le moment idéal pour faire un point avec ${c.prenom}.</div>
       </div>
-      <button class="btn btn-ghost btn-xs" onclick="exportAnalysisPDF(${cid})" style="border-color:var(--warn);color:var(--warn)">📄 Faire le bilan</button>
+      <button class="btn btn-ghost btn-xs" onclick="openMesure(${cid})" style="border-color:var(--warn);color:var(--warn)">📏 Faire le bilan</button>
     </div>`;
   }
 
@@ -5592,6 +5634,24 @@ function renderClientProg(){
 
     h+=`</div>`;
 
+    // Quick access to bilan/mesures
+    const clientMesures=S.mesures?.[cid];
+    if(clientMesures&&clientMesures.length){
+      const lastM=clientMesures[clientMesures.length-1];
+      h+=`<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;margin-top:10px;cursor:pointer" onclick="clTab('profil',document.querySelector('.ctab:last-child'))">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:11px;font-weight:700">📏 Dernières mensurations — ${lastM.date||'?'}</div>
+          <span style="font-size:10px;color:var(--info)">Voir tout →</span>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:6px;font-size:10px;color:var(--muted)">
+          ${lastM.poids?`<span>⚖️ ${lastM.poids}kg</span>`:''}
+          ${lastM.tour_bras?`<span>💪 Bras: ${lastM.tour_bras}cm</span>`:''}
+          ${lastM.tour_taille?`<span>📐 Taille: ${lastM.tour_taille}cm</span>`:''}
+          ${lastM.tour_cuisses?`<span>🦵 Cuisses: ${lastM.tour_cuisses}cm</span>`:''}
+        </div>
+      </div>`;
+    }
+
     // Separator
     // Separate active vs completed programmes
     const activeProgs=[];const completedProgs=[];
@@ -5607,37 +5667,65 @@ function renderClientProg(){
       else activeProgs.push(prog);
     });
 
-    if(activeProgs.length){
-      h+=`<div class="ch-divider"><span>MON PROGRAMME</span></div>`;
-      activeProgs.forEach(prog=>{
-        try{
-          const wk=weekNum(prog.startDate,prog.dur);
-          h+=renderProgHeader(prog,null);
-          if(wk) h+=`<div class="week-badge">📅 Semaine ${wk.current} sur ${wk.total}</div>`;
-          h+=renderAccordion(prog, true, true);
-          if(prog.notes) h+=`<div style="background:var(--red-dim);border:1px solid rgba(192,21,42,.2);border-radius:var(--rs);padding:12px;margin-top:10px;font-size:12px;line-height:1.7"><div style="font-size:9px;letter-spacing:2px;color:var(--red2);font-weight:800;margin-bottom:5px">📝 CONSEILS DE ${(S.coachName||'Coach').toUpperCase()}</div>${prog.notes}</div>`;
-          if(prog.changelog&&prog.changelog.length) h+=renderChangelog(prog);
-        }catch(pe){
-          h+=`<div class="alert" style="color:var(--warn)">⚠️ Erreur : ${pe.message}</div>`;
-        }
+    // If multiple programmes, show selector
+    if(progs.length>1){
+      const selectedProgId=window._selectedClientProg||activeProgs[0]?.id||progs[0]?.id;
+      h+=`<div style="margin-bottom:12px">
+        <div style="font-size:9px;letter-spacing:2px;color:var(--muted);font-weight:800;margin-bottom:6px">MES PROGRAMMES</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">`;
+      activeProgs.forEach(p=>{
+        const isSel=p.id===selectedProgId;
+        h+=`<button onclick="window._selectedClientProg=${p.id};renderClientProg()" style="padding:8px 14px;border-radius:var(--rs);border:1px solid ${isSel?'var(--red)':'var(--border)'};background:${isSel?'var(--red-dim)':'var(--s2)'};color:${isSel?'var(--red)':'var(--text)'};font-weight:700;font-size:12px;cursor:pointer;transition:all .15s">${p.name}</button>`;
       });
-    }
+      if(completedProgs.length){
+        completedProgs.forEach(p=>{
+          const isSel=p.id===selectedProgId;
+          h+=`<button onclick="window._selectedClientProg=${p.id};renderClientProg()" style="padding:6px 12px;border-radius:var(--rs);border:1px solid ${isSel?'var(--red)':'var(--border)'};background:${isSel?'var(--red-dim)':'var(--s2)'};color:var(--muted);font-size:10px;cursor:pointer;opacity:.7" title="Terminé">✅ ${p.name}</button>`;
+        });
+      }
+      h+=`</div></div>`;
 
-    if(completedProgs.length){
-      h+=`<div class="ch-divider" style="margin-top:20px"><span>📁 PROGRAMMES TERMINÉS (${completedProgs.length})</span></div>`;
-      h+=`<div id="completed-progs-toggle" style="text-align:center;margin-bottom:10px"><button class="btn btn-ghost btn-xs" onclick="document.getElementById('completed-progs-list').style.display=document.getElementById('completed-progs-list').style.display==='none'?'block':'none';this.textContent=this.textContent.includes('Voir')?'Masquer les programmes terminés':'Voir les programmes terminés'">Voir les programmes terminés</button></div>`;
-      h+=`<div id="completed-progs-list" style="display:none;opacity:.7">`;
-      completedProgs.forEach(prog=>{
-        try{
-          h+=`<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:8px">
+      // Show only selected programme
+      const selectedProg=progs.find(p=>p.id===selectedProgId)||progs[0];
+      try{
+        const wk=weekNum(selectedProg.startDate,selectedProg.dur);
+        h+=renderProgHeader(selectedProg,null);
+        if(wk) h+=`<div class="week-badge">📅 Semaine ${wk.current} sur ${wk.total}</div>`;
+        h+=renderAccordion(selectedProg, true, true);
+        if(selectedProg.notes) h+=`<div style="background:var(--red-dim);border:1px solid rgba(192,21,42,.2);border-radius:var(--rs);padding:12px;margin-top:10px;font-size:12px;line-height:1.7"><div style="font-size:9px;letter-spacing:2px;color:var(--red2);font-weight:800;margin-bottom:5px">📝 CONSEILS DE ${(S.coachName||'Coach').toUpperCase()}</div>${selectedProg.notes}</div>`;
+        if(selectedProg.changelog&&selectedProg.changelog.length) h+=renderChangelog(selectedProg);
+      }catch(pe){
+        h+=`<div class="alert" style="color:var(--warn)">⚠️ Erreur : ${pe.message}</div>`;
+      }
+    } else {
+      // Single programme - show directly
+      if(activeProgs.length){
+        activeProgs.forEach(prog=>{
+          try{
+            const wk=weekNum(prog.startDate,prog.dur);
+            h+=renderProgHeader(prog,null);
+            if(wk) h+=`<div class="week-badge">📅 Semaine ${wk.current} sur ${wk.total}</div>`;
+            h+=renderAccordion(prog, true, true);
+            if(prog.notes) h+=`<div style="background:var(--red-dim);border:1px solid rgba(192,21,42,.2);border-radius:var(--rs);padding:12px;margin-top:10px;font-size:12px;line-height:1.7"><div style="font-size:9px;letter-spacing:2px;color:var(--red2);font-weight:800;margin-bottom:5px">📝 CONSEILS DE ${(S.coachName||'Coach').toUpperCase()}</div>${prog.notes}</div>`;
+            if(prog.changelog&&prog.changelog.length) h+=renderChangelog(prog);
+          }catch(pe){
+            h+=`<div class="alert" style="color:var(--warn)">⚠️ Erreur : ${pe.message}</div>`;
+          }
+        });
+      }
+      if(completedProgs.length){
+        h+=`<div style="text-align:center;margin-top:14px"><button class="btn btn-ghost btn-xs" onclick="document.getElementById('completed-progs-list').style.display=document.getElementById('completed-progs-list').style.display==='none'?'block':'none'">📁 Programmes terminés (${completedProgs.length})</button></div>`;
+        h+=`<div id="completed-progs-list" style="display:none;opacity:.7;margin-top:8px">`;
+        completedProgs.forEach(prog=>{
+          h+=`<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:6px">
             <div style="display:flex;justify-content:space-between;align-items:center">
-              <div><strong>${prog.name}</strong><span style="font-size:10px;color:var(--muted);margin-left:6px">${prog.obj||''} · ${prog.dur||''}</span></div>
+              <div><strong>${prog.name}</strong><span style="font-size:10px;color:var(--muted);margin-left:6px">${prog.obj||''}</span></div>
               <span style="font-size:9px;padding:2px 6px;background:#dcfce7;color:#16a34a;border-radius:3px;font-weight:700">✅ Terminé</span>
             </div>
           </div>`;
-        }catch(pe){}
-      });
-      h+=`</div>`;
+        });
+        h+=`</div>`;
+      }
     }
     el.innerHTML=h;
     // Init swipe for all prog seance tabs
@@ -5661,13 +5749,15 @@ function renderClientProg(){
 let _autoSaveTimer=null;
 function autoSaveLogDraft(){
   if(_autoSaveTimer) clearTimeout(_autoSaveTimer);
-  _autoSaveTimer=setTimeout(_doSaveLogDraft, 500); // debounce 500ms
+  _autoSaveTimer=setTimeout(_doSaveLogDraft, 500);
 }
+// Force save when leaving the page or app going to background
+window.addEventListener('beforeunload',()=>_doSaveLogDraft());
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')_doSaveLogDraft();});
 function _doSaveLogDraft(){
   try{
     const draft={};
-    // Collect all slog-r and slog-l inputs
-    document.querySelectorAll('[id^="slog-r-"],[id^="slog-l-"]').forEach(inp=>{
+    document.querySelectorAll('[id^="slog-r-"],[id^="slog-l-"],[id^="slog-r2-"],[id^="slog-l2-"]').forEach(inp=>{
       if(inp.value) draft[inp.id]=inp.value;
     });
     // Collect checked series
@@ -6150,7 +6240,7 @@ function exportAnalysisPDF(clientId){
       if(!totalReps&&!maxLoad) return;
       let est1RM=0;loads.forEach(({r,l})=>{if(r>0&&r<=30&&l>0){const e1=l*(1+r/30);if(e1>est1RM)est1RM=e1;}});
       const _ek2=e.exo+(e.variant?` (${e.variant})`:"");if(!exoData[_ek2])exoData[_ek2]=[];
-      exoData[_exoKey].push({date:log.date,volume:vol,maxLoad,totalReps,totalSeries,est1RM:Math.round(est1RM*10)/10,intensity:totalReps>0?Math.round(vol/totalReps*10)/10:0});
+      exoData[_ek2].push({date:log.date,volume:vol,maxLoad,totalReps,totalSeries,est1RM:Math.round(est1RM*10)/10,intensity:totalReps>0?Math.round(vol/totalReps*10)/10:0});
     });
   });
   let totalVolAll=0,totalRepsAll=0,totalSeriesAll=0;
@@ -6294,7 +6384,10 @@ function openJournalDetail(logIdx,filter){
     h+=`<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:6px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div><strong style="font-size:13px">${e.exo}</strong>${variantStr}${methodBadge}</div>
-        <span>${e.feel?feelMap[e.feel]:''}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span>${e.feel?feelMap[e.feel]:''}</span>
+          <button style="background:none;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-size:9px;padding:2px 6px;cursor:pointer" onclick="editLogExo('${log.date}','${(log.seanceName||'').replace(/'/g,"\\'")}',${ei})">✏️</button>
+        </div>
       </div>
       ${replStr}`;
     if(e.seriesData&&e.seriesData.length){
@@ -6316,6 +6409,42 @@ function openJournalDetail(logIdx,filter){
 
   h+=`</div>`;
   showModal('',h);
+}
+
+function editLogExo(date,seanceName,exoIdx){
+  const cid=currentClient?.id;if(!cid)return;
+  const logs=S.logs[cid]||{};
+  const logKey=Object.keys(logs).find(k=>{
+    const l=logs[k];return l.date===date&&l.seanceName===seanceName;
+  });
+  if(!logKey){showToast('Log non trouvé');return;}
+  const log=logs[logKey];
+  const entry=log.entries?.[exoIdx];
+  if(!entry){showToast('Exercice non trouvé');return;}
+
+  let h=`<div style="max-width:400px">
+    <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;margin-bottom:10px">✏️ Corriger un exercice</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:10px">Séance du ${date} — ${seanceName}</div>
+    <div class="field"><label class="flabel">Nom de l'exercice</label><input type="text" id="edit-log-exo" value="${(entry.exo||'').replace(/"/g,'&quot;')}"></div>
+    <div class="field"><label class="flabel">Variante</label><input type="text" id="edit-log-variant" value="${(entry.variant||'').replace(/"/g,'&quot;')}" placeholder="Ex: unilatéral, poulie corde..."></div>
+    <div class="field"><label class="flabel">Méthode</label><input type="text" id="edit-log-method" value="${(entry.method||'Classique').replace(/"/g,'&quot;')}" placeholder="Classique, Drop Set..."></div>
+    <button class="btn btn-red" style="width:100%;justify-content:center;padding:12px;margin-top:8px" onclick="applyEditLogExo('${logKey}',${exoIdx})">✅ Corriger</button>
+  </div>`;
+  showModal('',h);
+}
+
+function applyEditLogExo(logKey,exoIdx){
+  const cid=currentClient?.id;if(!cid)return;
+  const log=S.logs[cid]?.[logKey];if(!log)return;
+  const entry=log.entries?.[exoIdx];if(!entry)return;
+  const oldName=entry.exo;
+  entry.exo=$('edit-log-exo')?.value.trim()||entry.exo;
+  entry.variant=$('edit-log-variant')?.value.trim()||'';
+  entry.method=$('edit-log-method')?.value.trim()||'Classique';
+  saveState();
+  closeGenericModal();
+  renderClientJournal();
+  showToast(`✏️ ${oldName} → ${entry.exo} corrigé`,true);
 }
 
 function renderClientRes(){
