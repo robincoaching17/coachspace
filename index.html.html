@@ -2604,7 +2604,7 @@ function renderAccordion(prog, withLog=false, openFirstWeek=true, useClassicAcco
             h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${MT(e.method)}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpH}</tbody></table></td></tr>`;
           } else if(e.method==='Circuit'&&e.methodData&&e.methodData.stations){
             const md=e.methodData;let ctH=`<tr style="background:rgba(56,189,248,.05)"><td colspan="4" style="font-size:10px;color:var(--info);padding:4px 8px">🔄 ${md.tours} tours · Repos tours: ${md.reposTours||'—'} · Repos stations: ${md.reposStations||'0'}</td></tr>`;
-            md.stations.forEach((st,sti)=>{const p=st.type==='durée'?st.durée:st.reps;ctH+=`<tr><td style="color:var(--info);font-weight:700">${sti+1}</td><td>${st.name||'Station '+(sti+1)}</td><td>${p||'—'}${st.type==='durée'?' (durée)':''}</td><td>${st.load||'PDC'}</td></tr>`;});
+            md.stations.forEach((st,sti)=>{const p=st.type==='durée'?st.durée:st.type==='distance'?st.distance:st.reps;ctH+=`<tr><td style="color:var(--info);font-weight:700">${sti+1}</td><td>${st.name||'Station '+(sti+1)}</td><td>${p||'—'}${st.type==='durée'?' (durée)':st.type==='distance'?' (distance)':''}</td><td>${st.load||'PDC'}</td></tr>`;});
             h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name||'Circuit'}</strong>${MT(e.method)}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>#</th><th>Station</th><th>Rép./Durée</th><th>Charge</th></tr></thead><tbody>${ctH}</tbody></table></td></tr>`;
           } else {
             h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.variant?' <span style="font-size:10px;color:var(--muted);font-style:italic">('+e.variant+')</span>':''}${e.method&&e.method!=='Classique'?MT(e.method):''}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
@@ -2805,9 +2805,10 @@ function onMethodChange(sid,eid){
   // Hide name field for Superset/Bi-Set/Tri-Set (names are in the form)
   const nameBlock=card.querySelector('.exo-name-inp')?.parentElement;
   const variantBlock=card.querySelector('.variant-inp')?.parentElement;
-  const isSupersetType=['Superset','Bi-Set','Tri-Set'].includes(method);
-  if(nameBlock) nameBlock.style.display=isSupersetType?'none':'';
-  if(variantBlock) variantBlock.style.display=isSupersetType?'none':'';
+  const hideNameMethods=['Superset','Bi-Set','Tri-Set','Circuit','EMOM','AMRAP'];
+  const hideName=hideNameMethods.includes(method);
+  if(nameBlock) nameBlock.style.display=hideName?'none':'';
+  if(variantBlock) variantBlock.style.display=hideName?'none':'';
   // Custom method form vs classic fields
   const customWrap=$(`method-custom-${sid}-${eid}`);
   const classicWrap=card.querySelector('.exo-classic-fields');
@@ -3007,12 +3008,15 @@ function renderCircuitForm(sid,eid,wrap){
       </div>
       <div class="ct-station-fields">
         <div class="ct-type-toggle">
-          <button class="ct-type-btn${isReps?' active':''}" onclick="setStationType(${sid},${eid},${si},'reps')">Rép.</button>
-          <button class="ct-type-btn${!isReps?' active':''}" onclick="setStationType(${sid},${eid},${si},'durée')">Durée</button>
+          <button class="ct-type-btn${st.type==='reps'?' active':''}" onclick="setStationType(${sid},${eid},${si},'reps')">Rép.</button>
+          <button class="ct-type-btn${st.type==='durée'?' active':''}" onclick="setStationType(${sid},${eid},${si},'durée')">Durée</button>
+          <button class="ct-type-btn${st.type==='distance'?' active':''}" onclick="setStationType(${sid},${eid},${si},'distance')">Distance</button>
         </div>
-        ${isReps?
-          `<div><div class="plbl">Rép.</div><input class="pinp" type="text" value="${st.reps||''}" style="width:60px" onchange="circuitData['${getCircuitKey(sid,eid)}'].stations[${si}].reps=this.value;updatePreview()"></div>`
-          :`<div><div class="plbl">Durée</div><input class="pinp" type="text" value="${st.durée||''}" placeholder="30s" style="width:60px" onchange="circuitData['${getCircuitKey(sid,eid)}'].stations[${si}].durée=this.value;updatePreview()"></div>`
+        ${st.type==='durée'?
+          `<div><div class="plbl">Durée</div><input class="pinp" type="text" value="${st.durée||''}" placeholder="30s" style="width:60px" onchange="circuitData['${getCircuitKey(sid,eid)}'].stations[${si}].durée=this.value;updatePreview()"></div>`
+          :st.type==='distance'?
+          `<div><div class="plbl">Distance</div><input class="pinp" type="text" value="${st.distance||''}" placeholder="20m" style="width:60px" onchange="circuitData['${getCircuitKey(sid,eid)}'].stations[${si}].distance=this.value;updatePreview()"></div>`
+          :`<div><div class="plbl">Rép.</div><input class="pinp" type="text" value="${st.reps||''}" style="width:60px" onchange="circuitData['${getCircuitKey(sid,eid)}'].stations[${si}].reps=this.value;updatePreview()"></div>`
         }
         <div><div class="plbl">Charge</div><input class="pinp" type="text" value="${st.load||''}" placeholder="—" style="width:70px" onchange="circuitData['${getCircuitKey(sid,eid)}'].stations[${si}].load=this.value;updatePreview()"></div>
       </div>
@@ -4022,11 +4026,11 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
                 <span class="serie-label" style="font-weight:800;color:var(--info)">🔄 Tour ${ti+1}/${nTours}</span>
               </div>`;
           md.stations.forEach((st,si)=>{
-            const prescrit=st.type==='durée'?(st.durée||'30s'):(st.reps||'12')+' rép.';
+            const prescrit=st.type==='durée'?(st.durée||'30s'):st.type==='distance'?(st.distance||'20m'):(st.reps||'12')+' rép.';
             seriesHtml+=`<div class="ds-log-drop" style="border-color:var(--info)">
                 <span class="ds-log-drop-label" style="color:var(--info)">📍 ${st.name||'Station '+(si+1)} — ${prescrit} ${st.load?'× '+st.load:'PDC'}</span>
                 <div class="serie-log">
-                  <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${ti}s${si}" placeholder="${st.type==='durée'?'Durée':'Rép.'}" oninput="autoSaveLogDraft()">
+                  <input class="serie-log-inp" type="text" id="slog-r-${pid}-${e.id}-${ti}s${si}" placeholder="${st.type==='durée'?'Durée':st.type==='distance'?'Distance':'Rép.'}" oninput="autoSaveLogDraft()">
                   ${st.load?`<input class="serie-log-inp" type="text" id="slog-l-${pid}-${e.id}-${ti}s${si}" placeholder="Charge" oninput="autoSaveLogDraft()">`:''}
                 </div>
               </div>`;
@@ -6087,7 +6091,6 @@ function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
         const md=e.methodData;
         md.exercises.forEach((ssEx,ssIdx)=>{
           if(!ssEx.name) return;
-          // Collect series data for this specific exercise from the superset log inputs
           const ssSeriesData=[];
           (md.sets||[]).forEach((set,si)=>{
             const rInp=$(`slog-r-${_dp}-${e.id}-${si}x${ssIdx}`);
@@ -6097,6 +6100,23 @@ function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
           });
           const ssSeriesStr=ssSeriesData.map((sd,i)=>`S${i+1}:${sd.reps||'?'}r×${sd.load||'?'}`).join(' ');
           entries.push({exo:ssEx.name,variant:ssEx.variant||'',method:e.method,supersetGroup:e.id,series:ssSeriesStr,seriesData:ssSeriesData,feel,note});
+        });
+      }
+      // For Circuit: create separate entries per station
+      else if(e.method==='Circuit' && e.methodData && e.methodData.stations){
+        const md=e.methodData;
+        const nTours=parseInt(md.tours)||3;
+        md.stations.forEach((st,stIdx)=>{
+          if(!st.name) return;
+          const stSeriesData=[];
+          for(let ti=0;ti<nTours;ti++){
+            const rInp=$(`slog-r-${_dp}-${e.id}-${ti}s${stIdx}`);
+            const lInp=$(`slog-l-${_dp}-${e.id}-${ti}s${stIdx}`);
+            const r=rInp?.value||'';const l=lInp?.value||'';
+            if(r||l) stSeriesData.push({reps:r,load:l,done:true,type:st.type||'reps'});
+          }
+          const stSeriesStr=stSeriesData.map((sd,i)=>`T${i+1}:${sd.reps||'?'}${sd.load?' ×'+sd.load:''}`).join(' ');
+          entries.push({exo:st.name,method:'Circuit',circuitGroup:e.id,measureType:st.type||'reps',series:stSeriesStr,seriesData:stSeriesData,feel,note});
         });
       } else {
         entries.push({exo:exoName,variant:exoVariant,originalExo,method:e.method||'Classique',methodData:e.methodData||null,series:seriesStr,seriesData,feel,note});
