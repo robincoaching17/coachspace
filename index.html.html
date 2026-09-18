@@ -2419,7 +2419,7 @@ function collectWeeks(){
       const exos=[];
       sb.querySelectorAll('.exo-card').forEach(er=>{
         const parts=er.id.split('-'); const eid=parts[parts.length-1];
-        const ename=$(`en-${sid}-${eid}`)?.value.trim(); if(!ename)return;
+        const ename=$(`en-${sid}-${eid}`)?.value.trim()||$(`mth-${sid}-${eid}`)?.value||''; if(!ename)return;
         const detail=isDetailMode(sid,eid);
         const globalRest=$(`ert-${sid}-${eid}`)?.value||'—';
         let setDetails=null;
@@ -3468,7 +3468,7 @@ function collectSeances(){
     const exos=[];
     sb.querySelectorAll('.exo-card').forEach(er=>{
       const parts=er.id.split('-');const eid=parts[parts.length-1];
-      const ename=$(`en-${sid}-${eid}`)?.value.trim();if(!ename)return;
+      const ename=$(`en-${sid}-${eid}`)?.value.trim()||$(`mth-${sid}-${eid}`)?.value||'';if(!ename)return;
       const detail=isDetailMode(sid,eid);
       const globalRest=$(`ert-${sid}-${eid}`)?.value||'—';
       let setDetails=null;
