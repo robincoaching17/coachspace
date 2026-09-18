@@ -2809,6 +2809,11 @@ function onMethodChange(sid,eid){
   const hideName=hideNameMethods.includes(method);
   if(nameBlock) nameBlock.style.display=hideName?'none':'';
   if(variantBlock) variantBlock.style.display=hideName?'none':'';
+  // Auto-set name for hidden-name methods
+  if(hideName){
+    const nameInp2=$(`en-${sid}-${eid}`);
+    if(nameInp2 && !nameInp2.value) nameInp2.value=method;
+  }
   // Custom method form vs classic fields
   const customWrap=$(`method-custom-${sid}-${eid}`);
   const classicWrap=card.querySelector('.exo-classic-fields');
