@@ -3614,7 +3614,23 @@ function openLogInNewTab(clientId,date,seanceName){
     if(e.seriesData&&e.seriesData.length){
       html+=`<div class="series">`;
       e.seriesData.forEach((sd,si)=>{
-        html+=`<div class="serie"><div class="sn">S${si+1}</div><div class="sr">${sd.reps||'?'}</div><div class="sc">${sd.load||'?'}</div></div>`;
+        html+=`<div class="serie"><div class="sn">${sd.repsR?'G':'S'+(si+1)}</div><div class="sr"${sd.repsR?' style="color:#38bdf8"':''}>${sd.reps||'?'}</div><div class="sc">${sd.load||'?'}</div></div>`;
+        // Drop set drops
+        if(sd.drops&&sd.drops.length){
+          sd.drops.forEach((dr,di)=>{
+            html+=`<div class="serie" style="border-color:#f59e0b"><div class="sn" style="color:#f59e0b">↘${di+1}</div><div class="sr" style="color:#f59e0b">${dr.reps||'?'}</div><div class="sc">${dr.load||'?'}</div></div>`;
+          });
+        }
+        // Rest-pause relances
+        if(sd.relances&&sd.relances.length){
+          sd.relances.forEach((rl,ri)=>{
+            html+=`<div class="serie" style="border-color:#38bdf8"><div class="sn" style="color:#38bdf8">↩${ri+1}</div><div class="sr" style="color:#38bdf8">${rl.reps||'?'}</div><div class="sc">—</div></div>`;
+          });
+        }
+        // Unilateral right side
+        if(sd.repsR){
+          html+=`<div class="serie" style="border-color:#f97316"><div class="sn" style="color:#f97316">D</div><div class="sr" style="color:#f97316">${sd.repsR||'?'}</div><div class="sc">${sd.loadR||sd.load||'?'}</div></div>`;
+        }
       });
       html+=`</div>`;
     } else if(e.series){
