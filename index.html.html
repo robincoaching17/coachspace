@@ -505,6 +505,9 @@ a.contact-link:hover{text-decoration:underline;}
 .sd-analytics-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:12px;}
 .sd-ac-title{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;color:var(--muted);margin-bottom:8px;}
 .sd-exo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;}
+.encyclo-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:4px;overflow:hidden;}
+.encyclo-hd{padding:8px 10px;cursor:pointer;transition:background .15s;}
+.encyclo-hd:hover{background:var(--s2);}
 .sd-exo-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;overflow:hidden;}
 .sd-exo-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
 .sd-exo-name{font-size:13px;font-weight:800;color:var(--text);}
@@ -616,6 +619,9 @@ a.contact-link:hover{text-decoration:underline;}
 .dict-exo-hd{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;cursor:pointer;transition:background .15s;}
 .dict-exo-hd:hover{background:var(--s3);}
 .dict-exo-body{padding:0 10px 8px;}
+.encyclo-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:4px;overflow:hidden;}
+.encyclo-hd{padding:8px 10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+.encyclo-hd:hover{background:var(--s3);}
 .dict-session{border-left:3px solid var(--red);padding:6px 0 6px 10px;margin-bottom:4px;}
 .dict-session-hd{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px;}
 .dict-series-row{display:flex;gap:4px;flex-wrap:wrap;}
@@ -1340,6 +1346,7 @@ a.contact-link:hover{text-decoration:underline;}
   <div class="ctabs">
     <button class="ctab active" onclick="clTab('programme',this)">Mon programme</button>
     <button class="ctab" onclick="clTab('journal',this)">Journal</button>
+    <button class="ctab" onclick="clTab('nutrition',this)">🍽 Nutrition</button>
     <button class="ctab" onclick="clTab('ressources',this)">Ressources</button>
     <button class="ctab" onclick="clTab('documents',this)">Documents</button>
     <button class="ctab" onclick="clTab('contact',this)">Contact</button>
@@ -1348,6 +1355,7 @@ a.contact-link:hover{text-decoration:underline;}
   <div class="cbody">
     <div class="tab-page active" id="clp-programme"><div id="cl-prog-view"></div></div>
     <div class="tab-page" id="clp-journal"><div id="cl-journal-view"></div></div>
+    <div class="tab-page" id="clp-nutrition"><div id="cl-nutrition-view"></div></div>
     <div class="tab-page" id="clp-ressources"><div id="cl-res-view"></div></div>
     <div class="tab-page" id="clp-documents"><div id="cl-docs-view"></div></div>
     <div class="tab-page" id="clp-contact"><div id="cl-contact-view"></div></div>
@@ -1611,6 +1619,10 @@ const DEFAULT_STATE={
     {id:'measurements',icon:'📏',title:'Prise de mesures',content:MEASUREMENTS_DEFAULT},
     {id:'journal_guide',icon:'📝',title:'Journal de bord',content:''},
   ],
+  exerciseImages:{},
+  nutrition:{},
+  nutritionFavs:[],
+  nutritionTargets:{},
   recipes:[
     {id:'rd1',name:'Porridge protéiné banane',category:'🌅 Petit-déjeuner',instructions:'80g flocons d\'avoine + 250ml lait + 1 scoop whey vanille. Cuire 3 min au micro-ondes. Ajouter 1 banane tranchée, 10g beurre de cacahuète, cannelle.',calories:480,proteines:35,glucides:60,lipides:12,fibres:6,portions:1},
     {id:'rd2',name:'Œufs brouillés avocat toast',category:'🌅 Petit-déjeuner',instructions:'3 œufs brouillés (beurre, sel, poivre). 2 tranches pain complet toastées. 1/2 avocat écrasé. Quelques tomates cerises.',calories:520,proteines:28,glucides:35,lipides:30,fibres:8,portions:1},
@@ -4794,6 +4806,7 @@ function renderSuiviDashboard(cid){
       <button class="btn btn-info btn-xs" onclick="openMesure(${c.id})">+ Mesures</button>
       <button class="btn btn-ghost btn-xs" onclick="showNotifModal(${c.id})">🔔 Notifier</button>
       <button class="btn btn-ghost btn-xs" onclick="openExoDictionary(${c.id})">📖 Dictionnaire</button>
+      <button class="btn btn-ghost btn-xs" onclick="setNutritionTargets(${c.id})">🍽 Objectifs nutrition</button>
       <button class="btn btn-ghost btn-xs" onclick="exportAnalysisPDF(${c.id})">📄 PDF Bilan</button>
     </div>
   </div>`;
@@ -4931,6 +4944,27 @@ function renderAdvancedAnalytics(clientId){
         totalReps+=r;totalSeries++;vol+=r*l;
         if(l>maxLoad) maxLoad=l;
         if(l>0) loads.push({r,l});
+        // Include Drop Set drops in volume
+        if(s.drops&&s.drops.length){
+          s.drops.forEach(dr=>{
+            const drR=parseFloat(dr.reps)||0;const drL=parseFloat(dr.load)||0;
+            totalReps+=drR;vol+=drR*drL;
+            if(drR>0||drL>0) hasData=true;
+          });
+        }
+        // Include Rest-Pause relances in volume (same load as main set)
+        if(s.relances&&s.relances.length){
+          s.relances.forEach(rl=>{
+            const rlR=parseFloat(rl.reps)||0;
+            totalReps+=rlR;vol+=rlR*l; // relance uses same load
+            if(rlR>0) hasData=true;
+          });
+        }
+        // Include unilateral right side
+        if(s.repsR){
+          const r2=parseFloat(s.repsR)||0;const l2=parseFloat(s.loadR||s.load)||0;
+          totalReps+=r2;vol+=r2*l2;
+        }
       });
       if(!hasData) return;
       // Estimated 1RM (Epley formula)
@@ -4970,7 +5004,16 @@ function renderAdvancedAnalytics(clientId){
       const entries=log.entries||[];
       let totalVol=0,totalReps=0,avgFeel=0,feelCount=0;
       entries.forEach(e=>{
-        (e.seriesData||[]).forEach(sd=>{totalVol+=(parseFloat(sd.reps)||0)*(parseFloat(sd.load)||0);totalReps+=parseFloat(sd.reps)||0;});
+        (e.seriesData||[]).forEach(sd=>{
+          const r2=parseFloat(sd.reps)||0;const l2=parseFloat(sd.load)||0;
+          totalVol+=r2*l2;totalReps+=r2;
+          // Include drops
+          if(sd.drops){sd.drops.forEach(dr=>{const drR=parseFloat(dr.reps)||0;const drL=parseFloat(dr.load)||0;totalVol+=drR*drL;totalReps+=drR;});}
+          // Include relances
+          if(sd.relances){sd.relances.forEach(rl=>{const rlR=parseFloat(rl.reps)||0;totalVol+=rlR*l2;totalReps+=rlR;});}
+          // Include unilateral
+          if(sd.repsR){const r3=parseFloat(sd.repsR)||0;const l3=parseFloat(sd.loadR||sd.load)||0;totalVol+=r3*l3;totalReps+=r3;}
+        });
         if(e.feel){avgFeel+=e.feel;feelCount++;}
       });
       const feel=feelCount?Math.round(avgFeel/feelCount):3;
@@ -5135,6 +5178,10 @@ function renderAdvancedAnalytics(clientId){
             analyses.push(`Coeff contexte: <strong>×${last.contextCoeff}</strong> = ressenti (×${FEEL_COEFF[last.feel||3]}) × méthode (×${METHOD_COEFF[last.method||'Classique']||1}) × position (×${(1+((last.position-1)*POS_COEFF_PER_SLOT)).toFixed(2)}).`);
           }
           if(!analyses.length) analyses.push('Conditions similaires entre les séances. Comparaison directe fiable.');
+          // Reliability score
+          const contextDiff=Math.abs(last.contextCoeff-first.contextCoeff);
+          const reliability=contextDiff<0.05?'🟢 Très fiable':contextDiff<0.12?'🟡 Fiable (contexte légèrement différent)':'🔴 À relativiser (contexte très différent)';
+          analyses.push('<strong>Fiabilité : '+reliability+'</strong>');
           return analyses.join('<br>');
         })()}
       </div>`:''}
@@ -5337,7 +5384,11 @@ function toggleResContent(id){
 function renderResCoach(){
   // Ensure recipes are loaded
   if(!S.recipes||S.recipes.length===0){S.recipes=DEFAULT_STATE.recipes.map(r=>({...r}));}
-  let h='';
+  let h=`<div style="background:var(--red-dim);border:1px solid rgba(192,21,42,.2);border-radius:var(--rs);padding:12px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:10px" onclick="openEncyclopedia()">
+    <span style="font-size:28px">📚</span>
+    <div style="flex:1"><div style="font-weight:700;font-size:14px">Encyclopédie des exercices</div><div style="font-size:10px;color:var(--muted)">${EXERCISE_ENCYCLOPEDIA.length} exercices · Exécution, variantes, erreurs à éviter</div></div>
+    <span style="color:var(--red);font-size:14px">→</span>
+  </div>`;
   // Text resources grid
   h+=`<div class="res-grid">`;
   S.resources.forEach(r=>{
@@ -5566,6 +5617,7 @@ function _doClTab(tab,btn){
   document.querySelectorAll('.ctab').forEach(b=>b.classList.remove('active'));
   $('clp-'+tab).classList.add('active');
   if(btn)btn.classList.add('active');
+  if(tab==='nutrition') try{renderNutrition();}catch(e){}
 }
 
 function initSwipe(pid, total){
@@ -6551,11 +6603,486 @@ function applyEditLogExo(logKey,exoIdx){
   showToast(`✏️ ${oldName} → ${entry.exo} corrigé`,true);
 }
 
+// ══════════════════════════════════════════════════
+// ── ENCYCLOPÉDIE DES EXERCICES ──
+// ══════════════════════════════════════════════════
+const EXERCISE_ENCYCLOPEDIA=[
+{name:"Développé couché barre",group:"Pectoraux",muscles:"Pectoraux (faisceau sternal), deltoïdes antérieurs, triceps",variants:["Prise large", "Prise serrée", "Avec pause"],instructions:"Allongé sur un banc plat, pieds au sol. Décroche la barre, descends-la au niveau des mamelons en contrôlant. Coudes à 45° du corps. Pousse en verrouillant les bras. Expire en poussant.",erreurs:["Rebondir la barre sur le torse", "Décoller les fesses du banc", "Coudes trop écartés", "Poignets cassés"],tips:"Serre les omoplates et enfonce-les dans le banc. Pieds bien ancrés."},
+{name:"Développé couché haltères",group:"Pectoraux",muscles:"Pectoraux, deltoïdes antérieurs, triceps",variants:["Prise neutre", "Avec rotation"],instructions:"Allongé, un haltère par main. Descends de chaque côté, coudes à 45°. Pousse en rapprochant les haltères en haut.",erreurs:["Descendre trop bas", "Haltères qui se touchent violemment"],tips:"Plus grande amplitude. Excellent pour corriger les déséquilibres."},
+{name:"Développé incliné barre",group:"Pectoraux",muscles:"Pectoraux (faisceau claviculaire), deltoïdes, triceps",variants:["Inclinaison 30°", "Inclinaison 45°"],instructions:"Banc incliné 30-45°. Descends la barre vers le haut de la poitrine. Pousse verticalement.",erreurs:["Inclinaison trop forte (>45°)", "Cambrer excessivement"],tips:"30° cible mieux le haut des pecs."},
+{name:"Développé incliné haltères",group:"Pectoraux",muscles:"Pectoraux (haut), deltoïdes antérieurs",variants:["Prise neutre", "Avec rotation"],instructions:"Banc incliné 30-45°. Descends les haltères, étire bien, pousse en contractant le haut des pecs.",erreurs:["Monter les coudes trop haut"],tips:"Meilleure amplitude que la barre pour le haut des pecs."},
+{name:"Développé décliné",group:"Pectoraux",muscles:"Pectoraux (bas), triceps",variants:["Barre", "Haltères"],instructions:"Banc décliné 15-30°. Pieds calés. Descends vers le bas de la poitrine. Pousse.",erreurs:["Déclinaison trop forte", "Perte de contrôle"],tips:"Cible le bas des pecs. Souvent plus fort que le couché plat."},
+{name:"Écarté couché haltères",group:"Pectoraux",muscles:"Pectoraux (étirement)",variants:["Plat", "Incliné", "Décliné"],instructions:"Bras tendus au-dessus. Descends sur les côtés avec flexion des coudes. Remonte en serrant les pecs.",erreurs:["Bras trop tendus", "Descendre trop bas", "Trop lourd"],tips:"Isolation pure. Léger et contrôlé."},
+{name:"Pec fly machine",group:"Pectoraux",muscles:"Pectoraux (contraction)",variants:["Machine convergente", "Poulie vis-à-vis"],instructions:"Poignées au niveau poitrine. Serre les bras devant toi. Retour contrôlé.",erreurs:["Utiliser élan", "Pas assez de contraction"],tips:"Maintiens la contraction 1-2s en position fermée."},
+{name:"Cable crossover",group:"Pectoraux",muscles:"Pectoraux (toutes portions)",variants:["Poulie haute", "Poulie basse", "Poulie milieu"],instructions:"Entre deux poulies. Tire les câbles devant toi en croisant les mains.",erreurs:["Trop de poids", "Corps qui bouge"],tips:"Poulie haute = bas des pecs. Poulie basse = haut des pecs."},
+{name:"Dips pectoraux",group:"Pectoraux",muscles:"Pectoraux (bas), triceps, deltoïdes",variants:["PDC", "Lesté", "Assisté"],instructions:"Barres parallèles, buste penché 30°. Descends en fléchissant. Coudes légèrement écartés.",erreurs:["Buste trop droit (= triceps)", "Descendre trop bas"],tips:"Penché = pecs. Droit = triceps."},
+{name:"Pompes",group:"Pectoraux",muscles:"Pectoraux, triceps, deltoïdes, core",variants:["Classiques", "Pieds surélevés", "Diamant", "Larges", "Sur les genoux"],instructions:"Mains au sol largeur épaules. Corps gainé. Descends la poitrine au sol. Pousse.",erreurs:["Dos creusé", "Fesses en haut", "Pas assez bas"],tips:"Le corps forme une planche du début à la fin."},
+{name:"Pull-over haltère",group:"Pectoraux",muscles:"Pectoraux, grand dorsal, dentelé",variants:["Haltère", "Barre EZ", "Poulie"],instructions:"En travers du banc. Haltère au-dessus de la poitrine. Descends derrière la tête, bras quasi tendus. Remonte.",erreurs:["Plier trop les coudes", "Descendre trop loin"],tips:"Excellent pour ouvrir la cage thoracique."},
+{name:"Développé couché prise serrée",group:"Pectoraux",muscles:"Pectoraux, triceps (dominant)",variants:["Barre", "Smith machine"],instructions:"Couché, prise largeur épaules. Descends vers le bas de la poitrine. Pousse.",erreurs:["Prise trop serrée", "Coudes trop écartés"],tips:"Compromis pecs/triceps."},
+{name:"Floor press",group:"Pectoraux",muscles:"Pectoraux, triceps (amplitude réduite)",variants:["Barre", "Haltères"],instructions:"Allongé au sol. Descends jusqu'aux coudes au sol. Pousse en extension.",erreurs:["Rebondir les coudes", "Cambrer le dos"],tips:"Focus sur le lockout et les triceps."},
+{name:"Écarté poulie haute",group:"Pectoraux",muscles:"Pectoraux (bas)",variants:["Debout", "Un bras", "À genoux"],instructions:"Poulies hautes. Tire vers le bas en croisant devant les hanches.",erreurs:["Trop de poids", "Bras trop tendus"],tips:"Croise les mains pour contraction max."},
+{name:"Écarté poulie basse",group:"Pectoraux",muscles:"Pectoraux (haut)",variants:["Debout", "Incliné"],instructions:"Poulies basses. Tire de bas en haut, mains devant le visage.",erreurs:["Se pencher", "Élan du corps"],tips:"Excellent en pré-fatigue."},
+{name:"Machine convergente pectoraux",group:"Pectoraux",muscles:"Pectoraux, triceps",variants:["Plate loaded", "Sélectorisée"],instructions:"Assis, pousse devant toi en contractant les pecs. Retour contrôlé.",erreurs:["Dos décollé", "Amplitude faible"],tips:"Sécuritaire. Idéal pour aller à l'échec."},
+{name:"Pompes pieds surélevés",group:"Pectoraux",muscles:"Pectoraux (haut), deltoïdes",variants:["Sur banc", "Sur box"],instructions:"Pompe avec pieds sur un banc. Plus haut = plus de haut des pecs.",erreurs:["Dos creusé", "Descendre le cou"],tips:"30-45cm de surélévation = bon compromis."},
+{name:"Pompes diamant",group:"Pectoraux",muscles:"Pectoraux (intérieur), triceps",variants:["Sur les genoux", "Pieds surélevés"],instructions:"Mains jointes sous la poitrine en losange. Descends et pousse.",erreurs:["Coudes trop écartés", "Fesses en haut"],tips:"Version avancée pour triceps et intérieur des pecs."},
+{name:"Tractions",group:"Dos",muscles:"Grand dorsal, trapèzes, rhomboïdes, biceps",variants:["Pronation large", "Supination", "Neutre", "Lestées", "Assistées"],instructions:"Suspens-toi à une barre, prise large. Tire la poitrine vers la barre en serrant les omoplates. Descends en contrôlant.",erreurs:["Se balancer", "Pas assez haut", "Cou en avant"],tips:"Pronation = largeur. Supination = biceps. Tire les coudes vers le bas."},
+{name:"Tirage vertical poulie haute",group:"Dos",muscles:"Grand dorsal, biceps, trapèzes",variants:["Barre large pronation", "Barre serrée supination", "Triangle neutre", "Unilatéral"],instructions:"Assis, cuisses calées. Tire la barre vers le haut de la poitrine. Contrôle la remontée.",erreurs:["Tirer derrière la nuque", "Trop penché en arrière", "Élan"],tips:"Alternative aux tractions. Charge ajustable."},
+{name:"Rowing barre",group:"Dos",muscles:"Trapèzes, rhomboïdes, grand dorsal, érecteurs, biceps",variants:["Pronation", "Supination (Yates)", "Pendlay"],instructions:"Buste penché 45°, dos plat. Tire la barre vers le nombril en serrant les omoplates.",erreurs:["Dos rond", "Se redresser", "Élan"],tips:"Pronation = trapèzes. Supination = lats/biceps."},
+{name:"Rowing haltère unilatéral",group:"Dos",muscles:"Grand dorsal, trapèzes, rhomboïdes, biceps",variants:["Genou sur banc", "Appui main", "Sans appui"],instructions:"Un genou et une main sur le banc. Tire le coude vers le plafond en serrant l'omoplate.",erreurs:["Rotation du tronc", "Tirer avec le biceps", "Élan"],tips:"Initie par l'omoplate, pas par le bras."},
+{name:"Rowing T-bar",group:"Dos",muscles:"Trapèzes, rhomboïdes, grand dorsal",variants:["Avec poignée", "Landmine", "Machine"],instructions:"Debout au-dessus de la barre. Buste penché, dos plat. Tire vers la poitrine.",erreurs:["Dos rond", "Trop lourd"],tips:"Excellent pour l'épaisseur du dos."},
+{name:"Tirage horizontal poulie basse",group:"Dos",muscles:"Trapèzes moyens, rhomboïdes, grand dorsal",variants:["Barre V neutre", "Barre large", "Corde", "Unilatéral"],instructions:"Assis face à la poulie. Tire vers le nombril, dos droit. Serre les omoplates.",erreurs:["Se pencher trop", "Épaules qui montent"],tips:"Imagine tes omoplates dans tes poches arrière."},
+{name:"Soulevé de terre",group:"Dos",muscles:"Érecteurs, fessiers, ischios, trapèzes, quadriceps",variants:["Conventionnel", "Sumo", "Roumain (RDL)", "Trap bar"],instructions:"Pieds largeur hanches, barre au-dessus des pieds. Dos neutre. Pousse le sol avec les pieds. Barre collée au corps.",erreurs:["Dos rond", "Barre éloignée", "Tirer avec le dos", "Hyperextension"],tips:"Pense à pousser le sol, pas à tirer la barre."},
+{name:"Face pull",group:"Dos",muscles:"Trapèzes postérieurs, deltoïdes post., rotateurs externes",variants:["Poulie haute", "Élastique", "Avec rotation externe"],instructions:"Poulie haute, corde. Tire vers le visage en écartant les mains. Finis pouces en arrière.",erreurs:["Trop lourd", "Pas de rotation externe"],tips:"Exercice de santé de l'épaule. Fais-le à chaque séance haut du corps."},
+{name:"Hyperextensions",group:"Dos",muscles:"Érecteurs, fessiers, ischios",variants:["Banc 45°", "Horizontal", "Avec charge", "Superman au sol"],instructions:"Hanches sur le support. Descends le buste. Remonte en contractant fessiers et bas du dos. Stop à l'horizontale.",erreurs:["Hyperextension", "Trop rapide"],tips:"Ajoute de la charge quand le PDC est facile."},
+{name:"Shrugs",group:"Dos",muscles:"Trapèzes supérieurs",variants:["Barre", "Haltères", "Smith machine"],instructions:"Debout, bras le long du corps. Monte les épaules vers les oreilles. Maintiens 1-2s. Descends.",erreurs:["Rouler les épaules", "Plier les coudes", "Amplitude nulle"],tips:"Haut et bas, pas de rotation."},
+{name:"Tirage poulie haute prise neutre",group:"Dos",muscles:"Grand dorsal (épaisseur), biceps",variants:["Triangle", "Poignée serrée"],instructions:"Tire la barre triangle vers la poitrine. Coudes serrés.",erreurs:["Trop penché", "Tirer avec les bras"],tips:"Prise neutre serrée = épaisseur du dos."},
+{name:"Tirage poulie haute unilatéral",group:"Dos",muscles:"Grand dorsal, biceps",variants:["Poignée D"],instructions:"Poulie haute, une main. Tire le coude vers la hanche.",erreurs:["Rotation excessive", "Élan"],tips:"Corrige les asymétries."},
+{name:"Rowing machine Hammer Strength",group:"Dos",muscles:"Grand dorsal, trapèzes, rhomboïdes",variants:["Prise large", "Prise serrée", "Unilatéral"],instructions:"Poitrine contre le support. Tire les poignées vers les hanches. Serre les omoplates.",erreurs:["Poitrine décollée", "Tirer trop haut"],tips:"Idéal pour aller lourd sans risque."},
+{name:"Rowing Meadows landmine",group:"Dos",muscles:"Grand dorsal (unilatéral), obliques",variants:["Debout", "À genoux"],instructions:"Barre en landmine. Perpendiculaire, tire le coude vers le plafond.",erreurs:["Rotation excessive", "Tirer avec le biceps"],tips:"Angle unique pour la largeur du dos."},
+{name:"Rowing Pendlay",group:"Dos",muscles:"Dos complet, explosivité",variants:["Prise large", "Prise moyenne"],instructions:"Barre au sol. Penché 90°. Tire de manière explosive vers le nombril. Repose au sol à chaque rep.",erreurs:["Se redresser", "Dos rond"],tips:"Barre repart du sol = pas de triche."},
+{name:"Rowing inversé (australien)",group:"Dos",muscles:"Trapèzes, rhomboïdes, biceps",variants:["Barre haute", "Barre basse", "Pieds surélevés", "Supination"],instructions:"Suspendu sous une barre basse, corps droit. Tire la poitrine vers la barre.",erreurs:["Hanches qui tombent", "Amplitude incomplète"],tips:"Progression vers les tractions. Parfait pour débutants ou en finisher."},
+{name:"Muscle-up",group:"Dos",muscles:"Grand dorsal, pectoraux, triceps",variants:["Strict", "Kipping", "Barre", "Anneaux"],instructions:"Traction explosive. Au sommet, bascule les poignets et pousse en extension (dip). Redescends.",erreurs:["Pas assez explosif", "Coudes en arrière"],tips:"Maîtrise 10 tractions strictes avant de tenter."},
+{name:"Lat pullover poulie",group:"Dos",muscles:"Grand dorsal (isolation)",variants:["Barre droite", "Corde"],instructions:"Debout face à la poulie haute. Bras quasi tendus. Tire vers les cuisses. Remonte.",erreurs:["Plier les coudes", "Élan"],tips:"Isolation du lat sans biceps."},
+{name:"Sled pull",group:"Dos",muscles:"Grand dorsal, biceps, ischios, grip",variants:["Corde main par main", "Marche arrière", "Harnais"],instructions:"Face au traîneau, tire la corde ou marche en arrière.",erreurs:["Se pencher", "Tirer uniquement avec les bras"],tips:"Excellent pour le dos et le conditionnement."},
+{name:"Développé militaire",group:"Épaules",muscles:"Deltoïdes antérieurs et latéraux, triceps",variants:["Barre debout", "Barre assis", "Haltères debout", "Haltères assis", "Machine"],instructions:"Barre aux clavicules ou haltères aux épaules. Pousse au-dessus de la tête. Descends au menton.",erreurs:["Cambrer le dos", "Dévier la barre", "Verrouiller brutalement"],tips:"Debout = gainage. Assis = isolation. Abdos gainés."},
+{name:"Développé Arnold",group:"Épaules",muscles:"Deltoïdes (toutes portions), triceps",variants:[],instructions:"Assis, haltères devant le visage en supination. En poussant, tourne les paumes vers l'avant. Descends en inversant.",erreurs:["Trop rapide", "Trop lourd pour la rotation"],tips:"La rotation travaille les 3 portions du deltoïde."},
+{name:"Élévations latérales",group:"Épaules",muscles:"Deltoïdes latéraux",variants:["Haltères debout", "Assis", "Poulie basse", "Machine", "Élastique"],instructions:"Haltères le long du corps. Monte les bras sur les côtés jusqu'à l'horizontale. Légère flexion des coudes.",erreurs:["Au-dessus des épaules", "Balancer", "Bras trop tendus"],tips:"Petit doigt légèrement plus haut que le pouce."},
+{name:"Élévations frontales",group:"Épaules",muscles:"Deltoïdes antérieurs",variants:["Haltères", "Barre", "Disque", "Poulie basse"],instructions:"Bras devant les cuisses. Monte devant toi à l'horizontale.",erreurs:["Élan du corps", "Trop haut"],tips:"Souvent surdéveloppé par le développé couché."},
+{name:"Oiseau (rear delt fly)",group:"Épaules",muscles:"Deltoïdes postérieurs, trapèzes",variants:["Haltères penché", "Poulie basse", "Pec deck inversé", "Sur banc incliné"],instructions:"Penché en avant. Monte les bras sur les côtés en serrant les omoplates.",erreurs:["Se redresser", "Tirer avec les trapèzes"],tips:"Essentiel pour la santé de l'épaule."},
+{name:"Rowing menton",group:"Épaules",muscles:"Deltoïdes latéraux, trapèzes, biceps",variants:["Barre prise large", "Prise serrée", "Haltères", "Poulie"],instructions:"Tire vers le menton en montant les coudes. Prise large = deltoïdes.",erreurs:["Monter trop haut", "Prise trop serrée"],tips:"Coudes max au niveau des épaules, pas plus."},
+{name:"Élévations latérales poulie basse",group:"Épaules",muscles:"Deltoïdes latéraux",variants:["Derrière le dos", "Devant", "Deux poulies"],instructions:"À côté d'une poulie basse. Tire le câble sur le côté à l'horizontale.",erreurs:["Au-dessus de l'épaule", "Pencher le corps"],tips:"Tension constante, même en bas."},
+{name:"Élévations latérales machine",group:"Épaules",muscles:"Deltoïdes latéraux",variants:["Bilatéral", "Unilatéral"],instructions:"Assis, bras le long des supports. Monte sur les côtés.",erreurs:["Trop de poids", "Amplitude insuffisante"],tips:"Trajectoire guidée = meilleure isolation."},
+{name:"Face pull avec rotation externe",group:"Épaules",muscles:"Deltoïdes post., infraépineux, trapèzes",variants:["Poulie haute", "Élastique", "Unilatéral"],instructions:"Poulie haute, corde. Tire vers le visage puis rotation externe.",erreurs:["Pas de rotation externe", "Coudes trop bas"],tips:"Santé de l'épaule. 2-3 séries suffisent."},
+{name:"Développé militaire landmine",group:"Épaules",muscles:"Deltoïdes, triceps, core",variants:["Deux mains", "Une main", "À genoux"],instructions:"Barre en landmine. Pousse vers le haut et l'avant.",erreurs:["Cambrer le dos", "Pas de gainage"],tips:"Plus facile pour les épaules sensibles."},
+{name:"Développé haltères prise neutre",group:"Épaules",muscles:"Deltoïdes antérieurs et latéraux",variants:["Alternés", "Simultanés"],instructions:"Assis, haltères en prise neutre. Pousse au-dessus de la tête.",erreurs:["Cambrer le dos", "Verrouiller brutalement"],tips:"Prise neutre = moins de stress épaule."},
+{name:"Élévation Y (scaption)",group:"Épaules",muscles:"Deltoïdes antéro-latéraux, supraspinatus",variants:["Haltères", "Poulie", "Élastique"],instructions:"Monte les bras en Y (45°) à l'horizontale. Pouces vers le haut.",erreurs:["Trop lourd", "Trop haut"],tips:"Plan de la scapula = moins de stress."},
+{name:"Bradford press",group:"Épaules",muscles:"Deltoïdes (toutes portions)",variants:["Debout", "Assis"],instructions:"Barre au front. Pousse au-dessus puis descends derrière la nuque. Alterne avant/arrière.",erreurs:["Trop lourd", "Trop d'amplitude derrière"],tips:"Léger et contrôlé."},
+{name:"Bus driver",group:"Épaules",muscles:"Deltoïdes (rotation), coiffe des rotateurs",variants:["Avec disque", "Avec haltère"],instructions:"Bras tendu devant, disque tenu. Tourne comme un volant (gauche-droite).",erreurs:["Bras qui descend", "Trop rapide"],tips:"Excellente finition. Brûlure garantie."},
+{name:"Curl biceps",group:"Biceps",muscles:"Biceps brachial, brachial antérieur",variants:["Barre droite", "Barre EZ", "Haltères", "Alternés", "Poulie", "Élastique"],instructions:"Debout, fléchis les coudes en montant vers les épaules. Coudes collés. Descends en contrôlant.",erreurs:["Balancer", "Décoller les coudes", "Descente rapide", "Trop lourd"],tips:"Barre EZ = moins de stress poignets."},
+{name:"Curl marteau",group:"Biceps",muscles:"Brachial, brachio-radial, biceps (chef long)",variants:["Simultanés", "Alternés", "Corde poulie"],instructions:"Prise neutre (pouces en haut). Fléchis en gardant la prise neutre.",erreurs:["Tourner les poignets", "Élan"],tips:"Cible le brachial = bras plus épais."},
+{name:"Curl incliné",group:"Biceps",muscles:"Biceps (chef long, étirement max)",variants:["Banc 45°", "Banc 60°"],instructions:"Assis sur banc incliné 45°. Bras pendant derrière. Fléchis en montant.",erreurs:["Banc trop droit", "Avancer les coudes"],tips:"Meilleur exercice pour le chef long."},
+{name:"Curl pupitre (preacher)",group:"Biceps",muscles:"Biceps (chef court)",variants:["Barre EZ", "Haltère unilatéral", "Machine"],instructions:"Bras calés sur le pupitre. Fléchis. Descends en contrôlant.",erreurs:["Décoller les bras", "Extension brutale"],tips:"Isolation parfaite. Pas de triche."},
+{name:"Curl concentré",group:"Biceps",muscles:"Biceps (pic)",variants:["Assis", "Debout penché"],instructions:"Coude contre la cuisse. Monte vers l'épaule. Contracte fort en haut.",erreurs:["Utiliser l'épaule", "Trop rapide"],tips:"Contraction maximale et pic du biceps."},
+{name:"Curl poulie basse",group:"Biceps",muscles:"Biceps brachial",variants:["Barre droite", "Barre EZ", "Corde", "Unilatéral"],instructions:"Face à la poulie basse. Fléchis les coudes. Coudes fixes.",erreurs:["Déplacer les coudes", "Élan"],tips:"Tension constante du début à la fin."},
+{name:"Curl araignée (spider curl)",group:"Biceps",muscles:"Biceps (chef court, contraction)",variants:["Barre EZ", "Haltères"],instructions:"Face contre un banc incliné. Bras pendants. Fléchis les coudes.",erreurs:["Bouger les coudes", "Trop rapide"],tips:"Élimine toute triche. Contraction pure."},
+{name:"Curl Zottman",group:"Biceps",muscles:"Biceps (montée), brachio-radial (descente)",variants:[],instructions:"Curl en supination. En haut, tourne en pronation. Descends en pronation. Retourne en supination.",erreurs:["Rotation trop rapide", "Trop lourd pour la descente"],tips:"Deux exercices en un."},
+{name:"Curl 21s",group:"Biceps",muscles:"Biceps (amplitude complète)",variants:["Barre", "Haltères", "Poulie"],instructions:"7 reps bas-milieu. 7 reps milieu-haut. 7 reps complètes. Sans pause.",erreurs:["Tricher sur les dernières", "Amplitude incorrecte"],tips:"Technique d'intensification. Charge légère."},
+{name:"Curl prise inversée (reverse)",group:"Biceps",muscles:"Brachio-radial, brachial",variants:["Barre droite", "Barre EZ", "Poulie"],instructions:"Comme un curl mais en pronation (paumes vers le sol). Monte et descends.",erreurs:["Trop lourd", "Poignets qui fléchissent"],tips:"Cible le brachio-radial (dessus de l'avant-bras)."},
+{name:"Extension triceps poulie haute",group:"Triceps",muscles:"Triceps (chef latéral)",variants:["Barre droite", "Barre V", "Corde", "Unilatéral"],instructions:"Face à la poulie haute. Coudes collés. Pousse vers le bas. Remonte en contrôlant.",erreurs:["Décoller les coudes", "Se pencher", "Élan"],tips:"Avec corde, écarte les mains en bas pour plus de contraction."},
+{name:"Dips triceps",group:"Triceps",muscles:"Triceps, pectoraux, deltoïdes",variants:["Barres parallèles", "Banc", "Assisté", "Lesté"],instructions:"Barres parallèles, buste DROIT. Descends en fléchissant. Coudes serrés.",erreurs:["Se pencher (= pecs)", "Descendre trop bas", "Épaules qui montent"],tips:"Buste droit + coudes serrés = triceps."},
+{name:"Barre au front (skull crusher)",group:"Triceps",muscles:"Triceps (chef long)",variants:["Barre EZ", "Barre droite", "Haltères"],instructions:"Allongé, barre bras tendus. Fléchis les coudes vers le front. Remonte.",erreurs:["Coudes qui bougent", "Barre sur le visage"],tips:"Descends vers le front ou derrière la tête pour plus d'étirement."},
+{name:"Extension nuque",group:"Triceps",muscles:"Triceps (chef long, étirement max)",variants:["Haltère deux mains", "Unilatéral", "Barre EZ", "Poulie basse"],instructions:"Charge au-dessus de la tête. Fléchis derrière la tête. Remonte en extension.",erreurs:["Coudes qui s'écartent", "Cambrer le dos"],tips:"Le chef long est le plus gros des trois."},
+{name:"Kickback triceps",group:"Triceps",muscles:"Triceps (contraction)",variants:["Haltère", "Poulie", "Élastique"],instructions:"Penché, coude le long du corps à 90°. Tends le bras en arrière. Maintiens 1s.",erreurs:["Bouger le coude", "Élan", "Trop lourd"],tips:"Exercice de finition. Léger et contrôlé."},
+{name:"Extension poulie haute corde",group:"Triceps",muscles:"Triceps (chef latéral, longue portion)",variants:["Avec pause", "Drop set"],instructions:"Poulie haute, corde. Pousse vers le bas. Écarte les mains en bas.",erreurs:["Coudes qui bougent", "Ne pas écarter la corde"],tips:"Écarter recrute plus la longue portion."},
+{name:"Extension poulie basse overhead",group:"Triceps",muscles:"Triceps (chef long, étirement)",variants:["Corde", "Barre EZ", "Unilatéral"],instructions:"Dos à la poulie basse. Corde derrière la tête. Tends les bras au-dessus.",erreurs:["Cambrer le dos", "Coudes écartés"],tips:"Position overhead = meilleur étirement du chef long."},
+{name:"Dips banc (bench dips)",group:"Triceps",muscles:"Triceps, deltoïdes antérieurs",variants:["Pieds au sol", "Pieds surélevés", "Avec charge"],instructions:"Mains sur un banc derrière. Pieds devant. Descends en fléchissant. Pousse.",erreurs:["Descendre trop bas", "Coudes écartés"],tips:"Pieds surélevés = plus dur. Charge sur les cuisses pour progresser."},
+{name:"JM Press",group:"Triceps",muscles:"Triceps (chef latéral et médial)",variants:["Barre", "Barre EZ"],instructions:"Allongé. Descends vers le cou/menton. Hybride développé serré/skull crusher.",erreurs:["Barre trop vers le visage", "Épaules instables"],tips:"Excellent pour les triceps lourds."},
+{name:"Extension triceps haltère unilatéral",group:"Triceps",muscles:"Triceps (chef long)",variants:["Debout", "Assis"],instructions:"Un haltère, bras au-dessus. Fléchis derrière la tête. Tends.",erreurs:["Coude qui s'écarte", "Cambrer le dos"],tips:"Meilleure connexion neuromusculaire."},
+{name:"Squat",group:"Quadriceps",muscles:"Quadriceps, fessiers, ischios, core",variants:["Barre haute", "Barre basse", "Front squat", "Goblet", "Trap bar", "Smith", "Sumo"],instructions:"Barre sur les trapèzes. Pieds largeur épaules. Descends hanches en arrière, genoux vers l'extérieur. Parallèle minimum. Pousse le sol.",erreurs:["Genoux qui rentrent", "Dos rond", "Talons qui décollent", "Pas assez bas"],tips:"Le roi des exercices. Genoux dans l'axe des pieds."},
+{name:"Presse à cuisses",group:"Quadriceps",muscles:"Quadriceps, fessiers",variants:["Pieds hauts (fessiers)", "Pieds bas (quads)", "Serrés", "Larges", "Unilatéral"],instructions:"Pieds largeur épaules. Descends genoux vers la poitrine. Pousse sans verrouiller.",erreurs:["Verrouiller les genoux", "Fesses décollées", "Amplitude faible"],tips:"Pieds hauts = fessiers. Pieds bas = quads. JAMAIS verrouiller."},
+{name:"Leg extension",group:"Quadriceps",muscles:"Quadriceps (isolation)",variants:["Bilatéral", "Unilatéral", "Partiel haut"],instructions:"Assis, chevilles sous le boudin. Tends les jambes. Maintiens 1s en haut.",erreurs:["Élan", "Trop rapide", "Trop lourd (stress genou)"],tips:"Contraction max en haut. Excellent en pré-fatigue ou finisher."},
+{name:"Fentes",group:"Quadriceps",muscles:"Quadriceps, fessiers, ischios",variants:["Avant", "Arrière", "Marchées", "Bulgares", "Latérales", "Haltères", "Barre"],instructions:"Grand pas. Fléchis les deux genoux à 90°. Genou arrière frôle le sol. Pousse.",erreurs:["Genou trop en avant", "Pas trop court", "Tronc penché"],tips:"Bulgares = plus de fessiers. Arrière = moins de stress genou."},
+{name:"Hack squat",group:"Quadriceps",muscles:"Quadriceps (focus), fessiers",variants:["Machine", "Barre derrière"],instructions:"Dos calé sur le dossier. Pieds sur la plateforme. Descends. Pousse.",erreurs:["Pieds trop bas", "Pas assez bas"],tips:"Pieds bas et serrés = max de quads."},
+{name:"Squat bulgare",group:"Quadriceps",muscles:"Quadriceps, fessiers, stabilisateurs",variants:["Haltères", "Barre", "Smith", "PDC"],instructions:"Pied arrière sur un banc. Descends genou avant à 90°. Genou arrière vers le sol.",erreurs:["Genou trop en avant", "Pied trop près du banc", "Buste penché"],tips:"Double travail de stabilisation. Excellent pour les fessiers."},
+{name:"Goblet squat",group:"Quadriceps",muscles:"Quadriceps, fessiers, core",variants:["Haltère", "Kettlebell"],instructions:"Charge contre la poitrine. Descends en squat profond. Coudes entre les genoux.",erreurs:["Se pencher", "Genoux qui rentrent"],tips:"Idéal pour apprendre le squat."},
+{name:"Front squat",group:"Quadriceps",muscles:"Quadriceps (dominant), core, érecteurs",variants:["Clean grip", "Bras croisés", "Avec sangles"],instructions:"Barre sur les deltoïdes, coudes hauts. Descends buste droit. Pousse.",erreurs:["Coudes qui tombent", "Dos rond", "Manque de mobilité"],tips:"Plus de quads, moins de stress lombaire."},
+{name:"Step-up",group:"Quadriceps",muscles:"Quadriceps, fessiers",variants:["Box basse", "Box haute", "Haltères", "Barre", "Latéral"],instructions:"Un pied sur une box. Pousse avec la jambe du dessus. Redescends.",erreurs:["Pousser avec le bas", "Box trop haute", "Élan"],tips:"Plus la box est haute, plus de fessiers."},
+{name:"Wall sit (chaise)",group:"Quadriceps",muscles:"Quadriceps (isométrique)",variants:["Avec charge", "Unilatéral"],instructions:"Dos contre le mur, cuisses parallèles au sol. Maintiens.",erreurs:["Genoux en avant", "Dos décollé"],tips:"Excellent pour l'endurance musculaire."},
+{name:"Sissy squat",group:"Quadriceps",muscles:"Quadriceps (rectus femoris)",variants:["PDC", "Avec charge", "Machine"],instructions:"Tiens-toi à un support. Penche le buste en arrière, genoux avancent, talons décollent.",erreurs:["Perdre l'équilibre", "Pas de contrôle"],tips:"Isolation extrême du quad. Exercice avancé."},
+{name:"Thruster",group:"Quadriceps",muscles:"Quadriceps, fessiers, deltoïdes, triceps, core",variants:["Barre", "Haltères", "Kettlebells"],instructions:"Front squat suivi d'un développé. Utilise l'élan du squat pour pousser.",erreurs:["Séparer les mouvements", "Dos rond en bas"],tips:"Très cardio. Excellent pour le conditionnement."},
+{name:"Sled push",group:"Quadriceps",muscles:"Quadriceps, fessiers, mollets, cardio",variants:["Position haute", "Position basse", "Sprint", "Marche lente"],instructions:"Mains sur le traîneau. Pousse en marchant ou sprintant. Corps penché.",erreurs:["Se redresser", "Petits pas"],tips:"Position basse = plus de quads. Excellent en finisher."},
+{name:"Box jump",group:"Quadriceps",muscles:"Quadriceps, fessiers, mollets (pliométrie)",variants:["Box haute", "Box basse", "Unilatéral"],instructions:"Face à une box. Fléchis et saute. Réceptionne pieds à plat. Step-down.",erreurs:["Box trop haute", "Atterrir sur les orteils", "Genoux qui rentrent"],tips:"Redescends en step-down pour les articulations."},
+{name:"Soulevé de terre roumain (RDL)",group:"Ischio-jambiers",muscles:"Ischios (proximal), fessiers, érecteurs",variants:["Barre", "Haltères", "Unilatéral", "Trap bar"],instructions:"Debout, barre en main. Pousse les hanches en arrière, jambes quasi tendues. Descends le long des cuisses. Remonte en contractant.",erreurs:["Dos rond", "Trop de flexion genoux", "Trop bas"],tips:"Mouvement de hanche, pas de dos. Barre collée aux jambes."},
+{name:"Leg curl allongé",group:"Ischio-jambiers",muscles:"Ischios (flexion du genou)",variants:["Bilatéral", "Unilatéral"],instructions:"Allongé face contre le banc. Fléchis les genoux vers les fessiers. Contracte. Redescends.",erreurs:["Décoller les hanches", "Trop rapide"],tips:"Allongé = plus d'étirement."},
+{name:"Leg curl assis",group:"Ischio-jambiers",muscles:"Ischios (position raccourcie)",variants:["Bilatéral", "Unilatéral"],instructions:"Assis, genoux au bord. Fléchis les genoux. Contracte fort. Retour lent.",erreurs:["Trop rapide", "Élan"],tips:"Complémentaire du leg curl allongé."},
+{name:"Nordic curl",group:"Ischio-jambiers",muscles:"Ischios (excentrique intense)",variants:["Assisté élastique", "Complet", "Partiel"],instructions:"À genoux, pieds calés. Descends le buste en contrôlant avec les ischios. Le plus lentement possible.",erreurs:["Plier les hanches", "Descendre trop vite"],tips:"L'un des meilleurs pour prévenir les blessures."},
+{name:"Good morning",group:"Ischio-jambiers",muscles:"Ischios, fessiers, érecteurs",variants:["Barre sur trapèzes", "Assis", "Élastique"],instructions:"Barre sur les trapèzes. Pousse les hanches en arrière, dos plat. Descends. Remonte.",erreurs:["Dos rond", "Trop bas", "Trop lourd"],tips:"Exercice avancé. Commence très léger."},
+{name:"RDL unilatéral",group:"Ischio-jambiers",muscles:"Ischios, fessiers (unilatéral)",variants:["Haltère", "Kettlebell", "Barre"],instructions:"Debout sur une jambe. L'autre recule en l'air. Penche le buste. Remonte.",erreurs:["Genou qui bouge", "Dos rond", "Perte d'équilibre"],tips:"La jambe arrière et le buste forment une ligne."},
+{name:"Glute ham raise (GHR)",group:"Ischio-jambiers",muscles:"Ischios, fessiers, érecteurs",variants:["Machine GHD", "Avec partenaire"],instructions:"Genoux sur la machine, pieds calés. Descends le buste. Remonte en contractant les ischios.",erreurs:["Plier les hanches", "Descendre trop vite"],tips:"Combine extension de hanche et flexion de genou."},
+{name:"Swiss ball leg curl",group:"Ischio-jambiers",muscles:"Ischios, fessiers",variants:["Deux jambes", "Unilatéral"],instructions:"Allongé, talons sur un swiss ball. Lève les hanches. Ramène le ballon vers toi.",erreurs:["Hanches qui tombent", "Instabilité"],tips:"Exercice fonctionnel sans matériel lourd."},
+{name:"Hip thrust",group:"Fessiers",muscles:"Grand fessier (activation maximale)",variants:["Barre", "Machine", "Unilatéral", "Élastique", "Smith"],instructions:"Dos sur un banc. Barre sur les hanches. Pousse les hanches vers le plafond. Serre les fessiers 1-2s.",erreurs:["Hyperextension du dos", "Pieds mal placés", "Pas de contraction"],tips:"LE meilleur exercice pour les fessiers. Pousse avec les talons."},
+{name:"Pont fessier (glute bridge)",group:"Fessiers",muscles:"Grand fessier, ischios",variants:["Au sol", "Unilatéral", "Avec charge", "Pieds surélevés"],instructions:"Allongé, pieds à plat, genoux fléchis. Pousse les hanches vers le plafond. Serre. Redescends.",erreurs:["Pousser avec le dos", "Pas assez haut"],tips:"Version au sol du hip thrust. Parfait en échauffement."},
+{name:"Hip thrust unilatéral",group:"Fessiers",muscles:"Grand fessier (unilatéral)",variants:["PDC", "Avec charge", "Pied surélevé"],instructions:"Position hip thrust. Une jambe tendue en l'air. Pousse avec une seule jambe.",erreurs:["Basculer les hanches", "Pas assez haut"],tips:"Double la charge sur un fessier."},
+{name:"Kickback fessier",group:"Fessiers",muscles:"Grand fessier",variants:["Poulie basse", "Machine", "Quatre pattes", "Élastique"],instructions:"Pousse la jambe vers l'arrière en extension de hanche. Contracte. Reviens.",erreurs:["Cambrer le dos", "Élan", "Tourner la hanche"],tips:"Isolation du fessier. Léger et contrôlé."},
+{name:"Abduction",group:"Fessiers",muscles:"Moyen fessier, petit fessier",variants:["Machine", "Poulie basse", "Élastique", "Au sol"],instructions:"Machine : pousse les genoux vers l'extérieur. Poulie : écarte la jambe sur le côté.",erreurs:["Trop rapide", "Se pencher pour tricher"],tips:"Le moyen fessier donne la forme arrondie."},
+{name:"Cable pull-through",group:"Fessiers",muscles:"Grand fessier, ischios",variants:["Poulie basse", "Élastique"],instructions:"Dos à la poulie. Corde entre les jambes. Hip hinge. Remonte en contractant.",erreurs:["Plier les genoux trop", "Tirer avec les bras"],tips:"Excellent pour apprendre le hip hinge."},
+{name:"Frog pump",group:"Fessiers",muscles:"Grand fessier (activation)",variants:["PDC", "Avec charge"],instructions:"Allongé, plantes des pieds jointes, genoux ouverts. Pousse les hanches. Serre.",erreurs:["Pousser avec le dos", "Amplitude insuffisante"],tips:"Activation maximale. Parfait en échauffement."},
+{name:"Squat sumo",group:"Fessiers",muscles:"Adducteurs, fessiers, quadriceps",variants:["Barre", "Goblet", "Kettlebell", "Smith"],instructions:"Pieds très écartés, pointes vers l'extérieur. Descends en squat. Genoux suivent les pieds.",erreurs:["Genoux qui rentrent", "Dos rond"],tips:"Plus large = plus d'adducteurs et de fessiers."},
+{name:"Curl poignet (wrist curl)",group:"Avant-bras",muscles:"Fléchisseurs du poignet",variants:["Barre", "Haltères"],instructions:"Avant-bras sur les cuisses. Paumes vers le haut. Fléchis les poignets.",erreurs:["Décoller les avant-bras", "Amplitude faible"],tips:"Haute reps (15-25) recommandées."},
+{name:"Extension poignet (reverse wrist curl)",group:"Avant-bras",muscles:"Extenseurs du poignet",variants:["Barre", "Haltères"],instructions:"Avant-bras sur les cuisses, paumes vers le bas. Lève les poignets.",erreurs:["Trop lourd", "Trop rapide"],tips:"Important pour l'équilibre avec les fléchisseurs."},
+{name:"Farmer walk",group:"Avant-bras",muscles:"Avant-bras (grip), trapèzes, core",variants:["Haltères", "Kettlebells", "Trap bar", "Suitcase carry"],instructions:"Un poids lourd dans chaque main. Marche buste droit, épaules en arrière.",erreurs:["Se pencher", "Épaules qui montent", "Pas trop longs"],tips:"Exercice fonctionnel roi. 30-60s par série."},
+{name:"Wrist roller",group:"Avant-bras",muscles:"Fléchisseurs et extenseurs",variants:["Flexion", "Extension"],instructions:"Bâton avec poids suspendu. Enroule la corde en tournant les poignets. Déroule.",erreurs:["Trop rapide", "Bras qui descendent"],tips:"L'un des meilleurs pour le grip."},
+{name:"Mollets debout",group:"Mollets",muscles:"Gastrocnémiens",variants:["Machine", "Smith", "Unilatéral", "Sur une marche"],instructions:"Sur une marche, talons dans le vide. Monte sur la pointe le plus haut possible. Maintiens. Descends en étirant.",erreurs:["Amplitude faible", "Plier les genoux", "Rebondir"],tips:"Genou tendu = gastrocnémiens. Amplitude complète obligatoire."},
+{name:"Mollets assis",group:"Mollets",muscles:"Soléaire",variants:["Machine", "Barre sur les cuisses"],instructions:"Assis, genoux à 90°. Monte sur la pointe. Maintiens. Descends.",erreurs:["Trop lourd = pas d'amplitude", "Rebondir"],tips:"Le soléaire = 60% du volume du mollet."},
+{name:"Mollets presse à cuisses",group:"Mollets",muscles:"Gastrocnémiens, soléaire",variants:["Pieds parallèles", "Pointes externes", "Pointes internes"],instructions:"Sur la presse, juste les avant-pieds. Pousse en extension des chevilles.",erreurs:["Amplitude faible", "Verrouiller les genoux"],tips:"Charge lourde en sécurité. Amplitude complète."},
+{name:"Mollets debout unilatéral",group:"Mollets",muscles:"Gastrocnémiens",variants:["Haltère", "Marche", "Smith"],instructions:"Un pied sur une marche. Monte le plus haut. Descends en étirant.",erreurs:["Aller trop vite", "Amplitude insuffisante"],tips:"Double charge. Corrige les déséquilibres."},
+{name:"Saut à la corde",group:"Mollets",muscles:"Mollets, cardio",variants:["Basique", "Double under", "Croisé", "Unilatéral"],instructions:"Saute sur la pointe des pieds. Poignets souples, sauts bas et rapides.",erreurs:["Sauter trop haut", "Bras écartés", "Talons au sol"],tips:"10 min de corde = excellent échauffement."},
+{name:"Crunch",group:"Abdominaux",muscles:"Grand droit (portion haute)",variants:["Au sol", "Ballon", "Avec charge", "Machine", "Poulie haute"],instructions:"Allongé, genoux fléchis. Enroule le buste. Contracte en haut. Redescends.",erreurs:["Tirer sur la nuque", "Monter trop haut", "Trop rapide"],tips:"Petit mouvement d'enroulement, pas un sit-up."},
+{name:"Crunch inversé",group:"Abdominaux",muscles:"Grand droit (portion basse)",variants:["Au sol", "Sur banc", "Suspendu"],instructions:"Jambes en l'air. Monte les hanches du sol en ramenant genoux vers la poitrine.",erreurs:["Élan des jambes", "Décoller le dos violemment"],tips:"Le bassin décolle, pas juste les jambes."},
+{name:"Relevé de jambes",group:"Abdominaux",muscles:"Grand droit (bas), hip flexors",variants:["Suspendu", "Sur banc", "Au sol", "Genoux fléchis", "Jambes tendues"],instructions:"Suspendu. Monte les jambes. Monte les hanches pour recruter les abdos.",erreurs:["Se balancer", "Pas de bascule du bassin"],tips:"Monte les hanches à la fin du mouvement."},
+{name:"Planche (gainage)",group:"Abdominaux",muscles:"Transverse, grand droit, obliques, érecteurs",variants:["Coudes", "Mains", "Latérale", "Dynamique"],instructions:"Appui coudes et pieds. Corps aligné. Contracte abdos et fessiers. Maintiens.",erreurs:["Fesses en haut", "Dos creusé", "Tête qui tombe"],tips:"Contracte comme pour encaisser un coup."},
+{name:"Russian twist",group:"Abdominaux",muscles:"Obliques, grand droit",variants:["Avec charge", "Sans charge", "Pieds au sol", "Pieds en l'air"],instructions:"Assis, dos incliné, pieds décollés. Tourne le buste gauche-droite.",erreurs:["Tourner que les épaules", "Trop rapide"],tips:"La rotation vient du tronc, pas des bras."},
+{name:"Ab wheel",group:"Abdominaux",muscles:"Grand droit, transverse, obliques, dorsaux",variants:["Sur les genoux", "Debout", "TRX"],instructions:"À genoux, mains sur la roue. Roule en avant corps gainé. Remonte en contractant.",erreurs:["Dos qui se creuse", "Trop loin trop tôt"],tips:"Commence sur les genoux avec petite amplitude."},
+{name:"Pallof press",group:"Abdominaux",muscles:"Obliques, transverse (anti-rotation)",variants:["Poulie", "Élastique", "À genoux", "Debout"],instructions:"Perpendiculaire à la poulie. Pousse les bras devant toi en résistant à la rotation. Maintiens 2-3s.",erreurs:["Laisser le corps tourner", "Trop lourd"],tips:"Anti-rotation. Excellent pour le core fonctionnel."},
+{name:"Dead bug",group:"Abdominaux",muscles:"Transverse, grand droit (stabilisation)",variants:["Bras seuls", "Jambes seules", "Opposés", "Avec charge"],instructions:"Allongé, bras au plafond, genoux à 90°. Tends un bras et la jambe opposée. Reviens. Alterne.",erreurs:["Dos qui se creuse", "Trop rapide"],tips:"Le bas du dos reste COLLÉ au sol."},
+{name:"Clean and press",group:"Épaules",muscles:"Corps entier",variants:["Barre", "Haltères", "Kettlebell", "Unilatéral"],instructions:"Barre au sol. Tire en clean aux épaules. Pousse au-dessus de la tête.",erreurs:["Tirer avec le dos", "Sauter la réception"],tips:"Apprends la technique avant de charger."},
+{name:"Turkish get-up",group:"Épaules",muscles:"Corps entier : épaules, core, hanches",variants:["Kettlebell", "Haltère", "PDC"],instructions:"Allongé, un bras tendu avec charge. Lève-toi en gardant le bras tendu. 7 étapes. Redescends.",erreurs:["Perdre le regard", "Trop vite", "Sauter des étapes"],tips:"Commence très léger."},
+{name:"Burpee",group:"Quadriceps",muscles:"Corps entier, cardio",variants:["Classique", "Sans pompe", "Avec jump", "Avec traction"],instructions:"Debout, squat, pieds en arrière, pompe, pieds en avant, saut. Enchaîne.",erreurs:["Dos creusé en pompe", "Pompe incomplète"],tips:"Modifie la difficulté selon le niveau."},
+{name:"Battle ropes",group:"Épaules",muscles:"Épaules, biceps, core, cardio",variants:["Vagues alternées", "Simultanées", "Slams", "Cercles"],instructions:"Léger squat. Fouette les cordes. Garde le rythme.",erreurs:["Se redresser", "Cordes molles"],tips:"20-30s intense + 30s repos. 5-8 rounds."}
+];
+
+function openEncyclopedia(){
+  const groups=[...new Set(EXERCISE_ENCYCLOPEDIA.map(e=>e.group))];
+  let h=`<div style="max-width:600px;max-height:85vh;overflow-y:auto">
+    <div style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px">📚 Encyclopédie des exercices</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">${EXERCISE_ENCYCLOPEDIA.length} exercices · ${groups.length} groupes musculaires</div>
+    <input type="text" id="encyclo-search" placeholder="🔍 Rechercher un exercice..." oninput="filterEncyclopedia()" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px;font-size:13px;color:var(--text);outline:none;margin-bottom:8px">
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="wiz-preset-btn active" onclick="filterEncyclopedia('')" id="enc-all">Tous</button>
+      ${groups.map(g=>`<button class="wiz-preset-btn" onclick="filterEncyclopedia('','${g}')">${g}</button>`).join('')}
+    </div>
+    <div id="encyclo-list">`;
+  const groupIcons={'Pectoraux':'🫁','Dos':'🔙','Épaules':'🔺','Biceps':'💪','Triceps':'🦾','Quadriceps':'🦵','Ischio-jambiers':'🦿','Fessiers':'🍑','Mollets':'🦶','Abdominaux':'🎯'};
+  const groupColors={'Pectoraux':'#c0152a','Dos':'#3b82f6','Épaules':'#f59e0b','Biceps':'#22c55e','Triceps':'#a855f7','Quadriceps':'#ec4899','Ischio-jambiers':'#f97316','Fessiers':'#14b8a6','Mollets':'#6366f1','Abdominaux':'#ef4444'};
+  EXERCISE_ENCYCLOPEDIA.forEach((ex,i)=>{
+    const gcol=groupColors[ex.group]||'var(--red)';
+    const gicon=groupIcons[ex.group]||'🏋️';
+    h+=`<div class="encyclo-card" data-name="${ex.name.toLowerCase()}" data-group="${ex.group}" style="border-left:3px solid ${gcol}">
+      <div class="encyclo-hd" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:22px;flex-shrink:0">${gicon}</span>
+        <div style="flex:1"><strong>${ex.name}</strong><br><span style="font-size:9px;color:${gcol};font-weight:700">${ex.group}</span> <span style="font-size:9px;color:var(--muted)">· ${ex.muscles.split(',')[0]}</span></div>
+        <span style="font-size:10px;color:var(--muted)">▶</span>
+      </div>
+      <div style="display:none;padding:10px;font-size:11px;line-height:1.7;border-top:1px solid var(--border);background:var(--s2)">
+        ${(()=>{const imgUrl=ex.photo||(S.exerciseImages||{})[ex.name]||'';return imgUrl?`<img src="${imgUrl}" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;margin-bottom:8px" onerror="this.style.display='none'">`:''})()}
+        <button style="width:100%;padding:6px;margin-bottom:8px;background:var(--s3);border:1px dashed var(--border);border-radius:var(--rs);color:var(--muted);font-size:10px;cursor:pointer" onclick="addExoImage('${ex.name.replace(/'/g,"\\'")}',this)">${(ex.photo||(S.exerciseImages||{})[ex.name])?"🔄 Changer l'image":"📷 Ajouter une image"}</button>
+        <div style="color:var(--muted);margin-bottom:6px"><strong style="color:var(--text)">🎯 Muscles ciblés</strong><br>${ex.muscles}</div>
+        ${ex.variants&&ex.variants.length?`<div style="margin-bottom:6px"><strong>🔄 Variantes</strong><br><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">${ex.variants.map(v=>`<span style="font-size:10px;padding:2px 6px;background:var(--s3);border:1px solid var(--border);border-radius:3px">${v}</span>`).join('')}</div></div>`:''}
+        <div style="margin-bottom:6px;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:var(--rs);padding:8px"><strong style="color:#22c55e">✅ Comment faire</strong><br>${ex.instructions}</div>
+        ${ex.erreurs?`<div style="margin-bottom:6px;background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:var(--rs);padding:8px"><strong style="color:#ef4444">❌ Erreurs fréquentes</strong><br>${ex.erreurs.map(e=>'• '+e).join('<br>')}</div>`:''}
+        ${ex.tips?`<div style="background:rgba(56,189,248,.05);border:1px solid rgba(56,189,248,.15);border-radius:var(--rs);padding:8px"><strong style="color:var(--info)">💡 Conseil pro</strong><br>${ex.tips}</div>`:''}
+      </div>
+    </div>`;
+  });
+  h+=`</div></div>`;
+  showModal('',h);
+}
+
+function addExoImage(exoName,btn){
+  const current=(S.exerciseImages||{})[exoName]||'';
+  const url=prompt('Colle l\'URL de l\'image pour "'+exoName+'" :\n\n(Google Drive, Imgur, ou tout lien direct vers une image)',current);
+  if(url===null) return; // cancelled
+  if(!S.exerciseImages) S.exerciseImages={};
+  if(url.trim()){
+    S.exerciseImages[exoName]=url.trim();
+    showToast('📷 Image ajoutée pour '+exoName,true);
+  } else {
+    delete S.exerciseImages[exoName];
+    showToast('🗑 Image retirée pour '+exoName);
+  }
+  saveState();
+  // Refresh the card
+  const card=btn.closest('.encyclo-card');
+  if(card){
+    const detailDiv=btn.parentElement;
+    let imgEl=detailDiv.querySelector('img');
+    if(url.trim()){
+      if(!imgEl){
+        imgEl=document.createElement('img');
+        imgEl.style.cssText='width:100%;max-height:200px;object-fit:cover;border-radius:6px;margin-bottom:8px';
+        imgEl.onerror=function(){this.style.display='none'};
+        detailDiv.insertBefore(imgEl,detailDiv.firstChild);
+      }
+      imgEl.src=url.trim();
+      imgEl.style.display='';
+      btn.textContent='🔄 Changer l\'image';
+    } else {
+      if(imgEl) imgEl.remove();
+      btn.textContent='📷 Ajouter une image';
+    }
+  }
+}
+
+function filterEncyclopedia(query,group){
+  const q=(query||$('encyclo-search')?.value||'').toLowerCase();
+  document.querySelectorAll('.encyclo-card').forEach(card=>{
+    const nameMatch=card.dataset.name.includes(q);
+    const groupMatch=!group||card.dataset.group===group;
+    card.style.display=(nameMatch&&groupMatch)?'':'none';
+  });
+  // Update active button
+  document.querySelectorAll('#encyclo-list').forEach(()=>{});
+}
+
+// ══════════════════════════════════════════════════
+// ── NUTRITION TRACKER ──
+// ══════════════════════════════════════════════════
+function setNutritionTargets(cid){
+  const t=S.nutritionTargets?.[cid]||{cal:2200,prot:150,gluc:250,lip:70};
+  let h=`<div style="max-width:350px">
+    <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;margin-bottom:10px">🍽 Objectifs nutritionnels</div>
+    <div class="field"><label class="flabel">Calories (kcal/jour)</label><input type="number" id="nt-cal" value="${t.cal}"></div>
+    <div class="field"><label class="flabel">Protéines (g/jour)</label><input type="number" id="nt-prot" value="${t.prot}"></div>
+    <div class="field"><label class="flabel">Glucides (g/jour)</label><input type="number" id="nt-gluc" value="${t.gluc}"></div>
+    <div class="field"><label class="flabel">Lipides (g/jour)</label><input type="number" id="nt-lip" value="${t.lip}"></div>
+    <button class="btn btn-red" style="width:100%;justify-content:center;padding:10px;margin-top:6px" onclick="if(!S.nutritionTargets)S.nutritionTargets={};S.nutritionTargets[${cid}]={cal:parseFloat($('nt-cal').value)||2200,prot:parseFloat($('nt-prot').value)||150,gluc:parseFloat($('nt-gluc').value)||250,lip:parseFloat($('nt-lip').value)||70};saveState();closeGenericModal();showToast('🍽 Objectifs mis à jour',true);">✅ Sauvegarder</button>
+  </div>`;
+  showModal('',h);
+}
+
+function renderNutrition(){
+  const el=$('cl-nutrition-view');if(!el)return;
+  const cid=currentClient?.id;if(!cid)return;
+  const today=new Date().toISOString().split('T')[0];
+  const selDate=window._nutDate||today;
+  if(!S.nutrition) S.nutrition={};
+  if(!S.nutrition[cid]) S.nutrition[cid]={};
+  if(!S.nutrition[cid][selDate]) S.nutrition[cid][selDate]={meals:[]};
+  const dayData=S.nutrition[cid][selDate];
+  const meals=dayData.meals||[];
+  const targets=S.nutritionTargets?.[cid]||{cal:2200,prot:150,gluc:250,lip:70};
+
+  // Totals
+  let totCal=0,totProt=0,totGluc=0,totLip=0;
+  meals.forEach(m=>{totCal+=parseFloat(m.cal)||0;totProt+=parseFloat(m.prot)||0;totGluc+=parseFloat(m.gluc)||0;totLip+=parseFloat(m.lip)||0;});
+
+  const calPct=targets.cal?Math.min(100,Math.round(totCal/targets.cal*100)):0;
+  const protPct=targets.prot?Math.min(100,Math.round(totProt/targets.prot*100)):0;
+  const glucPct=targets.gluc?Math.min(100,Math.round(totGluc/targets.gluc*100)):0;
+  const lipPct=targets.lip?Math.min(100,Math.round(totLip/targets.lip*100)):0;
+
+  // Date nav
+  const prevDate=new Date(new Date(selDate).getTime()-86400000).toISOString().split('T')[0];
+  const nextDate=new Date(new Date(selDate).getTime()+86400000).toISOString().split('T')[0];
+  const isToday=selDate===today;
+  const dayNames=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const d=new Date(selDate);
+  const dayLabel=isToday?'Aujourd\'hui':dayNames[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1);
+
+  let h=`<div style="font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:12px">Ma <span style="color:var(--red)">nutrition</span></div>`;
+
+  // Date navigation
+  h+=`<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px">
+    <button class="btn btn-ghost btn-xs" onclick="window._nutDate='${prevDate}';renderNutrition()">◀</button>
+    <span style="font-weight:700;font-size:14px;min-width:120px;text-align:center">${dayLabel}</span>
+    <button class="btn btn-ghost btn-xs" onclick="window._nutDate='${nextDate}';renderNutrition()" ${isToday?'disabled':''}>▶</button>
+  </div>`;
+
+  // Macro bars
+  h+=`<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;margin-bottom:10px">
+      <div><div style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:${totCal>targets.cal?'#ef4444':'var(--red)'}">${Math.round(totCal)}</div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">/ ${targets.cal} kcal</div></div>
+      <div><div style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:#3b82f6">${Math.round(totProt)}g</div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">/ ${targets.prot}g prot</div></div>
+      <div><div style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:#f59e0b">${Math.round(totGluc)}g</div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">/ ${targets.gluc}g gluc</div></div>
+      <div><div style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:#22c55e">${Math.round(totLip)}g</div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">/ ${targets.lip}g lip</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      <div style="background:var(--s3);border-radius:20px;height:6px;overflow:hidden"><div style="height:100%;background:var(--red);width:${calPct}%;border-radius:20px;transition:width .3s"></div></div>
+      <div style="background:var(--s3);border-radius:20px;height:6px;overflow:hidden"><div style="height:100%;background:#3b82f6;width:${protPct}%;border-radius:20px;transition:width .3s"></div></div>
+      <div style="background:var(--s3);border-radius:20px;height:6px;overflow:hidden"><div style="height:100%;background:#f59e0b;width:${glucPct}%;border-radius:20px;transition:width .3s"></div></div>
+      <div style="background:var(--s3);border-radius:20px;height:6px;overflow:hidden"><div style="height:100%;background:#22c55e;width:${lipPct}%;border-radius:20px;transition:width .3s"></div></div>
+    </div>
+  </div>`;
+
+  // Meal categories
+  const categories=['🌅 Petit-déjeuner','🥗 Déjeuner','🌙 Dîner','🍌 Collation'];
+  categories.forEach(cat=>{
+    const catMeals=meals.filter(m=>m.category===cat);
+    const catCal=catMeals.reduce((a,m)=>a+(parseFloat(m.cal)||0),0);
+    h+=`<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-weight:700;font-size:13px">${cat}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:10px;color:var(--muted)">${Math.round(catCal)} kcal</span>
+          <button class="btn btn-red btn-xs" onclick="openAddFood('${cat}','${selDate}')" style="padding:2px 8px;font-size:10px">+ Ajouter</button>
+        </div>
+      </div>`;
+    if(catMeals.length){
+      catMeals.forEach((m,mi)=>{
+        const idx=meals.indexOf(m);
+        h+=`<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:3px;font-size:11px">
+          <div style="flex:1">
+            <strong>${m.name}</strong> <span style="color:var(--muted)">${m.qty||''}</span>
+          </div>
+          <span style="color:var(--red);font-weight:700;min-width:45px;text-align:right">${m.cal||0}</span>
+          <span style="color:#3b82f6;min-width:30px;text-align:right">${m.prot||0}p</span>
+          <span style="color:#f59e0b;min-width:30px;text-align:right">${m.gluc||0}g</span>
+          <span style="color:#22c55e;min-width:30px;text-align:right">${m.lip||0}l</span>
+          <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px" onclick="removeFood(${idx},'${selDate}')">✕</button>
+        </div>`;
+      });
+    }
+    h+=`</div>`;
+  });
+
+  el.innerHTML=h;
+}
+
+function openAddFood(category,date){
+  const favs=S.nutritionFavs||[];
+  let h=`<div style="max-width:450px;max-height:80vh;overflow-y:auto">
+    <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;margin-bottom:10px">🍽 Ajouter un aliment</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:10px">${category}</div>
+
+    <!-- Search Open Food Facts -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;margin-bottom:4px">🔍 Rechercher un produit</div>
+      <div style="display:flex;gap:4px">
+        <input type="text" id="food-search-q" placeholder="Ex: Yaourt grec Fage, Flocons avoine..." style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:8px;font-size:12px;color:var(--text)">
+        <button class="btn btn-red btn-xs" onclick="searchFood()">Chercher</button>
+      </div>
+      <div id="food-search-results" style="margin-top:6px;max-height:200px;overflow-y:auto"></div>
+    </div>
+
+    <!-- Manual entry -->
+    <div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;margin-bottom:6px">✏️ Saisie manuelle</div>
+      <input type="text" id="food-name" placeholder="Nom de l'aliment" style="width:100%;margin-bottom:4px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 8px;font-size:12px;color:var(--text)">
+      <input type="text" id="food-qty" placeholder="Quantité (ex: 100g, 1 portion)" style="width:100%;margin-bottom:6px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 8px;font-size:12px;color:var(--text)">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
+        <div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Calories</div><input type="number" id="food-cal" placeholder="kcal" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:5px;font-size:12px;color:var(--red);font-weight:700;text-align:center"></div>
+        <div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Protéines</div><input type="number" id="food-prot" placeholder="g" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:5px;font-size:12px;color:#3b82f6;font-weight:700;text-align:center"></div>
+        <div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Glucides</div><input type="number" id="food-gluc" placeholder="g" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:5px;font-size:12px;color:#f59e0b;font-weight:700;text-align:center"></div>
+        <div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Lipides</div><input type="number" id="food-lip" placeholder="g" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:5px;font-size:12px;color:#22c55e;font-weight:700;text-align:center"></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-red" style="flex:1;justify-content:center;padding:10px" onclick="addFoodEntry('${category}','${date}')">✅ Ajouter</button>
+        <button class="btn btn-ghost btn-xs" onclick="addFoodEntry('${category}','${date}',true)">⭐ + Favori</button>
+      </div>
+    </div>`;
+
+  // Favorites
+  if(favs.length){
+    h+=`<div style="border-top:1px solid var(--border);padding-top:10px">
+      <div style="font-size:11px;font-weight:700;margin-bottom:6px">⭐ Mes favoris</div>`;
+    favs.forEach((f,fi)=>{
+      h+=`<div style="display:flex;align-items:center;gap:4px;padding:5px 8px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:3px;cursor:pointer" onclick="useFavorite(${fi},'${category}','${date}')">
+        <span style="flex:1;font-size:11px;font-weight:700">${f.name}</span>
+        <span style="font-size:9px;color:var(--red)">${f.cal}kcal</span>
+        <span style="font-size:9px;color:#3b82f6">${f.prot}p</span>
+        <span style="font-size:9px;color:#f59e0b">${f.gluc}g</span>
+        <span style="font-size:9px;color:#22c55e">${f.lip}l</span>
+        <button style="background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer" onclick="event.stopPropagation();removeFav(${fi})">✕</button>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+  showModal('',h);
+}
+
+function searchFood(){
+  const q=$('food-search-q')?.value.trim();
+  if(!q){showToast('Tape un nom de produit');return;}
+  const res=$('food-search-results');
+  res.innerHTML='<div style="text-align:center;padding:8px;color:var(--muted);font-size:11px">🔍 Recherche en cours...</div>';
+  fetch('https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=8&fields=product_name,brands,nutriments,serving_size,image_small_url')
+  .then(r=>r.json())
+  .then(data=>{
+    const products=(data.products||[]).filter(p=>p.product_name);
+    if(!products.length){res.innerHTML='<div style="text-align:center;padding:8px;color:var(--muted);font-size:11px">Aucun résultat. Essaie un autre terme ou saisis manuellement.</div>';return;}
+    let rh='';
+    products.forEach(p=>{
+      const n=p.nutriments||{};
+      const cal=Math.round(n['energy-kcal_100g']||n['energy-kcal']||0);
+      const prot=Math.round((n.proteins_100g||0)*10)/10;
+      const gluc=Math.round((n.carbohydrates_100g||0)*10)/10;
+      const lip=Math.round((n.fat_100g||0)*10)/10;
+      const name=(p.product_name||'')+(p.brands?' ('+p.brands+')':'');
+      rh+=`<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:3px;cursor:pointer" onclick="fillFoodFromSearch(this)" data-name="${name.replace(/"/g,'&quot;')}" data-cal="${cal}" data-prot="${prot}" data-gluc="${gluc}" data-lip="${lip}">
+        ${p.image_small_url?'<img src="'+p.image_small_url+'" style="width:32px;height:32px;border-radius:4px;object-fit:cover" onerror="this.style.display=\'none\'">':''}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+          <div style="font-size:9px;color:var(--muted)">pour 100g${p.serving_size?' · Portion: '+p.serving_size:''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:11px;font-weight:700;color:var(--red)">${cal} kcal</div>
+          <div style="font-size:8px;color:var(--muted)">P${prot} G${gluc} L${lip}</div>
+        </div>
+      </div>`;
+    });
+    res.innerHTML=rh;
+  })
+  .catch(e=>{
+    res.innerHTML='<div style="text-align:center;padding:8px;color:var(--warn);font-size:11px">Erreur de recherche. Vérifie ta connexion.</div>';
+  });
+}
+
+function fillFoodFromSearch(el){
+  $('food-name').value=el.dataset.name;
+  $('food-qty').value='100g';
+  $('food-cal').value=el.dataset.cal;
+  $('food-prot').value=el.dataset.prot;
+  $('food-gluc').value=el.dataset.gluc;
+  $('food-lip').value=el.dataset.lip;
+  showToast('Produit sélectionné — ajuste la quantité si besoin');
+}
+
+function addFoodEntry(category,date,asFav){
+  const name=$('food-name')?.value.trim();
+  if(!name){showToast('Nom requis');return;}
+  const entry={
+    name,
+    qty:$('food-qty')?.value.trim()||'',
+    cal:parseFloat($('food-cal')?.value)||0,
+    prot:parseFloat($('food-prot')?.value)||0,
+    gluc:parseFloat($('food-gluc')?.value)||0,
+    lip:parseFloat($('food-lip')?.value)||0,
+    category
+  };
+  const cid=currentClient?.id;if(!cid)return;
+  if(!S.nutrition[cid]) S.nutrition[cid]={};
+  if(!S.nutrition[cid][date]) S.nutrition[cid][date]={meals:[]};
+  S.nutrition[cid][date].meals.push(entry);
+  if(asFav){
+    if(!S.nutritionFavs) S.nutritionFavs=[];
+    S.nutritionFavs.push({name:entry.name,cal:entry.cal,prot:entry.prot,gluc:entry.gluc,lip:entry.lip,qty:entry.qty});
+    showToast('⭐ Ajouté aux favoris + repas');
+  } else {
+    showToast('✅ '+name+' ajouté');
+  }
+  saveState();
+  closeGenericModal();
+  renderNutrition();
+}
+
+function useFavorite(fi,category,date){
+  const fav=(S.nutritionFavs||[])[fi];if(!fav)return;
+  const cid=currentClient?.id;if(!cid)return;
+  if(!S.nutrition[cid]) S.nutrition[cid]={};
+  if(!S.nutrition[cid][date]) S.nutrition[cid][date]={meals:[]};
+  S.nutrition[cid][date].meals.push({...fav,category});
+  saveState();
+  closeGenericModal();
+  renderNutrition();
+  showToast('✅ '+fav.name+' ajouté');
+}
+
+function removeFood(idx,date){
+  const cid=currentClient?.id;if(!cid)return;
+  const meals=S.nutrition[cid]?.[date]?.meals;
+  if(!meals) return;
+  meals.splice(idx,1);
+  saveState();
+  renderNutrition();
+}
+
+function removeFav(fi){
+  (S.nutritionFavs||[]).splice(fi,1);
+  saveState();
+  showToast('Favori retiré');
+}
+
 function renderClientRes(){
   const el=$('cl-res-view');if(!el)return;
   // Ensure recipes are loaded
   if(!S.recipes||S.recipes.length===0){S.recipes=DEFAULT_STATE.recipes.map(r=>({...r}));}
-  let h=`<div style="font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:16px">Mes <span style="color:var(--red)">ressources</span></div>`;
+  let h=`<div style="font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:12px">Mes <span style="color:var(--red)">ressources</span></div>
+  <div style="background:var(--red-dim);border:1px solid rgba(192,21,42,.2);border-radius:var(--rs);padding:12px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:10px" onclick="openEncyclopedia()">
+    <span style="font-size:28px">📚</span>
+    <div style="flex:1"><div style="font-weight:700;font-size:14px">Encyclopédie des exercices</div><div style="font-size:10px;color:var(--muted)">${EXERCISE_ENCYCLOPEDIA.length} exercices · Exécution, variantes, erreurs à éviter</div></div>
+    <span style="color:var(--red);font-size:14px">→</span>
+  </div>`;
 
   // Text resources grid
   const filledRes=S.resources.filter(r=>r.content&&r.content.trim());
