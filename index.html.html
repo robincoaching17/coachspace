@@ -1146,9 +1146,10 @@ a.contact-link:hover{text-decoration:underline;}
 <div id="client-login" class="screen">
   <div class="login-box">
     <div class="login-title">Mon <span style="color:var(--red)">Espace</span></div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Sélectionne ton profil puis entre ton mot de passe</div>
-    <div class="field"><label class="flabel">Mon profil</label><select id="cl-select" onchange="onClientSelect()"><option value="">— Choisir —</option></select></div>
-    <div class="field" id="cl-pwd-wrap" style="display:none">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Entre ton prénom et nom puis ton mot de passe</div>
+    <div class="field"><label class="flabel">Prénom</label><input type="text" id="cl-prenom" placeholder="Ton prénom" autocomplete="off" onkeydown="if(event.key==='Enter')$('cl-nom').focus()"></div>
+    <div class="field"><label class="flabel">Nom</label><input type="text" id="cl-nom" placeholder="Ton nom" autocomplete="off" onkeydown="if(event.key==='Enter')$('cl-pwd').focus()"></div>
+    <div class="field">
       <label class="flabel">Mot de passe</label>
       <input type="password" id="cl-pwd" placeholder="••••" onkeydown="if(event.key==='Enter')clientLogin()">
       <div style="font-size:11px;color:var(--info);background:rgba(56,189,248,.08);border-radius:5px;padding:5px 8px;margin-top:4px">💡 Ton mot de passe = ta date de naissance en JJMM</div>
@@ -1222,6 +1223,14 @@ a.contact-link:hover{text-decoration:underline;}
               <input type="hidden" id="editing-prog-id">
               <div class="field"><label class="flabel">Coaché</label><div style="display:flex;gap:6px;align-items:center"><select id="b-client" onchange="updatePreview()" style="flex:1"><option value="">— Choisir —</option></select><button class="btn btn-ghost btn-xs" onclick="const cid=parseInt($('b-client')?.value);if(cid)openExoDictionary(cid);else showToast('Sélectionne un coaché');" style="flex-shrink:0">📖 Perfs</button></div></div>
               <div class="field"><label class="flabel">Nom du programme</label><input type="text" id="b-name" placeholder="ex : Full Body 8 semaines" oninput="updatePreview()"></div>
+              <div class="field" style="margin-bottom:10px">
+                <label class="flabel">Type de programme</label>
+                <div style="display:flex;gap:6px">
+                  <button class="btn btn-xs" id="b-mode-prog" onclick="setProgMode('programme')" style="flex:1;padding:8px;font-size:12px;font-weight:700;border:2px solid var(--red);background:var(--red-dim);color:var(--red);border-radius:var(--rs);cursor:pointer">📅 Programme (semaines)</button>
+                  <button class="btn btn-xs" id="b-mode-carnet" onclick="setProgMode('carnet')" style="flex:1;padding:8px;font-size:12px;font-weight:700;border:2px solid var(--border);background:var(--s2);color:var(--muted);border-radius:var(--rs);cursor:pointer">🎫 Carnet de séances</button>
+                </div>
+                <input type="hidden" id="b-prog-mode" value="programme">
+              </div>
               <div class="row2">
                 <div class="field"><label class="flabel">Objectif</label>
                   <select id="b-obj" onchange="toggleCustomObj()">
@@ -1229,17 +1238,23 @@ a.contact-link:hover{text-decoration:underline;}
                   </select>
                   <input type="text" id="b-obj-custom" placeholder="Décris l'objectif..." style="margin-top:6px;display:none">
                 </div>
-                <div class="field"><label class="flabel">Durée</label>
+                <div class="field" id="b-dur-field"><label class="flabel">Durée</label>
                   <select id="b-dur" onchange="toggleCustomDur()">
                     <option>4 semaines</option><option>6 semaines</option><option selected>8 semaines</option><option>12 semaines</option><option value="custom">✏️ Personnalisée...</option>
                   </select>
                   <input type="text" id="b-dur-custom" placeholder="ex: 10 semaines, 3 mois..." style="margin-top:6px;display:none">
                 </div>
+                <div class="field" id="b-nb-seances-field" style="display:none"><label class="flabel">Nombre de séances</label>
+                  <select id="b-nb-seances" onchange="rebuildCarnetSeances()">
+                    <option>5</option><option>10</option><option selected>15</option><option>20</option><option value="custom">✏️ Autre...</option>
+                  </select>
+                  <input type="number" id="b-nb-seances-custom" placeholder="ex: 12" min="1" max="50" style="margin-top:6px;display:none">
+                </div>
               </div>
               <div class="divider"></div>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                <div style="font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted)">📅 SEMAINES</div>
-                <button class="btn-add-week" onclick="addWeek()">＋ Semaine</button>
+                <div style="font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted)" id="weeks-section-label">📅 SEMAINES</div>
+                <button class="btn-add-week" id="btn-add-week" onclick="addWeek()">＋ Semaine</button>
               </div>
               <div class="week-tabs-builder" id="week-tabs-builder"></div>
               <div class="builder-scroll"><div id="weeks-wrap"></div></div>
@@ -1547,6 +1562,8 @@ a.contact-link:hover{text-decoration:underline;}
 // CONSTANTS & DATA
 // ════════════════════════════════════════════
 const COLORS=['#c0152a','#2563eb','#16a34a','#d97706','#7c3aed','#0891b2','#be185d'];
+// Normalize exercise name for grouping: lowercase + strip accents
+function normalizeExoName(str){return (str||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();}
 const METHODS=['Classique','Superset','Bi-Set','Tri-Set','Drop Set','Rest-Pause','Pyramidal','Circuit','EMOM','AMRAP','Tempo','Tabata','Cluster Set'];
 const MT=(m)=>{
   if(!m||m==='Classique') return `<span class="method-tag mt-c">Classique</span>`;
@@ -1674,6 +1691,11 @@ if(window._fbReady){
   });
 }
 let currentClient=null;
+// Auto-restore client session
+try{
+  const _cs=localStorage.getItem('cs_client_session');
+  if(_cs){const _sd=JSON.parse(_cs);const _cl=S.clients.find(x=>x.id===_sd.id);if(_cl){currentClient=_cl;setTimeout(()=>{try{loadClientApp();showScreen('client-app');}catch(e){currentClient=null;}},50);}}
+}catch(e){}
 let seanceCount=0;
 let weekCount=0;
 let activeWeekId=null;
@@ -1810,19 +1832,13 @@ function closeSidebar(){
   document.getElementById('main-sidebar')?.classList.remove('open');
   document.getElementById('sidebar-overlay')?.classList.remove('active');
 }
-function goLanding(){showScreen('landing');currentClient=null;}
+function goLanding(){showScreen('landing');currentClient=null;try{localStorage.removeItem('cs_client_session');}catch(e){}}
 function goCoachLogin(){showScreen('coach-login');$('coach-pwd').value='';setTimeout(()=>$('coach-pwd').focus(),100);}
 function goClientLogin(){
   showScreen('client-login');
-  const sel=$('cl-select');
-  sel.innerHTML='<option value="">— Choisir —</option>';
-  S.clients.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.prenom+' '+c.nom;sel.appendChild(o);});
-  $('cl-pwd-wrap').style.display='none';
-}
-function onClientSelect(){
-  const id=parseInt($('cl-select').value);
-  $('cl-pwd-wrap').style.display=id?'block':'none';
-  if(id) setTimeout(()=>$('cl-pwd').focus(),100);
+  const pi=$('cl-prenom');const ni=$('cl-nom');const pw=$('cl-pwd');
+  if(pi)pi.value='';if(ni)ni.value='';if(pw)pw.value='';
+  setTimeout(()=>pi?.focus(),100);
 }
 function coachLogin(){
   try{
@@ -1834,12 +1850,15 @@ function coachLogin(){
   }
 }
 function clientLogin(){
-  const id=parseInt($('cl-select').value);
-  if(!id){showToast('Sélectionne ton profil !');return;}
-  const c=S.clients.find(x=>x.id===id);
-  if(!c){showToast('Profil introuvable');return;}
+  const prenomInput=normalizeExoName($('cl-prenom')?.value||'');
+  const nomInput=normalizeExoName($('cl-nom')?.value||'');
+  if(!prenomInput||!nomInput){showToast('Entre ton prénom et ton nom !');return;}
+  const c=S.clients.find(x=>normalizeExoName(x.prenom)===prenomInput && normalizeExoName(x.nom)===nomInput);
+  if(!c){showToast('Profil introuvable — vérifie ton prénom et nom');return;}
   if($('cl-pwd').value.trim()!==getClientPwd(c)){showToast('Mot de passe incorrect ❌');return;}
-  currentClient=c;loadClientApp();showScreen('client-app');
+  currentClient=c;
+  try{localStorage.setItem('cs_client_session',JSON.stringify({id:c.id,ts:Date.now()}));}catch(e){}
+  loadClientApp();showScreen('client-app');
 }
 
 // ════════════════════════════════════════════
@@ -1923,7 +1942,55 @@ function toggleCustomDur(){
   else inp.style.display='none';
 }
 function getObj(){const s=$('b-obj');if(!s)return '';return s.value==='custom'?($('b-obj-custom')?.value.trim()||'Personnalisé'):s.value;}
-function getDur(){const s=$('b-dur');if(!s)return '';return s.value==='custom'?($('b-dur-custom')?.value.trim()||'Personnalisée'):s.value;}
+function getDur(){
+  const mode=$('b-prog-mode')?.value||'programme';
+  if(mode==='carnet'){
+    const nb=getCarnetNb();return nb+' séances';
+  }
+  const s=$('b-dur');if(!s)return '';return s.value==='custom'?($('b-dur-custom')?.value.trim()||'Personnalisée'):s.value;
+}
+function getCarnetNb(){const s=$('b-nb-seances');if(!s)return 15;if(s.value==='custom')return parseInt($('b-nb-seances-custom')?.value)||15;return parseInt(s.value)||15;}
+
+function setProgMode(mode){
+  $('b-prog-mode').value=mode;
+  const isCarnet=mode==='carnet';
+  // Toggle buttons
+  const bp=$('b-mode-prog'),bc=$('b-mode-carnet');
+  if(bp){bp.style.border='2px solid '+(isCarnet?'var(--border)':'var(--red)');bp.style.background=isCarnet?'var(--s2)':'var(--red-dim)';bp.style.color=isCarnet?'var(--muted)':'var(--red)';}
+  if(bc){bc.style.border='2px solid '+(isCarnet?'var(--red)':'var(--border)');bc.style.background=isCarnet?'var(--red-dim)':'var(--s2)';bc.style.color=isCarnet?'var(--red)':'var(--muted)';}
+  // Toggle fields
+  const df=$('b-dur-field'),nf=$('b-nb-seances-field');
+  if(df)df.style.display=isCarnet?'none':'block';
+  if(nf)nf.style.display=isCarnet?'block':'none';
+  // Update section label
+  const lbl=$('weeks-section-label'),btn=$('btn-add-week');
+  if(lbl)lbl.textContent=isCarnet?'🎫 SÉANCES DU CARNET':'📅 SEMAINES';
+  if(btn)btn.textContent=isCarnet?'＋ Séance':'＋ Semaine';
+  updatePreview();
+}
+
+function rebuildCarnetSeances(){
+  const sel=$('b-nb-seances'),inp=$('b-nb-seances-custom');
+  if(sel.value==='custom'){inp.style.display='block';inp.focus();return;}
+  inp.style.display='none';
+  const nb=getCarnetNb();
+  clearBuilder();
+  for(let i=0;i<nb;i++){
+    addWeek('Séance '+(i+1));
+    const wid=weekCount;
+    // Each carnet "week" has exactly 1 séance
+    // The addWeek for wid===1 creates 2 default séances, remove the extras
+    const wrap=$('seances-wrap-'+wid);
+    if(wrap){
+      const sbs=wrap.querySelectorAll('.sb');
+      if(sbs.length>1){for(let j=1;j<sbs.length;j++){const sid2=sbs[j].id.replace('sb-','');delete exoCounts[parseInt(sid2)];delete setDetailCounts[parseInt(sid2)];sbs[j].remove();}}
+      if(sbs.length===0){addSeanceToWeek(wid);}
+    }
+  }
+  switchWeekBuilder(1);
+  updatePreview();
+  showToast('🎫 Carnet de '+nb+' séances créé !');
+}
 
 // ── CLIENT DETAIL MODAL ──
 function openClientDetail(id){
@@ -2619,7 +2686,8 @@ function renderAccordion(prog, withLog=false, openFirstWeek=true, useClassicAcco
             md.stations.forEach((st,sti)=>{const p=st.type==='durée'?st.durée:st.type==='distance'?st.distance:st.reps;ctH+=`<tr><td style="color:var(--info);font-weight:700">${sti+1}</td><td>${st.name||'Station '+(sti+1)}</td><td>${p||'—'}${st.type==='durée'?' (durée)':st.type==='distance'?' (distance)':''}</td><td>${st.load||'PDC'}</td></tr>`;});
             h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name||'Circuit'}</strong>${MT(e.method)}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>#</th><th>Station</th><th>Rép./Durée</th><th>Charge</th></tr></thead><tbody>${ctH}</tbody></table></td></tr>`;
           } else {
-            h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.variant?' <span style="font-size:10px;color:var(--muted);font-style:italic">('+e.variant+')</span>':''}${e.method&&e.method!=='Classique'?MT(e.method):''}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
+            const _ti=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:inline-flex;gap:3px;align-items:center;margin-left:6px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:3px;padding:1px 6px;font-size:9px"><span style="font-weight:700;color:#a855f7">⏱</span><span style="color:var(--text);font-weight:600">${e.methodData.tempo}</span></div>`:'';
+            h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.variant?' <span style="font-size:10px;color:var(--muted);font-style:italic">('+e.variant+')</span>':''}${e.method&&e.method!=='Classique'?MT(e.method):''}${_ti}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
           }
         });
         h+=`</tbody></table>`;
@@ -3345,8 +3413,17 @@ function openProgramWizard(){
     <div style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px">🧙 Assistant de création</div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Définis la structure de ton programme en quelques clics</div>
 
+    <div class="wizard-step" id="wiz-step-0">
+      <div class="plbl" style="font-weight:800;color:var(--red2);margin-bottom:8px">Type de programme</div>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button class="wiz-num-btn active" id="wiz-mode-prog" onclick="wizSetMode('programme')" style="flex:1;font-size:11px;padding:8px">📅 Programme (semaines)</button>
+        <button class="wiz-num-btn" id="wiz-mode-carnet" onclick="wizSetMode('carnet')" style="flex:1;font-size:11px;padding:8px">🎫 Carnet de séances</button>
+      </div>
+      <input type="hidden" id="wiz-mode" value="programme">
+    </div>
+
     <div class="wizard-step" id="wiz-step-1">
-      <div class="plbl" style="font-weight:800;color:var(--red2);margin-bottom:8px">Étape 1 — Combien de séances par semaine ?</div>
+      <div class="plbl" style="font-weight:800;color:var(--red2);margin-bottom:8px" id="wiz-step1-label">Étape 1 — Combien de séances par semaine ?</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
         ${[2,3,4,5,6].map(n=>`<button class="wiz-num-btn${n===4?' active':''}" onclick="wizSetNbSeances(${n})">${n}</button>`).join('')}
       </div>
@@ -3412,9 +3489,57 @@ function wizSetNbWeeks(n){
   });
 }
 
+function wizSetMode(mode){
+  $('wiz-mode').value=mode;
+  const isCarnet=mode==='carnet';
+  $('wiz-mode-prog').classList.toggle('active',!isCarnet);
+  $('wiz-mode-carnet').classList.toggle('active',isCarnet);
+  // Adapt labels
+  $('wiz-step1-label').textContent=isCarnet?'Étape 1 — Combien de séances dans le carnet ?':'Étape 1 — Combien de séances par semaine ?';
+  $('wiz-step-2').style.display=isCarnet?'none':'block';
+  const s3=$('wiz-step-3');if(s3)s3.style.display=isCarnet?'none':'block';
+  // In carnet mode, the number in step 1 = total sessions
+  if(isCarnet){
+    // Show higher numbers for carnet
+    const step1=document.querySelector('#wiz-step-1 div[style*="flex"]');
+    if(step1) step1.innerHTML=[5,10,15,20].map(n=>`<button class="wiz-num-btn${n===15?' active':''}" onclick="wizSetNbSeances(${n})">${n}</button>`).join('');
+    $('wiz-nb-seances').value=15;
+  } else {
+    const step1=document.querySelector('#wiz-step-1 div[style*="flex"]');
+    if(step1) step1.innerHTML=[2,3,4,5,6].map(n=>`<button class="wiz-num-btn${n===4?' active':''}" onclick="wizSetNbSeances(${n})">${n}</button>`).join('');
+    $('wiz-nb-seances').value=4;
+    wizSetNbSeances(4);
+  }
+}
+
 function applyWizard(){
+  const wizMode=$('wiz-mode')?.value||'programme';
   const nbSeances=parseInt($('wiz-nb-seances')?.value)||4;
   const nbWeeks=parseInt($('wiz-nb-weeks')?.value)||8;
+
+  // ── CARNET MODE ──
+  if(wizMode==='carnet'){
+    clearBuilder();
+    setProgMode('carnet');
+    // Set nb séances dropdown
+    const nbSel=$('b-nb-seances');
+    if(nbSel){let found=false;for(let o of nbSel.options){if(o.value==nbSeances){o.selected=true;found=true;break;}}if(!found){nbSel.value='custom';$('b-nb-seances-custom').style.display='block';$('b-nb-seances-custom').value=nbSeances;}}
+    // Create each séance as a "week" with 1 session
+    for(let i=0;i<nbSeances;i++){
+      addWeek('Séance '+(i+1));
+      const wid=weekCount;
+      const wrap=$('seances-wrap-'+wid);
+      if(wrap){const sbs=wrap.querySelectorAll('.sb');if(sbs.length>1){for(let j=1;j<sbs.length;j++){const sid2=sbs[j].id.replace('sb-','');delete exoCounts[parseInt(sid2)];delete setDetailCounts[parseInt(sid2)];sbs[j].remove();}}}
+    }
+    switchWeekBuilder(1);
+    const nameInp=$('b-name');
+    if(nameInp&&!nameInp.value) nameInp.value='Carnet '+nbSeances+' séances';
+    closeGenericModal();updatePreview();
+    showToast('🎫 Carnet de '+nbSeances+' séances créé !',true);
+    return;
+  }
+
+  // ── PROGRAMME MODE ──
   // Collect séance names
   const seanceNames=[];
   for(let i=0;i<nbSeances;i++){
@@ -3423,6 +3548,7 @@ function applyWizard(){
   }
   // Clear builder
   clearBuilder();
+  setProgMode('programme');
   // Set durée
   const durSel=$('b-dur');
   if(durSel){
@@ -3724,7 +3850,7 @@ function saveProg(){
           nw.done=ow.done||false;
         }
       });
-      Object.assign(p,{clientId,name,obj:getObj(),dur:getDur(),notes:$('b-notes').value,weeks});
+      Object.assign(p,{clientId,name,obj:getObj(),dur:getDur(),mode:$('b-prog-mode')?.value||'programme',notes:$('b-notes').value,weeks});
     }
     saveState();renderStats();renderProgs();
     showToast('✅ Programme modifié !',true);
@@ -3732,7 +3858,8 @@ function saveProg(){
     cTab('programmes',null);
   } else {
     const cl=S.clients.find(x=>x.id===clientId);
-    const prog={id:Date.now(),clientId,name,obj:getObj(),dur:getDur(),notes:$('b-notes').value,weeks,date:new Date().toLocaleDateString('fr-FR'),startDate:new Date().toISOString().split('T')[0]};
+    const progMode=$('b-prog-mode')?.value||'programme';
+    const prog={id:Date.now(),clientId,name,obj:getObj(),dur:getDur(),mode:progMode,notes:$('b-notes').value,weeks,date:new Date().toLocaleDateString('fr-FR'),startDate:new Date().toISOString().split('T')[0]};
     S.programmes.push(prog);
     if(cl&&cl.status==='new')cl.status='active';
     saveState();renderStats();renderDashboard();
@@ -3752,6 +3879,8 @@ function editProg(id){
   $('b-obj').value=p.obj||'';
   $('b-dur').value=p.dur||'';
   $('b-notes').value=p.notes||'';
+  // Restore mode
+  setProgMode(p.mode||'programme');
   
   // Rebuild weeks-based programme
   const weeks = p.weeks || (p.seances ? [{id:1,name:'Semaine 1',seances:p.seances,unlocked:true}] : []);
@@ -3861,7 +3990,8 @@ function editProg(id){
 
 // ── RENDER PROGRAMME ──
 function renderProgHeader(prog,c){
-  return `<div class="prog-header"><div class="ph-coach">Programme par ${S.coachName} · Coach Fitness BPJEPS</div><div class="ph-name">${prog.name}</div><div class="ph-chips"><span class="chip red">${prog.obj}</span><span class="chip">📅 ${prog.dur}</span>${c?`<span class="chip">👤 ${c.prenom} ${c.nom}</span>`:''}</div></div>`;
+  const modeChip=prog.mode==='carnet'?'<span class="chip" style="background:rgba(139,92,246,.1);color:#a855f7">🎫 Carnet</span>':'';
+  return `<div class="prog-header"><div class="ph-coach">Programme par ${S.coachName} · Coach Fitness BPJEPS</div><div class="ph-name">${prog.name}</div><div class="ph-chips"><span class="chip red">${prog.obj}</span><span class="chip">📅 ${prog.dur}</span>${modeChip}${c?`<span class="chip">👤 ${c.prenom} ${c.nom}</span>`:''}</div></div>`;
 }
 
 function renderSeanceTabs(prog,withLog=false,preview=false,progId=null,weekIdx=null){
@@ -3977,7 +4107,8 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
     } else if(e.detail&&e.setDetails&&e.setDetails.length){
       h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
     } else {
-      h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
+      const tempoInfo=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:flex;gap:4px;align-items:center;margin-top:4px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:4px;padding:4px 8px;font-size:10px"><span style="font-weight:700;color:#a855f7">⏱ TEMPO</span>${e.methodData.tempo.split('-').map((v,ti)=>'<span style="color:var(--muted)">'+['Exc','Bas','Con','Haut'][ti]+':</span><span style="font-weight:700">'+v+'s</span>').join('<span style="color:var(--border)">·</span>')}</div>`:'';
+      h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${tempoInfo}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
     }
     if(withLog&&!preview){
       let seriesHtml='';
@@ -4982,7 +5113,7 @@ function renderAdvancedAnalytics(clientId){
       // Normalized metrics
       const volNorm=Math.round(vol*contextCoeff);
       const est1RMNorm=Math.round(est1RM*contextCoeff*10)/10;
-      const _exoKey=e.exo+(e.variant?` (${e.variant})`:"");if(!exoData[_exoKey]) exoData[_exoKey]=[];
+      const _exoKey=normalizeExoName(e.exo)+(e.variant?` (${normalizeExoName(e.variant)})`:"");if(!exoData[_exoKey]) exoData[_exoKey]=[];
       exoData[_exoKey].push({
         date:log.date,seance:log.seanceName||'',
         volume:vol,volNorm,maxLoad,totalReps,totalSeries,
@@ -5215,7 +5346,7 @@ function renderExoProgressChart(clientId){
         totalVol+=reps*load;
       });
       if(!hasData) return;
-      const _exoKey=e.exo+(e.variant?` (${e.variant})`:"");if(!exoData[_exoKey]) exoData[_exoKey]=[];
+      const _exoKey=normalizeExoName(e.exo)+(e.variant?` (${normalizeExoName(e.variant)})`:"");if(!exoData[_exoKey]) exoData[_exoKey]=[];
       exoData[_exoKey].push({date:log.date,volume:totalVol,maxLoad,totalReps,nSeries:e.seriesData.length});
     });
   });
@@ -6279,7 +6410,7 @@ function openExoDictionary(clientId){
   logs.forEach(log=>{
     (log.entries||[]).forEach(e=>{
       if(!e.exo)return;
-      const key=e.exo+(e.variant?' ('+e.variant+')':'');
+      const key=normalizeExoName(e.exo)+(e.variant?' ('+normalizeExoName(e.variant)+')':'');
       if(!exoMap[key]) exoMap[key]={name:e.exo,variant:e.variant||'',sessions:[]};
       const seriesData=e.seriesData||[];
       let vol=0,maxLoad=0,totalReps=0;
@@ -6919,6 +7050,7 @@ function renderNutrition(){
 }
 
 function openAddFood(category,date){
+  window._foodBase=null;
   const favs=S.nutritionFavs||[];
   let h=`<div style="max-width:450px;max-height:80vh;overflow-y:auto">
     <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;margin-bottom:10px">🍽 Ajouter un aliment</div>
@@ -6938,7 +7070,10 @@ function openAddFood(category,date){
     <div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:8px">
       <div style="font-size:11px;font-weight:700;margin-bottom:6px">✏️ Saisie manuelle</div>
       <input type="text" id="food-name" placeholder="Nom de l'aliment" style="width:100%;margin-bottom:4px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 8px;font-size:12px;color:var(--text)">
-      <input type="text" id="food-qty" placeholder="Quantité (ex: 100g, 1 portion)" style="width:100%;margin-bottom:6px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 8px;font-size:12px;color:var(--text)">
+      <div style="display:flex;gap:4px;align-items:center;margin-bottom:6px">
+        <input type="number" id="food-qty" placeholder="100" value="100" oninput="recalcFood()" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 8px;font-size:12px;color:var(--text)">
+        <span style="font-size:11px;color:var(--muted);flex-shrink:0">grammes</span>
+      </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
         <div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Calories</div><input type="number" id="food-cal" placeholder="kcal" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:5px;font-size:12px;color:var(--red);font-weight:700;text-align:center"></div>
         <div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Protéines</div><input type="number" id="food-prot" placeholder="g" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:5px;font-size:12px;color:#3b82f6;font-weight:700;text-align:center"></div>
@@ -7010,12 +7145,23 @@ function searchFood(){
 
 function fillFoodFromSearch(el){
   $('food-name').value=el.dataset.name;
-  $('food-qty').value='100g';
+  $('food-qty').value='100';
   $('food-cal').value=el.dataset.cal;
   $('food-prot').value=el.dataset.prot;
   $('food-gluc').value=el.dataset.gluc;
   $('food-lip').value=el.dataset.lip;
-  showToast('Produit sélectionné — ajuste la quantité si besoin');
+  // Store base values per 100g for auto-recalc
+  window._foodBase={cal:parseFloat(el.dataset.cal)||0,prot:parseFloat(el.dataset.prot)||0,gluc:parseFloat(el.dataset.gluc)||0,lip:parseFloat(el.dataset.lip)||0};
+  showToast('Produit sélectionné — modifie les grammes pour recalculer');
+}
+function recalcFood(){
+  if(!window._foodBase) return;
+  const qty=parseFloat($('food-qty')?.value)||100;
+  const ratio=qty/100;
+  $('food-cal').value=Math.round(window._foodBase.cal*ratio);
+  $('food-prot').value=Math.round(window._foodBase.prot*ratio*10)/10;
+  $('food-gluc').value=Math.round(window._foodBase.gluc*ratio*10)/10;
+  $('food-lip').value=Math.round(window._foodBase.lip*ratio*10)/10;
 }
 
 function addFoodEntry(category,date,asFav){
@@ -7023,7 +7169,7 @@ function addFoodEntry(category,date,asFav){
   if(!name){showToast('Nom requis');return;}
   const entry={
     name,
-    qty:$('food-qty')?.value.trim()||'',
+    qty:($('food-qty')?.value.trim()||'100')+'g',
     cal:parseFloat($('food-cal')?.value)||0,
     prot:parseFloat($('food-prot')?.value)||0,
     gluc:parseFloat($('food-gluc')?.value)||0,
