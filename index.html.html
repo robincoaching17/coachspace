@@ -2257,6 +2257,7 @@ function duplicateWeek(sourceWid){
       const load=$(`el-${sourceSid}-${sourceEid}`)?.value||'';
       const rest=$(`ert-${sourceSid}-${sourceEid}`)?.value||'';
       const tech=$(`etn-${sourceSid}-${sourceEid}`)?.value||'';
+      const demoUrl=$(`edemo-${sourceSid}-${sourceEid}`)?.value||'';
       const mo=METHODS.map(m=>`<option${m===method?' selected':''}>${m}</option>`).join('');
 
       // Check if detail mode is active
@@ -2274,7 +2275,8 @@ function duplicateWeek(sourceWid){
       <button class="${detailBtnClass}" id="dtog-${newSid}-${newEid}" onclick="toggleDetail(${newSid},${newEid})" style="margin-top:14px">${detailBtnText}</button></div>
       <div id="detail-wrap-${newSid}-${newEid}" style="display:${detailDisplay}"><table class="set-detail-table" id="detail-tbl-${newSid}-${newEid}"><thead><tr><th>#</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody id="detail-tbody-${newSid}-${newEid}"></tbody></table><button class="btn-add-exo" style="margin-top:4px" onclick="addSetRow(${newSid},${newEid})">+ Série</button></div>
       </div>
-      <input class="ti" type="text" id="etn-${newSid}-${newEid}" value="${tech.replace(/"/g,'&quot;')}" placeholder="💡 Conseil technique..." oninput="updatePreview()">`;
+      <input class="ti" type="text" id="etn-${newSid}-${newEid}" value="${tech.replace(/"/g,'&quot;')}" placeholder="💡 Conseil technique..." oninput="updatePreview()">
+      <input class="ti" type="text" id="edemo-${newSid}-${newEid}" value="${demoUrl.replace(/"/g,'&quot;')}" placeholder="🎬 Lien vidéo/GIF démo (YouTube, Instagram...)" oninput="updatePreview()" style="border-color:rgba(139,92,246,.3);color:var(--text)">`;
       $(`exos-${newSid}`)?.appendChild(exoDiv);
 
       // Copy detail rows if detail mode was active
@@ -2506,7 +2508,7 @@ function collectWeeks(){
           const n=setDetailCounts[sid]?.[eid]||3;
           setDetails=Array.from({length:n},(_,i)=>({reps:$(`dr-${sid}-${eid}-${i}`)?.value||'—',load:$(`dl-${sid}-${eid}-${i}`)?.value||'—',rest:$(`drt-${sid}-${eid}-${i}`)?.value||globalRest}));
         }
-        exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',variant:$(`ev-${sid}-${eid}`)?.value.trim()||'',methodData:getMethodData(sid,eid)});
+        exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',variant:$(`ev-${sid}-${eid}`)?.value.trim()||'',demoUrl:$(`edemo-${sid}-${eid}`)?.value.trim()||'',methodData:getMethodData(sid,eid)});
       });
       if(exos.length||sname) seances.push({num:snum,name:sname,objective:sobj,warmup:$(`swarmup-${sid}`)?.value.trim()||'',exos});
     });
@@ -2657,12 +2659,12 @@ function renderAccordion(prog, withLog=false, openFirstWeek=true, useClassicAcco
       const doneKey2=`${prog.id}_w${wi}_s${si}`;
       const doneDate=withLog?(S.doneSeances?.[cid]?.[doneKey1]||S.doneSeances?.[cid]?.[doneKey2]):null;
       h+=`<div class="seance-tab-content${si===0?' active':''}" data-si="${si}">`;
-      if(s.objective) h+=`<div style="background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--info)">🎯 <strong>Objectif :</strong> ${s.objective}</div>`;
-      if(s.warmup) h+=`<div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--warn);white-space:pre-line;line-height:1.6">🔥 <strong>Échauffement</strong>\n${s.warmup}</div>`;
       if(withLog){
         const pidStr=`${prog.id}-w${wi}`;
         h+=renderSeanceContent(s,false,pidStr,si,true,false,prog.id,wi);
       } else {
+      if(s.objective) h+=`<div style="background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--info)">🎯 <strong>Objectif :</strong> ${s.objective}</div>`;
+      if(s.warmup) h+=`<div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--warn);white-space:pre-line;line-height:1.6">🔥 <strong>Échauffement</strong>\n${s.warmup}</div>`;
         h+=`<table class="exo-table" style="margin:0"><thead><tr><th>#</th><th>Exercice</th><th>Séries</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>`;
         (s.exos||[]).forEach((e,ei)=>{
           if(!e.name) return;
@@ -2687,7 +2689,8 @@ function renderAccordion(prog, withLog=false, openFirstWeek=true, useClassicAcco
             h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name||'Circuit'}</strong>${MT(e.method)}</td><td colspan="4"><table class="set-tbl"><thead><tr><th>#</th><th>Station</th><th>Rép./Durée</th><th>Charge</th></tr></thead><tbody>${ctH}</tbody></table></td></tr>`;
           } else {
             const _ti=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:inline-flex;gap:3px;align-items:center;margin-left:6px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:3px;padding:1px 6px;font-size:9px"><span style="font-weight:700;color:#a855f7">⏱</span><span style="color:var(--text);font-weight:600">${e.methodData.tempo}</span></div>`:'';
-            h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.variant?' <span style="font-size:10px;color:var(--muted);font-style:italic">('+e.variant+')</span>':''}${e.method&&e.method!=='Classique'?MT(e.method):''}${_ti}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
+            const _di=e.demoUrl?'<span style="margin-left:4px;font-size:9px;color:#a855f7" title="Vidéo démo liée">🎬</span>':'';
+            h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.variant?' <span style="font-size:10px;color:var(--muted);font-style:italic">('+e.variant+')</span>':''}${e.method&&e.method!=='Classique'?MT(e.method):''}${_ti}${_di}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
           }
         });
         h+=`</tbody></table>`;
@@ -2762,7 +2765,8 @@ function addExo(sid){
     <button class="btn-add-exo" style="margin-top:4px" onclick="addSetRow(${sid},${eid})">+ Série</button>
   </div>
   </div>
-  <input class="ti" type="text" id="etn-${sid}-${eid}" placeholder="💡 Conseil technique..." oninput="updatePreview()">`;
+  <input class="ti" type="text" id="etn-${sid}-${eid}" placeholder="💡 Conseil technique..." oninput="updatePreview()">
+  <input class="ti" type="text" id="edemo-${sid}-${eid}" placeholder="🎬 Lien vidéo/GIF démo (YouTube, Instagram...)" oninput="updatePreview()" style="border-color:rgba(139,92,246,.3);color:var(--text)">`;
   c.appendChild(d);renderSetRows(sid,eid);renumberExos(sid);
 }
 function removeExo(sid,eid){const el=$(`ex-${sid}-${eid}`);if(el)el.remove();renumberExos(sid);updatePreview();}
@@ -3614,7 +3618,7 @@ function collectSeances(){
         const n=setDetailCounts[sid]?.[eid]||3;
         setDetails=Array.from({length:n},(_,i)=>({reps:$(`dr-${sid}-${eid}-${i}`)?.value||'—',load:$(`dl-${sid}-${eid}-${i}`)?.value||'—',rest:$(`drt-${sid}-${eid}-${i}`)?.value||globalRest}));
       }
-      exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',variant:$(`ev-${sid}-${eid}`)?.value.trim()||'',methodData:getMethodData(sid,eid)});
+      exos.push({id:`${sid}-${eid}`,name:ename,method:$(`mth-${sid}-${eid}`)?.value||'Classique',detail,sets:$(`es-${sid}-${eid}`)?.value||'—',reps:$(`er-${sid}-${eid}`)?.value||'—',load:$(`el-${sid}-${eid}`)?.value||'—',rest:globalRest,setDetails,tech:$(`etn-${sid}-${eid}`)?.value||'',variant:$(`ev-${sid}-${eid}`)?.value.trim()||'',demoUrl:$(`edemo-${sid}-${eid}`)?.value.trim()||'',methodData:getMethodData(sid,eid)});
     });
     if(exos.length||sname)seances.push({num,name:sname,objective:sobj,warmup:$(`swarmup-${sid}`)?.value.trim()||'',exos});
   });
@@ -3934,7 +3938,8 @@ function editProg(id){
     <button class="btn-add-exo" style="margin-top:4px" onclick="addSetRow(${sid},${eid})">+ Série</button>
   </div>
   </div>
-  <input class="ti" type="text" id="etn-${sid}-${eid}" value="${(e.tech||'').replace(/"/g,'&quot;')}" placeholder="💡 Conseil technique..." oninput="updatePreview()">`;
+  <input class="ti" type="text" id="etn-${sid}-${eid}" value="${(e.tech||'').replace(/"/g,'&quot;')}" placeholder="💡 Conseil technique..." oninput="updatePreview()">
+  <input class="ti" type="text" id="edemo-${sid}-${eid}" value="${(e.demoUrl||'').replace(/"/g,'&quot;')}" placeholder="🎬 Lien vidéo/GIF démo (YouTube, Instagram...)" oninput="updatePreview()" style="border-color:rgba(139,92,246,.3);color:var(--text)">`;
         c?.appendChild(d);
         // Restore custom method data if present
         if(e.methodData && e.method==='Drop Set'){
@@ -4040,6 +4045,8 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
     if(!e)return;
     if(!e.name&&!e.methodData)return;
     e.id=e.id||`${s.num||0}-${i}`;
+    // Demo link helper
+    const _demoHtml=e.demoUrl?`<a href="${e.demoUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;font-size:10px;color:#a855f7;text-decoration:none;font-weight:700" onclick="event.stopPropagation()">🎬 Voir la démo</a>`:'';
     // Check for exercise replacement by coaché
     const cid3=currentClient?.id;
     const replKey=`${pid}-${e.id}`;
@@ -4057,7 +4064,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
           dsHtml+=`<tr class="ds-sub-row"><td><span style="color:var(--warn);font-size:10px">↘ drop ${di+1}</span></td><td>${dr.reps}</td><td>${dr.load||'—'}</td></tr>`;
         });
       });
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${dsHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${dsHtml}</tbody></table></td></tr>`;
     } else if(e.method==='Rest-Pause' && e.methodData && e.methodData.sets){
       const md=e.methodData;
       let rpHtml='';
@@ -4068,7 +4075,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
           rpHtml+=`<tr class="ds-sub-row"><td><span style="color:var(--info);font-size:10px">↩ relance ${ri+1}</span> ${r.reps}</td><td>=</td><td>${ri===st.relances.length-1?(md.restEnd||"2'00"):(st.pause||'15s')}</td></tr>`;
         });
       });
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpHtml}</tbody></table></td></tr>`;
     } else if(e.method==='Circuit' && e.methodData && e.methodData.stations){
       const md=e.methodData;
       let ctHtml=`<tr style="background:rgba(56,189,248,.05)"><td colspan="4" style="font-size:10px;color:var(--info);padding:4px 8px">🔄 ${md.tours} tours · Repos entre tours: ${md.reposTours||'—'} · Repos entre stations: ${md.reposStations||'0'}</td></tr>`;
@@ -4076,7 +4083,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
         const prescrit=st.type==='durée'?st.durée:st.reps;
         ctHtml+=`<tr><td style="color:var(--info);font-weight:700">${si+1}</td><td>${st.name||'Station '+(si+1)}</td><td>${prescrit||'—'}${st.type==='durée'?' (durée)':''}</td><td>${st.load||'PDC'}</td></tr>`;
       });
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'Circuit'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>#</th><th>Station</th><th>Rép./Durée</th><th>Charge</th></tr></thead><tbody>${ctHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'Circuit'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>#</th><th>Station</th><th>Rép./Durée</th><th>Charge</th></tr></thead><tbody>${ctHtml}</tbody></table></td></tr>`;
     } else if((e.method==='Superset'||e.method==='Bi-Set'||e.method==='Tri-Set') && e.methodData && e.methodData.exercises){
       const md=e.methodData;
       const labels=['A','B','C'];const colors2=['#c0152a','#3b82f6','#22c55e'];
@@ -4088,7 +4095,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
           ssHtml+=`<tr${ei>0?' class="ds-sub-row"':''}><td${ei===0?' rowspan="'+set.exos.length+'" style="vertical-align:middle;font-weight:700"':' style="display:none"'}>${si+1}</td><td><span style="color:${colors2[ei]};font-weight:700">${labels[ei]}</span> ${exName}${exVar}</td><td>${exD.reps||'—'}</td><td>${exD.load||'—'}</td>${ei===0?`<td rowspan="${set.exos.length}" style="vertical-align:middle">${set.rest||"1'30"}</td>`:''}</tr>`;
         });
       });
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||e.method}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Série</th><th>Exercice</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${ssHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||e.method}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Série</th><th>Exercice</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${ssHtml}</tbody></table></td></tr>`;
     } else if(e.method==='EMOM' && e.methodData){
       const md=e.methodData;
       let emHtml=`<tr style="background:rgba(245,158,11,.05)"><td colspan="3" style="font-size:10px;color:var(--warn);padding:4px 8px">⏱ ${md.duration} min · Mode: ${md.mode==='alternate'?'Alternance':'Même exo'} · Repos = temps restant dans la minute</td></tr>`;
@@ -4096,19 +4103,19 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
         const minInfo=md.mode==='alternate'?(md.exercises.length>1?`Min ${ei%2===0?'impaires':'paires'}`:'Chaque min'):'Chaque min';
         emHtml+=`<tr><td style="color:var(--warn);font-weight:700">${ei+1}</td><td>${ex.name||'—'}</td><td>${ex.reps||'—'} rép. ${ex.load?'× '+ex.load:''} <span style="font-size:9px;color:var(--muted)">(${minInfo})</span></td></tr>`;
       });
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'EMOM'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>#</th><th>Exercice</th><th>Prescription</th></tr></thead><tbody>${emHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'EMOM'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>#</th><th>Exercice</th><th>Prescription</th></tr></thead><tbody>${emHtml}</tbody></table></td></tr>`;
     } else if(e.method==='AMRAP' && e.methodData){
       const md=e.methodData;
       let amHtml=`<tr style="background:rgba(192,21,42,.05)"><td colspan="3" style="font-size:10px;color:var(--red);padding:4px 8px">🔥 ${md.duration} min · Max de tours · Pas de repos programmé</td></tr>`;
       md.exercises.forEach((ex,ei)=>{
         amHtml+=`<tr><td style="color:var(--red);font-weight:700">${ei+1}</td><td>${ex.name||'—'}</td><td>${ex.reps||'—'} rép. ${ex.load?'× '+ex.load:''}</td></tr>`;
       });
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'AMRAP'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>#</th><th>Exercice</th><th>Prescription</th></tr></thead><tbody>${amHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'AMRAP'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>#</th><th>Exercice</th><th>Prescription</th></tr></thead><tbody>${amHtml}</tbody></table></td></tr>`;
     } else if(e.detail&&e.setDetails&&e.setDetails.length){
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
     } else {
       const tempoInfo=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:flex;gap:4px;align-items:center;margin-top:4px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:4px;padding:4px 8px;font-size:10px"><span style="font-weight:700;color:#a855f7">⏱ TEMPO</span>${e.methodData.tempo.split('-').map((v,ti)=>'<span style="color:var(--muted)">'+['Exc','Bas','Con','Haut'][ti]+':</span><span style="font-weight:700">'+v+'s</span>').join('<span style="color:var(--border)">·</span>')}</div>`:'';
-      h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${tempoInfo}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
+      h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${tempoInfo}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
     }
     if(withLog&&!preview){
       let seriesHtml='';
@@ -6286,7 +6293,8 @@ function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
       const seriesStr=seriesData.filter(sd=>sd.reps||sd.load).map((sd,i)=>`S${i+1}:${sd.reps||'?'}r@${sd.load||'?'}`).join(' ');
       // Check for exercise replacement
       const cid2=currentClient?.id;
-      const repl=S.exoReplacements?.[cid2]?.[`${progId}-${e.id}`];
+      const _replPid=weekIdx!==null?`${progId}-w${weekIdx}`:progId;
+      const repl=S.exoReplacements?.[cid2]?.[`${_replPid}-${e.id}`];
       const exoName=repl?repl.newName:e.name;
       const exoVariant=repl?repl.variant:(e.variant||'');
       const originalExo=repl?repl.oldName:null;
