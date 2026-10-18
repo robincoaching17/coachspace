@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="description" content="Robin Coaching France - Bilan sportif gratuit. Évalue tes objectifs et reçois un plan personnalisé.">
+<meta property="og:title" content="Bilan Gratuit — Robin Coaching France">
+<meta property="og:description" content="Évalue tes objectifs et reçois un plan d'entraînement personnalisé. Gratuit, sans engagement.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Robin Coaching France">
+<meta name="theme-color" content="#0d0d0e">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='35' width='15' height='30' rx='3' fill='%23c0152a'/%3E%3Crect x='75' y='35' width='15' height='30' rx='3' fill='%23c0152a'/%3E%3Crect x='25' y='45' width='50' height='10' rx='2' fill='%23c0152a'/%3E%3Crect x='5' y='30' width='8' height='40' rx='3' fill='%23c0152a'/%3E%3Crect x='87' y='30' width='8' height='40' rx='3' fill='%23c0152a'/%3E%3C/svg%3E">
+<title>Bilan Gratuit — Robin Coaching France</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0c0e;--s1:#131316;--s2:#1a1a1f;--s3:#222228;--border:#2d2d35;
+  --red:#c0152a;--red2:#e63946;--red-dim:rgba(192,21,42,.12);--red-glow:rgba(192,21,42,.25);
+  --muted:#6b7280;--text:#f0ece8;--success:#22c55e;--warn:#f59e0b;--info:#38bdf8;
+  --r:12px;--rs:8px;--rl:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Nunito',sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;min-height:100dvh;
+  display:flex;flex-direction:column;align-items:center;
+  padding:20px 0;
+}
+.screen{display:none;width:100%;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;}
+.screen.active{display:flex;}
+.login-box{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);padding:36px;width:560px;max-width:95vw;box-sizing:border-box;overflow:hidden;}
+.login-title{font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:4px;}
+.field{margin-bottom:12px;}
+.flabel{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:5px;display:block;}
+input[type="text"],input[type="email"],input[type="tel"],input[type="number"],textarea,select{
+  width:100%;padding:10px 14px;background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--rs);color:var(--text);font-size:14px;font-family:'Nunito',sans-serif;
+  outline:none;transition:border .2s;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--red);}
+select{cursor:pointer;}
+select option{background:var(--s2);color:var(--text);}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--rs);font-weight:700;font-size:13px;border:none;cursor:pointer;transition:all .15s;font-family:'Nunito',sans-serif;text-decoration:none;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-red:hover{background:var(--red2);transform:translateY(-1px);box-shadow:0 5px 16px var(--red-glow);}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--s2);}
+.prospect-form{display:flex;flex-direction:column;gap:10px;width:100%;max-width:100%;}
+.prospect-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:100%;}
+.prospect-check-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;max-width:100%;}
+.prospect-check{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:9px 12px;cursor:pointer;transition:all .2s;font-size:13px;line-height:1.4;user-select:none;box-sizing:border-box;}
+.prospect-check input[type="checkbox"],.prospect-check input[type="radio"]{display:none;}
+.prospect-check.sel{border-color:var(--red);background:var(--red-dim);color:var(--text);}
+.pr-progress{width:100%;height:4px;background:var(--s3);border-radius:3px;margin-bottom:6px;overflow:hidden;}
+.pr-progress-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--red2));border-radius:3px;transition:width .3s ease;}
+.pr-steps-label{font-size:10px;color:var(--muted);text-align:center;margin-bottom:14px;letter-spacing:.5px;}
+.pr-step{display:none;}
+.pr-step.active{display:block;animation:fadeIn .25s ease;}
+.pr-step-title{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;color:var(--text);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.pr-nav{display:flex;gap:8px;margin-top:16px;}
+.pr-nav .btn{flex:1;justify-content:center;padding:12px;}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:10px 22px;font-size:13px;font-weight:700;opacity:0;transition:opacity .3s;z-index:99999;pointer-events:none;}
+.toast.show{opacity:1;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){
+  .prospect-row{grid-template-columns:1fr;}
+  .prospect-check-grid{grid-template-columns:1fr 1fr;}
+  .login-box{padding:20px 16px;}
+}
+.sending-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:99999;display:none;}
+.sending-overlay.active{display:flex;}
+.sending-box{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);padding:40px;text-align:center;}
+.sending-spinner{width:40px;height:40px;border:3px solid var(--border);border-top:3px solid var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- FORM SCREEN -->
+<div id="form-screen" class="screen active" style="overflow-y:auto !important;overflow-x:hidden">
+  <div class="login-box" style="max-width:560px;width:90vw;box-sizing:border-box;overflow:hidden">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-family:'Oswald',sans-serif;font-size:32px;font-weight:700;letter-spacing:3px;margin-bottom:4px">ROBIN <span style="color:var(--red)">COACHING</span></div>
+      <div style="font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:16px">COACH SPORTIF · AIX-EN-PROVENCE</div>
+      <div class="login-title">🎯 Bilan <span style="color:var(--red)">Gratuit</span></div>
+      <div style="font-size:12px;color:var(--muted)">Remplis ce formulaire et Robin te contactera sous 24h</div>
+    </div>
+    <div class="pr-progress">
+      <div class="pr-progress-fill" id="pr-progress-fill" style="width:25%"></div>
+    </div>
+    <div class="pr-steps-label" id="pr-steps-label">Étape 1/4 — Tes infos</div>
+
+    <div class="prospect-form" id="prospect-form-wrap">
+
+      <!-- STEP 1 -->
+      <div class="pr-step active" id="pr-step-1">
+        <div class="pr-step-title">👤 Tes informations</div>
+        <div class="prospect-row">
+          <div class="field"><label class="flabel">Prénom *</label><input type="text" id="pr-prenom" placeholder="Ton prénom"></div>
+          <div class="field"><label class="flabel">Nom *</label><input type="text" id="pr-nom" placeholder="Ton nom"></div>
+        </div>
+        <div class="prospect-row">
+          <div class="field"><label class="flabel">Âge</label><input type="number" id="pr-age" placeholder="25" min="14" max="80"></div>
+          <div class="field"><label class="flabel">Sexe</label><select id="pr-sexe"><option value="">—</option><option>Homme</option><option>Femme</option></select></div>
+        </div>
+        <div class="prospect-row">
+          <div class="field"><label class="flabel">Taille (cm)</label><input type="number" id="pr-taille" placeholder="175" min="100" max="230"></div>
+          <div class="field"><label class="flabel">Poids (kg)</label><input type="number" id="pr-poids" placeholder="70" min="30" max="200"></div>
+        </div>
+        <div class="prospect-row">
+          <div class="field"><label class="flabel">Email *</label><input type="email" id="pr-email" placeholder="ton@email.com"></div>
+          <div class="field"><label class="flabel">Téléphone</label><input type="tel" id="pr-tel" placeholder="06 00 00 00 00"></div>
+        </div>
+        <div class="field">
+          <label class="flabel">Objectif principal *</label>
+          <select id="pr-objectif">
+            <option value="">— Choisir —</option>
+            <option>💪 Prise de masse</option>
+            <option>🔥 Perte de poids / Rééquilibrage</option>
+            <option>⚡ Renforcement musculaire</option>
+            <option>🏃 Améliorer mon endurance</option>
+            <option>🧘 Mobilité & bien-être</option>
+            <option>🏆 Performance sportive</option>
+            <option>🩹 Réhabilitation / Retour de blessure</option>
+            <option>🎯 Autre</option>
+          </select>
+        </div>
+        <div class="field"><label class="flabel">Précise ton objectif</label><textarea id="pr-obj-detail" rows="2" placeholder="Ex: perdre 5kg avant l'été, reprendre après une blessure au genou..."></textarea></div>
+        <div class="pr-nav"><div></div><button class="btn btn-red" onclick="prStep(2)">Suivant →</button></div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="pr-step" id="pr-step-2">
+        <div class="pr-step-title">🏋️ Ton profil sportif</div>
+        <div class="field">
+          <label class="flabel">Niveau d'expérience en musculation</label>
+          <div class="prospect-check-grid" id="pr-level">
+            <div class="prospect-check" onclick="prRadio(this,'pr-level')"><input type="radio" name="pr-level" value="Débutant">🌱 Débutant</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-level')"><input type="radio" name="pr-level" value="Intermédiaire">⚡ Intermédiaire</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-level')"><input type="radio" name="pr-level" value="Avancé">🔥 Avancé</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-level')"><input type="radio" name="pr-level" value="Jamais pratiqué">🆕 Jamais pratiqué</div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="flabel">Fréquence d'entraînement actuelle</label>
+          <select id="pr-freq"><option value="">— Choisir —</option><option>Je ne m'entraîne pas actuellement</option><option>1-2 fois / semaine</option><option>3-4 fois / semaine</option><option>5+ fois / semaine</option></select>
+        </div>
+        <div class="field">
+          <label class="flabel">Depuis combien de temps tu t'entraînes ?</label>
+          <select id="pr-anciennete"><option value="">— Choisir —</option><option>Je débute</option><option>Moins de 6 mois</option><option>6 mois - 1 an</option><option>1-3 ans</option><option>3+ ans</option></select>
+        </div>
+        <div class="field"><label class="flabel">Autres sports / activités pratiqués</label><input type="text" id="pr-sports" placeholder="Ex: foot, natation, course à pied, arts martiaux..."></div>
+        <div class="field">
+          <label class="flabel">Où tu t'entraînes ?</label>
+          <div class="prospect-check-grid" id="pr-lieu">
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Salle de sport">🏢 Salle de sport</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="À domicile">🏠 À domicile</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="En extérieur">🌳 En extérieur</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Fitness Park">🔴 Fitness Park</div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="flabel">Équipement accessible</label>
+          <div class="prospect-check-grid" id="pr-equip">
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Haltères">🏋️ Haltères</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Barres">📏 Barres</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Machines guidées">⚙️ Machines guidées</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Poulies">🔗 Poulies</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Élastiques">〰️ Élastiques</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Poids du corps uniquement">🤸 Poids du corps</div>
+          </div>
+        </div>
+        <div class="pr-nav"><button class="btn btn-ghost" onclick="prStep(1)">← Retour</button><button class="btn btn-red" onclick="prStep(3)">Suivant →</button></div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="pr-step" id="pr-step-3">
+        <div class="pr-step-title">🩺 Santé & antécédents</div>
+        <div class="field">
+          <label class="flabel">As-tu des blessures actuelles ou passées ?</label>
+          <div class="prospect-check-grid" id="pr-blessures">
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Aucune blessure">✅ Aucune</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Épaule">🦴 Épaule</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Genou">🦿 Genou</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Dos / Lombaires">🔙 Dos / Lombaires</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Cheville / Pied">🦶 Cheville / Pied</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Poignet / Coude">💪 Poignet / Coude</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Hanche">🦴 Hanche</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Autre">⚠️ Autre</div>
+          </div>
+        </div>
+        <div class="field"><label class="flabel">Précisions sur tes blessures / pathologies</label><textarea id="pr-blessure-detail" rows="2" placeholder="Ex: rupture LCA genou droit en 2024, tendinite épaule gauche..."></textarea></div>
+        <div class="field">
+          <label class="flabel">Suivi médical en cours ?</label>
+          <div class="prospect-check-grid" id="pr-medical">
+            <div class="prospect-check" onclick="prRadio(this,'pr-medical')"><input type="radio" name="pr-medical" value="Non">Non</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-medical')"><input type="radio" name="pr-medical" value="Kiné">🩺 Kiné</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-medical')"><input type="radio" name="pr-medical" value="Ostéo">🦴 Ostéo</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-medical')"><input type="radio" name="pr-medical" value="Médecin du sport">⚕️ Médecin du sport</div>
+          </div>
+        </div>
+        <div class="field"><label class="flabel">Douleurs ou limitations physiques ?</label><textarea id="pr-douleurs" rows="2" placeholder="Ex: douleur au genou en squat profond, mobilité limitée des épaules..."></textarea></div>
+        <div class="pr-nav"><button class="btn btn-ghost" onclick="prStep(2)">← Retour</button><button class="btn btn-red" onclick="prStep(4)">Suivant →</button></div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="pr-step" id="pr-step-4">
+        <div class="pr-step-title">🗓 Mode de vie & disponibilités</div>
+        <div class="field">
+          <label class="flabel">Combien de séances par semaine tu peux faire ?</label>
+          <select id="pr-dispo"><option value="">— Choisir —</option><option>1-2 séances</option><option>3 séances</option><option>4 séances</option><option>5+ séances</option></select>
+        </div>
+        <div class="field">
+          <label class="flabel">Jours de préférence</label>
+          <div class="prospect-check-grid" id="pr-jours">
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Lundi">Lundi</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Mardi">Mardi</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Mercredi">Mercredi</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Jeudi">Jeudi</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Vendredi">Vendredi</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Samedi">Samedi</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Dimanche">Dimanche</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Flexible">🔄 Flexible</div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="flabel">Durée de séance souhaitée</label>
+          <select id="pr-duree-seance"><option value="">— Choisir —</option><option>30-45 min</option><option>45 min - 1h</option><option>1h - 1h15</option><option>1h15+</option></select>
+        </div>
+        <div class="field">
+          <label class="flabel">Alimentation actuelle</label>
+          <select id="pr-alim"><option value="">— Choisir —</option><option>Aucun suivi, je mange comme je veux</option><option>J'essaie de faire attention</option><option>Je suis un plan alimentaire</option><option>Régime spécifique (végan, sans gluten...)</option></select>
+        </div>
+        <div class="field">
+          <label class="flabel">Qualité du sommeil</label>
+          <div class="prospect-check-grid" id="pr-sommeil">
+            <div class="prospect-check" onclick="prRadio(this,'pr-sommeil')"><input type="radio" name="pr-sommeil" value="Bon">😴 Bon (7-8h)</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-sommeil')"><input type="radio" name="pr-sommeil" value="Moyen">😐 Moyen (5-7h)</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-sommeil')"><input type="radio" name="pr-sommeil" value="Mauvais">😵 Mauvais (-5h)</div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="flabel">Niveau de stress au quotidien</label>
+          <div class="prospect-check-grid" id="pr-stress">
+            <div class="prospect-check" onclick="prRadio(this,'pr-stress')"><input type="radio" name="pr-stress" value="Faible">😊 Faible</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-stress')"><input type="radio" name="pr-stress" value="Modéré">😐 Modéré</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-stress')"><input type="radio" name="pr-stress" value="Élevé">😰 Élevé</div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="flabel">Ce que tu souhaites</label>
+          <div class="prospect-check-grid" id="pr-wishes">
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Bilan gratuit">🔍 Bilan gratuit</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Programme personnalisé">📋 Programme perso</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Séances coachées">🏋️ Séances coachées</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Suivi nutrition">🥗 Suivi nutrition</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Suivi en ligne">📱 Suivi en ligne</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Pack complet">⭐ Pack complet</div>
+          </div>
+        </div>
+        <div class="field"><label class="flabel">Quelque chose à ajouter ?</label><textarea id="pr-message" rows="3" placeholder="Questions, contraintes, motivation, tout ce qui te semble important..."></textarea></div>
+        <div class="pr-nav"><button class="btn btn-ghost" onclick="prStep(3)">← Retour</button><button class="btn btn-red" style="flex:2" onclick="submitProspect()">🎯 Envoyer ma demande</button></div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:20px;display:flex;gap:14px;align-items:center">
+    <a href="https://www.instagram.com/robin.coachingfrance" target="_blank" style="color:var(--text);text-decoration:none;font-size:20px">📸</a>
+    <a href="mailto:robin.coaching@gmail.com" style="color:var(--text);text-decoration:none;font-size:20px">📧</a>
+    <a href="tel:0770001971" style="color:var(--text);text-decoration:none;font-size:20px">📱</a>
+  </div>
+  <div style="margin-top:10px;font-size:10px;color:var(--muted);letter-spacing:1px">Robin Coaching France · Aix-en-Provence</div>
+</div>
+
+<!-- CONFIRM SCREEN -->
+<div id="confirm-screen" class="screen">
+  <div class="login-box" style="text-align:center">
+    <div style="font-size:56px;margin-bottom:16px">🎉</div>
+    <div class="login-title" style="font-size:22px">Demande envoyée !</div>
+    <div style="font-size:13px;color:var(--muted);margin:12px 0 16px;line-height:1.6">Robin a bien reçu ta demande de bilan.<br>Il te contactera sous <strong style="color:var(--red)">24h</strong> par email ou téléphone.</div>
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:14px;text-align:left;font-size:12px;line-height:1.8">
+      <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">EN ATTENDANT, TU PEUX :</div>
+      <div>✅ Préparer tes questions pour le bilan</div>
+      <div>✅ Noter tes objectifs précis et ton planning</div>
+      <div>✅ Suivre Robin sur Instagram pour du contenu gratuit</div>
+    </div>
+    <div style="background:var(--red-dim);border:1px solid rgba(192,21,42,.2);border-radius:var(--rs);padding:12px;margin-bottom:20px;font-size:12px;color:var(--muted)">
+      📧 robin.coaching@gmail.com<br>
+      📱 07 70 00 19 71<br>
+      📸 <a href="https://www.instagram.com/robin.coachingfrance" target="_blank" style="color:var(--red2)">@robin.coachingfrance</a>
+    </div>
+    <button class="btn btn-red" style="width:100%;justify-content:center" onclick="resetForm()">🎯 Nouveau bilan</button>
+  </div>
+</div>
+
+<!-- SENDING OVERLAY -->
+<div class="sending-overlay" id="sending-overlay">
+  <div class="sending-box">
+    <div class="sending-spinner"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:16px;letter-spacing:1px">Envoi en cours...</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA9vzaAzBrfjIV6YPR49Ue0lUX8jXaXS2k",
+  authDomain: "coachingspace-6b368.firebaseapp.com",
+  projectId: "coachingspace-6b368",
+  storageBucket: "coachingspace-6b368.firebasestorage.app",
+  messagingSenderId: "939907979966",
+  appId: "1:939907979966:web:316daab1c6990a4c289cef"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const DATA_REF = doc(db, 'coachspace', 'data');
+
+window._submitToFirebase = async function(prospect) {
+  // Strategy: read current state, add prospect to prospects array, write back
+  try {
+    const snap = await getDoc(DATA_REF);
+    if (snap.exists()) {
+      const data = snap.data();
+      const state = JSON.parse(data.state || '{}');
+      if (!state.prospects) state.prospects = [];
+      state.prospects.unshift(prospect);
+      await setDoc(DATA_REF, { state: JSON.stringify(state), updatedAt: Date.now() });
+      return true;
+    } else {
+      // No state yet, create minimal one
+      const state = { prospects: [prospect] };
+      await setDoc(DATA_REF, { state: JSON.stringify(state), updatedAt: Date.now() });
+      return true;
+    }
+  } catch (e) {
+    console.error('Firebase error:', e);
+    return false;
+  }
+};
+</script>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = $(id);
+  if (el) { el.classList.add('active'); window.scrollTo(0, 0); }
+}
+
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function toggleCheck(el) { el.classList.toggle('sel'); }
+
+function prRadio(el, groupId) {
+  const group = $(groupId);
+  if (group) group.querySelectorAll('.prospect-check').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function prStep(step) {
+  if (step > 1) {
+    const prenom = $('pr-prenom')?.value.trim();
+    const nom = $('pr-nom')?.value.trim();
+    const email = $('pr-email')?.value.trim();
+    const objectif = $('pr-objectif')?.value;
+    if (!prenom || !nom) { showToast('Prénom et nom requis !'); return; }
+    if (!email) { showToast('Email requis !'); return; }
+    if (!objectif) { showToast('Choisis un objectif !'); return; }
+  }
+  document.querySelectorAll('.pr-step').forEach(s => s.classList.remove('active'));
+  const target = $(`pr-step-${step}`);
+  if (target) { target.classList.add('active'); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  const fill = $('pr-progress-fill');
+  if (fill) fill.style.width = `${step * 25}%`;
+  const labels = ['Tes infos', 'Profil sportif', 'Santé & antécédents', 'Mode de vie & disponibilités'];
+  const lbl = $('pr-steps-label');
+  if (lbl) lbl.textContent = `Étape ${step}/4 — ${labels[step - 1]}`;
+}
+
+function getCheckedValues(containerId) {
+  return [...document.querySelectorAll(`#${containerId} .prospect-check.sel`)].map(el => {
+    const inp = el.querySelector('input');
+    return inp ? inp.value : el.textContent.trim();
+  });
+}
+
+function getRadioValue(groupId) {
+  const sel = document.querySelector(`#${groupId} .prospect-check.sel input`);
+  return sel ? sel.value : '';
+}
+
+async function submitProspect() {
+  const prenom = $('pr-prenom')?.value.trim();
+  const nom = $('pr-nom')?.value.trim();
+  const email = $('pr-email')?.value.trim();
+  const objectif = $('pr-objectif')?.value;
+  if (!prenom || !nom) { showToast('Prénom et nom requis !'); prStep(1); return; }
+  if (!email) { showToast('Email requis !'); prStep(1); return; }
+  if (!objectif) { showToast('Choisis un objectif !'); prStep(1); return; }
+
+  const prospect = {
+    id: 'p' + Date.now(),
+    prenom, nom,
+    age: $('pr-age')?.value || '',
+    sexe: $('pr-sexe')?.value || '',
+    taille: $('pr-taille')?.value || '',
+    poids: $('pr-poids')?.value || '',
+    email,
+    tel: $('pr-tel')?.value.trim() || '',
+    objectif,
+    objectifDetail: $('pr-obj-detail')?.value.trim() || '',
+    niveau: getRadioValue('pr-level'),
+    frequence: $('pr-freq')?.value || '',
+    anciennete: $('pr-anciennete')?.value || '',
+    sports: $('pr-sports')?.value.trim() || '',
+    lieu: getCheckedValues('pr-lieu'),
+    equipement: getCheckedValues('pr-equip'),
+    blessures: getCheckedValues('pr-blessures'),
+    blessureDetail: $('pr-blessure-detail')?.value.trim() || '',
+    medical: getRadioValue('pr-medical'),
+    douleurs: $('pr-douleurs')?.value.trim() || '',
+    dispo: $('pr-dispo')?.value || '',
+    jours: getCheckedValues('pr-jours'),
+    dureeSeance: $('pr-duree-seance')?.value || '',
+    alimentation: $('pr-alim')?.value || '',
+    sommeil: getRadioValue('pr-sommeil'),
+    stress: getRadioValue('pr-stress'),
+    wishes: getCheckedValues('pr-wishes'),
+    message: $('pr-message')?.value.trim() || '',
+    date: new Date().toLocaleDateString('fr-FR'),
+    status: 'nouveau',
+    source: 'bilan-standalone'
+  };
+
+  // Show sending overlay
+  $('sending-overlay').classList.add('active');
+
+  const ok = await window._submitToFirebase(prospect);
+
+  $('sending-overlay').classList.remove('active');
+
+  if (ok) {
+    // Reset form fields
+    ['pr-prenom','pr-nom','pr-age','pr-poids','pr-taille','pr-email','pr-tel','pr-obj-detail','pr-sports','pr-blessure-detail','pr-douleurs','pr-message'].forEach(id => { const el = $(id); if (el) el.value = ''; });
+    ['pr-objectif','pr-sexe','pr-freq','pr-anciennete','pr-dispo','pr-duree-seance','pr-alim'].forEach(id => { const el = $(id); if (el) el.value = ''; });
+    document.querySelectorAll('.prospect-check').forEach(el => el.classList.remove('sel'));
+    prStep(1);
+    showScreen('confirm-screen');
+  } else {
+    showToast('Erreur d\'envoi. Réessaie !');
+  }
+}
+
+function resetForm() {
+  showScreen('form-screen');
+}
+
+// Make functions available globally
+window.prStep = prStep;
+window.prRadio = prRadio;
+window.toggleCheck = toggleCheck;
+window.submitProspect = submitProspect;
+window.resetForm = resetForm;
+window.showScreen = showScreen;
+</script>
+</body>
+</html>
