@@ -858,12 +858,6 @@ a.contact-link:hover{text-decoration:underline;}
   <div class="l-sub" style="font-size:14px;margin-bottom:4px">Ton coach sportif à Aix-en-Provence</div>
   <div style="font-size:11px;color:var(--muted);margin-bottom:18px;max-width:320px;text-align:center;line-height:1.6">Programmes personnalisés · Suivi de progression · Coaching en salle & en ligne</div>
   <div class="l-cards">
-    <div class="l-card l-card-prospect" onclick="goProspect()">
-      <div class="l-badge">Gratuit</div>
-      <div class="lci">🎯</div>
-      <div class="lct">Bilan offert</div>
-      <div class="lcd">Évalue tes objectifs et reçois un plan personnalisé</div>
-    </div>
     <div class="l-card" onclick="goClientLogin()">
       <div class="lci">💪</div>
       <div class="lct">Mon espace coaché</div>
@@ -2597,7 +2591,7 @@ function renderAccordion(prog, withLog=false, openFirstWeek=true, useClassicAcco
             <table class="exo-table" style="margin:0"><thead><tr><th>#</th><th>Exercice</th><th>Séries</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>`;
         (s.exos||[]).forEach((e,ei)=>{
           if(!e.name) return;
-          h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.variant?' <span style="font-size:10px;color:var(--muted);font-style:italic">('+e.variant+')</span>':''}${e.method&&e.method!=='Classique'?MT(e.method):''}</td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
+          h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.variant?' <span style="font-size:10px;color:var(--muted);font-style:italic">('+e.variant+')</span>':''}${e.method&&e.method!=='Classique'?MT(e.method):''} <button style="background:none;border:none;cursor:pointer;font-size:10px;color:var(--muted);padding:0 2px" onclick="event.stopPropagation();quickEditExoName(${prog.id},${wi},${si},${ei})" title="Corriger le nom">✏️</button></td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
         });
         h+=`</tbody></table></div></div>`;
       });
@@ -6740,6 +6734,62 @@ function applyEditLogExo(logKey,exoIdx){
   closeGenericModal();
   renderClientJournal();
   showToast(`✏️ ${oldName} → ${entry.exo} corrigé`,true);
+}
+
+// ── CORRECTION RAPIDE NOM EXERCICE (dans le programme) ──
+function quickEditExoName(progId,wi,si,ei){
+  const prog=S.programmes.find(p=>p.id===progId);if(!prog)return;
+  const weeks=prog.weeks||[{seances:prog.seances||[]}];
+  const w=weeks[wi];if(!w)return;
+  const s=(w.seances||[])[si];if(!s)return;
+  const e=(s.exos||[])[ei];if(!e)return;
+  let h=`<div style="max-width:400px">
+    <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;margin-bottom:10px">✏️ Corriger un exercice</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:10px">${prog.name} — ${w.name||'Semaine '+(wi+1)} — ${s.name}</div>
+    <div class="field"><label class="flabel">Nom de l'exercice</label><input type="text" id="qe-name" value="${(e.name||'').replace(/"/g,'&quot;')}"></div>
+    <div class="field"><label class="flabel">Variante</label><input type="text" id="qe-variant" value="${(e.variant||'').replace(/"/g,'&quot;')}" placeholder="Ex: prise serrée, poulie corde..."></div>
+    <div style="margin:10px 0 6px;display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="qe-update-logs" checked style="accent-color:var(--red)">
+      <label for="qe-update-logs" style="font-size:11px;color:var(--muted);cursor:pointer">Aussi corriger dans l'historique des séances</label>
+    </div>
+    <button class="btn btn-red" style="width:100%;justify-content:center;padding:12px;margin-top:8px" onclick="applyQuickEditExo(${progId},${wi},${si},${ei})">✅ Corriger</button>
+  </div>`;
+  showModal('',h);
+  setTimeout(()=>$('qe-name')?.focus(),100);
+}
+function applyQuickEditExo(progId,wi,si,ei){
+  const prog=S.programmes.find(p=>p.id===progId);if(!prog)return;
+  const weeks=prog.weeks||[{seances:prog.seances||[]}];
+  const e=(weeks[wi]?.seances||[])[si]?.exos?.[ei];if(!e)return;
+  const oldName=e.name;
+  const oldVariant=e.variant||'';
+  const newName=$('qe-name')?.value.trim();
+  const newVariant=$('qe-variant')?.value.trim()||'';
+  if(!newName){showToast('Le nom ne peut pas être vide');return;}
+  // Update in programme
+  e.name=newName;
+  e.variant=newVariant;
+  // Update in logs if checked
+  if($('qe-update-logs')?.checked){
+    const nOld=normalizeExoName(oldName);
+    const nOldVar=normalizeExoName(oldVariant);
+    // Update all clients' logs that reference this exercise in this programme
+    Object.keys(S.logs||{}).forEach(cid=>{
+      Object.values(S.logs[cid]||{}).forEach(log=>{
+        if(log.progId!==progId) return;
+        (log.entries||[]).forEach(entry=>{
+          if(normalizeExoName(entry.exo)===nOld && normalizeExoName(entry.variant||'')===nOldVar){
+            entry.exo=newName;
+            entry.variant=newVariant;
+          }
+        });
+      });
+    });
+  }
+  saveState();
+  closeGenericModal();
+  renderProgs();
+  showToast(`✏️ ${oldName} → ${newName}`,true);
 }
 
 // ══════════════════════════════════════════════════
