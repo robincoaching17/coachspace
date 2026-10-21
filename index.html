@@ -5554,7 +5554,7 @@ async function saveDoc(){
         reader.onerror=()=>reject(reader.error);
         reader.readAsDataURL(_pendingDocFile);
       });
-      const fileDocRef=window._fbDocRef?window._fbDocRef(window._fbDb,'coachspace_files',docObj.id):null;
+      const fileDocRef=window._fbDocRef?window._fbDocRef(window._fbDb,'coachspace',docObj.id):null;
       if(fileDocRef){
         await window._fbSetDoc(fileDocRef,{data:b64,name:_pendingDocFile.name,size:_pendingDocFile.size,created:Date.now()});
       }
@@ -5588,7 +5588,7 @@ function deleteClientDoc(cid,docId){
     if(c&&c.docs){
       const docToDelete=c.docs.find(d=>d.id===docId);
       if(docToDelete&&docToDelete.fileId&&window._fbDocRef&&window._fbDeleteDoc){
-        try{await window._fbDeleteDoc(window._fbDocRef(window._fbDb,'coachspace_files',docToDelete.fileId));}catch(e){console.warn('Could not delete file doc:',e);}
+        try{await window._fbDeleteDoc(window._fbDocRef(window._fbDb,'coachspace',docToDelete.fileId));}catch(e){console.warn('Could not delete file doc:',e);}
       }
       c.docs=c.docs.filter(d=>d.id!==docId);
     }
@@ -5599,7 +5599,7 @@ function deleteClientDoc(cid,docId){
 async function viewPdfDoc(fileId,name){
   showToast('⏳ Chargement du PDF...');
   try{
-    const fileDocRef=window._fbDocRef(window._fbDb,'coachspace_files',fileId);
+    const fileDocRef=window._fbDocRef(window._fbDb,'coachspace',fileId);
     const snap=await window._fbGetDoc(fileDocRef);
     if(!snap.exists()){showToast('❌ Fichier introuvable');return;}
     const data=snap.data();
