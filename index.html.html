@@ -127,6 +127,8 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font
 .btn-ghost:hover{background:var(--s2);}
 .btn-danger{background:rgba(255,60,60,.1);color:#ff4444;border:1px solid rgba(255,60,60,.2);}
 .btn-danger:hover{background:rgba(255,60,60,.2);}
+.btn-green{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.2);}
+.btn-green:hover{background:rgba(34,197,94,.2);}
 .btn-info{background:rgba(56,189,248,.1);color:var(--info);border:1px solid rgba(56,189,248,.2);}
 .btn-success{background:rgba(34,197,94,.1);color:var(--success);border:1px solid rgba(34,197,94,.2);}
 .btn-sm{padding:7px 13px;font-size:12px;}
@@ -795,7 +797,7 @@ a.contact-link:hover{text-decoration:underline;}
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyA9vzaAzBrfjIV6YPR49Ue0lUX8jXaXS2k",
@@ -814,6 +816,8 @@ a.contact-link:hover{text-decoration:underline;}
     window._fbDoc = DATA_REF;
     window._fbSetDoc = setDoc;
     window._fbGetDoc = getDoc;
+    window._fbDocRef = doc;
+    window._fbDeleteDoc = deleteDoc;
     window._fbOnSnapshot = onSnapshot;
 
     window._fbReady = getDoc(DATA_REF).then(snap => {
@@ -1459,7 +1463,13 @@ a.contact-link:hover{text-decoration:underline;}
     <input type="hidden" id="mdoc-id">
     <div class="field"><label class="flabel">Nom du document</label><input type="text" id="mdoc-name" placeholder="Contrat de coaching"></div>
     <div class="field"><label class="flabel">Type</label><select id="mdoc-type"><option>📄 Contrat</option><option>🪪 Carte pro</option><option>📋 Formulaire</option><option>📜 Certificat</option><option>📁 Autre</option></select></div>
-    <div class="field"><label class="flabel">Lien (Google Drive, Dropbox...)</label><input type="url" id="mdoc-url" placeholder="https://drive.google.com/..."></div>
+    <div class="field"><label class="flabel">📎 Joindre un fichier PDF</label>
+      <div id="mdoc-file-zone" style="border:2px dashed var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;transition:border-color .2s" onclick="$('mdoc-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--red)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="event.preventDefault();this.style.borderColor='var(--border)';handleDocFileDrop(event)">
+        <input type="file" id="mdoc-file-input" accept=".pdf" style="display:none" onchange="handleDocFileSelect(this)">
+        <div id="mdoc-file-label" style="font-size:12px;color:var(--muted)">📄 Glisse un PDF ici ou clique pour sélectionner<br><span style="font-size:10px">(max 700 Ko)</span></div>
+      </div>
+    </div>
+    <div class="field"><label class="flabel">Ou lien externe (Google Drive, Dropbox...)</label><input type="url" id="mdoc-url" placeholder="https://drive.google.com/..."></div>
     <div class="field"><label class="flabel">Description</label><textarea id="mdoc-desc" rows="2" placeholder="Description du document..."></textarea></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('mod-doc')">Annuler</button><button class="btn btn-red" onclick="saveDoc()">Ajouter</button></div>
   </div>
@@ -1688,7 +1698,7 @@ let currentClient=null;
 // Auto-restore client session
 try{
   const _cs=localStorage.getItem('cs_client_session');
-  if(_cs){const _sd=JSON.parse(_cs);const _cl=S.clients.find(x=>x.id===_sd.id);if(_cl){currentClient=_cl;setTimeout(()=>{try{loadClientApp();showScreen('client-app');}catch(e){currentClient=null;}},50);}}
+  if(_cs){const _sd=JSON.parse(_cs);const _cl=S.clients.find(x=>x.id===_sd.id);if(_cl&&_cl.accessEnabled!==false){currentClient=_cl;setTimeout(()=>{try{loadClientApp();showScreen('client-app');}catch(e){currentClient=null;}},50);}else if(_cl&&_cl.accessEnabled===false){localStorage.removeItem('cs_client_session');}}
 }catch(e){}
 let seanceCount=0;
 let weekCount=0;
@@ -1850,6 +1860,7 @@ function clientLogin(){
   const c=S.clients.find(x=>normalizeExoName(x.prenom)===prenomInput && normalizeExoName(x.nom)===nomInput);
   if(!c){showToast('Profil introuvable — vérifie ton prénom et nom');return;}
   if($('cl-pwd').value.trim()!==getClientPwd(c)){showToast('Mot de passe incorrect ❌');return;}
+  if(c.accessEnabled===false){showToast('Ton accès a été désactivé par ton coach. Contacte-le pour plus d\'infos.');return;}
   currentClient=c;
   try{localStorage.setItem('cs_client_session',JSON.stringify({id:c.id,ts:Date.now()}));}catch(e){}
   loadClientApp();showScreen('client-app');
@@ -2005,6 +2016,11 @@ function openClientDetail(id){
       <button class="btn btn-info btn-xs" onclick="closeModal('mod-client-detail');openMesure(${id})">📏 Mesures</button>
     </div>
   </div>`;
+  const accessOn=c.accessEnabled!==false;
+  h+=`<div style="display:flex;align-items:center;justify-content:space-between;background:${accessOn?'rgba(34,197,94,.08)':'rgba(239,68,68,.08)'};border:1px solid ${accessOn?'rgba(34,197,94,.25)':'rgba(239,68,68,.25)'};border-radius:var(--rs);padding:10px 14px;margin-bottom:14px">
+    <div><div style="font-size:12px;font-weight:700;color:${accessOn?'#22c55e':'#ef4444'}">${accessOn?'🟢 Accès activé':'🔴 Accès désactivé'}</div><div style="font-size:10px;color:var(--muted)">${accessOn?'Le coaché peut se connecter à son espace':'Le coaché ne peut plus se connecter'}</div></div>
+    <button class="btn ${accessOn?'btn-danger':'btn-green'} btn-xs" onclick="toggleClientAccess(${id})">${accessOn?'🔒 Désactiver':'🔓 Activer'}</button>
+  </div>`;
   h+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;font-size:12px">
     ${c.age?`<span style="background:var(--s2);border-radius:5px;padding:4px 10px">🎂 ${c.age} ans</span>`:''}
     ${c.poids?`<span style="background:var(--s2);border-radius:5px;padding:4px 10px">⚖️ ${c.poids} kg</span>`:''}
@@ -2035,12 +2051,22 @@ function openClientDetail(id){
         <div><span style="font-size:12px;font-weight:800">${b.type}</span> <span style="font-size:11px;color:var(--muted)">· ${b.date}</span></div>
         <div style="display:flex;gap:4px"><button class="btn btn-ghost btn-xs" onclick="closeModal('mod-client-detail');openEditBilan(${id},'${b.id}')">✏️</button><button class="btn btn-danger btn-xs" onclick="deleteBilan(${id},'${b.id}')">🗑</button></div>
       </div>
-      ${b.content?`<div style="font-size:12px;line-height:1.7;white-space:pre-wrap;max-height:140px;overflow:hidden;color:var(--muted)">${b.content.slice(0,400)}${b.content.length>400?'...':''}</div>`:''}
+      ${b.content?`<div style="font-size:12px;line-height:1.7;white-space:pre-wrap;max-height:140px;overflow:hidden;color:var(--muted);cursor:pointer" onclick="viewBilanFull(${id},'${b.id}')" title="Cliquer pour voir en entier">${b.content.slice(0,400)}${b.content.length>400?'...':''}</div>${b.content.length>400?'<div style="font-size:10px;color:var(--red);cursor:pointer;margin-top:2px" onclick="viewBilanFull('+id+',\''+b.id+'\')">▼ Voir en entier</div>':''}`:''}
       ${b.url?`<a href="${b.url}" target="_blank" class="btn btn-ghost btn-xs" style="margin-top:8px;display:inline-flex">📎 Ouvrir le document</a>`:''}
     </div>`;
   });
   $('mcd-content').innerHTML=h;
   openModal('mod-client-detail');
+}
+
+function toggleClientAccess(id){
+  const c=S.clients.find(x=>x.id===id);if(!c)return;
+  const newVal=c.accessEnabled===false?true:false;
+  confirm2(newVal?'Réactiver l\'accès ?':'Désactiver l\'accès ?',newVal?`${c.prenom} pourra à nouveau se connecter à son espace.`:`${c.prenom} ne pourra plus se connecter à son espace coaché.`,()=>{
+    c.accessEnabled=newVal;saveState();
+    showToast(newVal?'🟢 Accès réactivé':'🔴 Accès désactivé');
+    openClientDetail(id);
+  });
 }
 
 // ── BILANS ──
@@ -2078,6 +2104,24 @@ function deleteBilan(cid,bid){
     if(S.bilans&&S.bilans[cid])S.bilans[cid]=S.bilans[cid].filter(b=>b.id!==bid);
     saveState();showToast('Bilan supprimé');openClientDetail(cid);
   });
+}
+
+function viewBilanFull(cid,bid){
+  const bilans=(S.bilans&&S.bilans[cid])||[];
+  const b=bilans.find(x=>x.id===bid);if(!b)return;
+  const c=S.clients.find(x=>x.id===cid);
+  let h=`<div style="max-width:600px;max-height:85vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div><div style="font-family:'Oswald',sans-serif;font-size:18px;font-weight:700">${b.type}</div>
+      <div style="font-size:11px;color:var(--muted)">${c?c.prenom+' '+c.nom:''} · ${b.date}</div></div>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-xs" onclick="closeGenericModal();openEditBilan(${cid},'${bid}')">✏️ Modifier</button>
+      </div>
+    </div>
+    ${b.url?`<a href="${b.url}" target="_blank" class="btn btn-ghost btn-xs" style="margin-bottom:10px;display:inline-flex">📎 Document joint</a>`:''}
+    <div style="font-size:13px;line-height:1.8;white-space:pre-wrap;color:var(--text);background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 16px">${b.content||'<em style="color:var(--muted)">Aucun contenu</em>'}</div>
+  </div>`;
+  showModal('',h);
 }
 
 // ── CLIENTS ──
@@ -2120,15 +2164,21 @@ function deleteClient(id){
 function renderFullClients(){
   const el=$('full-clist');
   if(!S.clients.length){el.innerHTML=`<div class="empty"><div class="ei">👥</div><div class="et">Aucun coaché</div></div>`;return;}
-  el.innerHTML=S.clients.map(c=>`
+  el.innerHTML=S.clients.map(c=>{
+    const _acc=c.accessEnabled!==false;
+    return `
     <div class="panel">
       <div class="panel-hd">
-        <div style="display:flex;align-items:center;gap:10px">${avatarHTML(c,42)}<div><div style="font-size:15px;font-weight:800">${c.prenom} ${c.nom}</div><div style="font-size:11px;color:var(--muted)">${c.obj} · ${c.level}</div></div></div>
-        <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px">${avatarHTML(c,42)}<div><div style="font-size:15px;font-weight:800">${c.prenom} ${c.nom} ${!_acc?'<span style="font-size:10px;color:#ef4444;font-weight:700">🔒 Accès désactivé</span>':''}</div><div style="font-size:11px;color:var(--muted)">${c.obj} · ${c.level}</div></div></div>
+        <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
           <span class="badge ${bClass(c.status)}">${bLabel(c.status)}</span>
+          <button class="btn btn-red btn-xs" onclick="openClientDetail(${c.id})">👤 Fiche</button>
           <button class="btn btn-ghost btn-xs" onclick="openEditClient(${c.id})">✏️</button>
-          <button class="btn btn-ghost btn-xs" onclick="openBuilderFor(${c.id})">📋 Programme</button>
+          <button class="btn btn-ghost btn-xs" onclick="openBuilderFor(${c.id})">📋 Prog</button>
+          <button class="btn btn-info btn-xs" onclick="openAddBilan(${c.id})">+ Bilan</button>
           <button class="btn btn-info btn-xs" onclick="openMesure(${c.id})">📏 Mesures</button>
+          <button class="btn btn-info btn-xs" onclick="openExoDictionary(${c.id})">📖 Dico</button>
+          <button class="btn ${_acc?'btn-danger':'btn-green'} btn-xs" onclick="toggleClientAccess(${c.id})">${_acc?'🔒':'🔓'}</button>
           <button class="btn btn-danger btn-xs" onclick="deleteClient(${c.id})">🗑</button>
         </div>
       </div>
@@ -2142,10 +2192,12 @@ function renderFullClients(){
             <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800">📄 Documents personnels</div>
             <button class="btn btn-ghost btn-xs" onclick="openAddClientDoc(${c.id})">+ Ajouter</button>
           </div>
-          ${(c.docs&&c.docs.length)?c.docs.map(d=>`<div class="client-doc-item"><span style="font-size:16px">${d.type.split(' ')[0]}</span><div style="flex:1"><div style="font-weight:700">${d.name}</div>${d.desc?`<div style="font-size:10px;color:var(--muted)">${d.desc}</div>`:''}</div><a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a><button class="btn btn-danger btn-xs" onclick="deleteClientDoc(${c.id},'${d.id}')">🗑</button></div>`).join(''):'<div style="font-size:11px;color:var(--muted);font-style:italic">Aucun document. Clique "+ Ajouter".</div>'}
+          ${(c.docs&&c.docs.length)?c.docs.map(d=>`<div class="client-doc-item"><span style="font-size:16px">${d.type.split(' ')[0]}</span><div style="flex:1"><div style="font-weight:700">${d.name}</div>${d.desc?`<div style="font-size:10px;color:var(--muted)">${d.desc}</div>`:''}${d.fileId?`<div style="font-size:9px;color:var(--info)">📎 PDF · ${((d.fileSize||0)/1024).toFixed(0)} Ko</div>`:''}</div>${d.fileId?`<button class="btn btn-info btn-xs" onclick="viewPdfDoc('${d.fileId}','${(d.name||'').replace(/'/g,"\\'")}')">👁 Voir</button>`:`<a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a>`}<button class="btn btn-danger btn-xs" onclick="deleteClientDoc(${c.id},'${d.id}')">🗑</button></div>`).join(''):'<div style="font-size:11px;color:var(--muted);font-style:italic">Aucun document. Clique "+ Ajouter".</div>'}
         </div>
+        ${(()=>{const _bils=(S.bilans&&S.bilans[c.id])||[];return _bils.length?`<div style="margin-top:8px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800">📋 Bilans (${_bils.length})</div></div>${_bils.slice(0,3).map(b=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--s3);cursor:pointer" onclick="viewBilanFull(${c.id},'${b.id}')"><span style="font-size:10px;font-weight:700">${b.type}</span><span style="font-size:10px;color:var(--muted)">${b.date}</span><span style="font-size:9px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(b.content||'').slice(0,60)}</span></div>`).join('')}${_bils.length>3?`<div style="font-size:10px;color:var(--red);margin-top:4px;cursor:pointer" onclick="openClientDetail(${c.id})">+ ${_bils.length-3} autre${_bils.length-3>1?'s':''}...</div>`:''}</div>`:''})()}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // ── BUILDER ──
@@ -2591,7 +2643,8 @@ function renderAccordion(prog, withLog=false, openFirstWeek=true, useClassicAcco
             <table class="exo-table" style="margin:0"><thead><tr><th>#</th><th>Exercice</th><th>Séries</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>`;
         (s.exos||[]).forEach((e,ei)=>{
           if(!e.name) return;
-          h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.variant?' <span style="font-size:10px;color:var(--muted);font-style:italic">('+e.variant+')</span>':''}${e.method&&e.method!=='Classique'?MT(e.method):''} <button style="background:none;border:none;cursor:pointer;font-size:10px;color:var(--muted);padding:0 2px" onclick="event.stopPropagation();quickEditExoName(${prog.id},${wi},${si},${ei})" title="Corriger le nom">✏️</button></td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
+          const _tempoAcc=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:inline-flex;gap:3px;align-items:center;margin-left:6px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:3px;padding:1px 6px;font-size:9px"><span style="font-weight:700;color:#a855f7">⏱</span><span style="color:var(--text);font-weight:600">${e.methodData.tempo}</span></div>`:'';
+          h+=`<tr><td><span class="mono">${String(ei+1).padStart(2,'0')}</span></td><td><strong>${e.name}</strong>${e.variant?' <span style="font-size:10px;color:var(--muted);font-style:italic">('+e.variant+')</span>':''}${e.method&&e.method!=='Classique'?MT(e.method):''}${_tempoAcc} <button style="background:none;border:none;cursor:pointer;font-size:10px;color:var(--muted);padding:0 2px" onclick="event.stopPropagation();quickEditExoName(${prog.id},${wi},${si},${ei})" title="Corriger le nom">✏️</button></td><td>${e.sets||'—'}</td><td>${e.reps||'—'}</td><td>${e.load||'—'}</td><td>${e.rest||'—'}</td></tr>`;
         });
         h+=`</tbody></table></div></div>`;
       });
@@ -4046,7 +4099,13 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
     const replKey=`${pid}-${e.id}`;
     const repl=S.exoReplacements?.[cid3]?.[replKey];
     if(repl){
-      e={...e,name:repl.newName,variant:repl.variant||e.variant,_replaced:true,_originalName:repl.oldName};
+      const replMethod=repl.method||e.method;
+      const isMethodChanged=repl.method&&repl.method!==e.method;
+      e={...e,name:repl.newName,variant:repl.variant||e.variant,_replaced:true,_originalName:repl.oldName,method:replMethod,_methodChanged:isMethodChanged};
+      // If method changed to a non-custom method, clear methodData to use standard rendering
+      if(isMethodChanged&&!['Drop Set','Rest-Pause','Circuit','Superset','Bi-Set','Tri-Set','EMOM','AMRAP','Tabata','Cluster Set'].includes(replMethod)){
+        e.methodData=null;
+      }
     }
     // Custom method rendering
     if(e.method==='Drop Set' && e.methodData && e.methodData.sets){
@@ -4106,7 +4165,8 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
       });
       h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'AMRAP'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>#</th><th>Exercice</th><th>Prescription</th></tr></thead><tbody>${amHtml}</tbody></table></td></tr>`;
     } else if(e.detail&&e.setDetails&&e.setDetails.length){
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
+      const _tempoSD=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:flex;gap:4px;align-items:center;margin:4px 0;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:4px;padding:4px 8px;font-size:10px"><span style="font-weight:700;color:#a855f7">⏱ TEMPO</span>${e.methodData.tempo.split('-').map((v,ti)=>'<span style="color:var(--muted)">'+['Exc','Bas','Con','Haut'][ti]+':</span><span style="font-weight:700">'+v+'s</span>').join('<span style="color:var(--border)">·</span>')}</div>`:'';
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${_tempoSD}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
     } else {
       const tempoInfo=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:flex;gap:4px;align-items:center;margin-top:4px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:4px;padding:4px 8px;font-size:10px"><span style="font-weight:700;color:#a855f7">⏱ TEMPO</span>${e.methodData.tempo.split('-').map((v,ti)=>'<span style="color:var(--muted)">'+['Exc','Bas','Con','Haut'][ti]+':</span><span style="font-weight:700">'+v+'s</span>').join('<span style="color:var(--border)">·</span>')}</div>`:'';
       h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${tempoInfo}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
@@ -4307,7 +4367,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
         }
       }
       h+=`<tr class="exo-log-row"><td colspan="6">
-        <div style="display:flex;justify-content:flex-end;padding:2px 4px">${e._replaced?`<span style="font-size:10px;color:var(--info);margin-right:auto">🔄 ${e._originalName} → <strong>${e.name}</strong></span>`:''}<button class="exo-replace-btn" onclick="openReplaceExo('${pid}','${e.id}','${(e._originalName||e.name||'').replace(/'/g,"\\'")}')">🔄 ${e._replaced?'Modifier':'Remplacer'}</button></div>
+        <div style="display:flex;justify-content:flex-end;padding:2px 4px">${e._replaced?`<span style="font-size:10px;color:var(--info);margin-right:auto">🔄 ${e._originalName} → <strong>${e.name}</strong>${e._methodChanged?' <span style="font-size:9px;padding:1px 4px;border-radius:3px;background:var(--red-dim);color:var(--red)">'+e.method+'</span>':''}</span>`:''}<button class="exo-replace-btn" onclick="openReplaceExo('${pid}','${e.id}','${(e._originalName||e.name||'').replace(/'/g,"\\'")}','${(e.method||'Classique').replace(/'/g,"\\'")}')">🔄 ${e._replaced?'Modifier':'Remplacer'}</button></div>
         <div class="series-list">${seriesHtml}</div>
         <div style="padding:6px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <span style="font-size:10px;color:var(--red2);font-weight:800;text-transform:uppercase;letter-spacing:1px">Ressenti :</span>
@@ -5444,6 +5504,7 @@ function renderWeightChart(measurements){
 
 function openAddClientDoc(cid){
   $('mdoc-id').value=''; $('mdoc-name').value=''; $('mdoc-url').value=''; $('mdoc-desc').value='';
+  clearDocFile();
   $('mdoc-title').textContent='Document pour ce coaché';
   // Store cid in a hidden field
   if(!$('mdoc-cid')){
@@ -5454,30 +5515,106 @@ function openAddClientDoc(cid){
   openModal('mod-doc');
 }
 
-function saveDoc(){
-  const name=$('mdoc-name').value.trim(),url=$('mdoc-url').value.trim();
-  if(!name||!url){showToast('Nom et lien requis !');return;}
+let _pendingDocFile=null;
+function handleDocFileSelect(input){
+  const file=input.files[0];if(!file)return;
+  if(file.type!=='application/pdf'){showToast('Seuls les fichiers PDF sont acceptés');input.value='';return;}
+  if(file.size>700*1024){showToast('Fichier trop volumineux (max 700 Ko)');input.value='';return;}
+  _pendingDocFile=file;
+  $('mdoc-file-label').innerHTML=`✅ <strong>${file.name}</strong> (${(file.size/1024).toFixed(0)} Ko)<br><span style="font-size:10px;color:var(--red);cursor:pointer" onclick="event.stopPropagation();clearDocFile()">✕ Retirer</span>`;
+  $('mdoc-file-zone').style.borderColor='#22c55e';
+  if(!$('mdoc-name').value.trim()) $('mdoc-name').value=file.name.replace(/\.pdf$/i,'');
+}
+function handleDocFileDrop(e){
+  const file=e.dataTransfer.files[0];if(!file)return;
+  const dt=new DataTransfer();dt.items.add(file);$('mdoc-file-input').files=dt.files;
+  handleDocFileSelect($('mdoc-file-input'));
+}
+function clearDocFile(){
+  _pendingDocFile=null;$('mdoc-file-input').value='';
+  $('mdoc-file-label').innerHTML='📄 Glisse un PDF ici ou clique pour sélectionner<br><span style="font-size:10px">(max 700 Ko)</span>';
+  $('mdoc-file-zone').style.borderColor='var(--border)';
+}
+
+async function saveDoc(){
+  const name=$('mdoc-name').value.trim();
+  const url=$('mdoc-url').value.trim();
+  if(!name){showToast('Nom requis !');return;}
+  if(!_pendingDocFile&&!url){showToast('Ajoute un fichier PDF ou un lien !');return;}
   const cid=parseInt($('mdoc-cid')?.value)||0;
-  const doc={id:'d'+Date.now(),name,type:$('mdoc-type').value,url,desc:$('mdoc-desc').value.trim()};
-  if(cid){
-    // Per-client doc
-    const c=S.clients.find(x=>x.id===cid);
-    if(c){if(!c.docs)c.docs=[];c.docs.push(doc);}
+  const docObj={id:'d'+Date.now(),name,type:$('mdoc-type').value,desc:$('mdoc-desc').value.trim()};
+
+  if(_pendingDocFile){
+    // Read file as base64 and store in separate Firestore document
+    try{
+      showToast('⏳ Upload en cours...');
+      const b64=await new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(reader.result);
+        reader.onerror=()=>reject(reader.error);
+        reader.readAsDataURL(_pendingDocFile);
+      });
+      const fileDocRef=window._fbDocRef?window._fbDocRef(window._fbDb,'coachspace_files',docObj.id):null;
+      if(fileDocRef){
+        await window._fbSetDoc(fileDocRef,{data:b64,name:_pendingDocFile.name,size:_pendingDocFile.size,created:Date.now()});
+      }
+      docObj.fileId=docObj.id;
+      docObj.fileName=_pendingDocFile.name;
+      docObj.fileSize=_pendingDocFile.size;
+      docObj.url='';
+      _pendingDocFile=null;
+    }catch(err){
+      console.error('PDF upload error:',err);
+      showToast('❌ Erreur lors de l\'upload : '+err.message);return;
+    }
   } else {
-    // Global doc
-    if(!S.documents)S.documents=[];S.documents.push(doc);
+    docObj.url=url;
   }
-  saveState();closeModal('mod-doc');
+
+  if(cid){
+    const c=S.clients.find(x=>x.id===cid);
+    if(c){if(!c.docs)c.docs=[];c.docs.push(docObj);}
+  } else {
+    if(!S.documents)S.documents=[];S.documents.push(docObj);
+  }
+  saveState();closeModal('mod-doc');clearDocFile();
   if(cid){renderFullClients();}else{renderDocsCoach();}
   showToast('📄 Document ajouté !',true);
 }
 
 function deleteClientDoc(cid,docId){
-  confirm2('Supprimer ce document ?','',()=>{
+  confirm2('Supprimer ce document ?','',async()=>{
     const c=S.clients.find(x=>x.id===cid);
-    if(c&&c.docs){c.docs=c.docs.filter(d=>d.id!==docId);}
+    if(c&&c.docs){
+      const docToDelete=c.docs.find(d=>d.id===docId);
+      if(docToDelete&&docToDelete.fileId&&window._fbDocRef&&window._fbDeleteDoc){
+        try{await window._fbDeleteDoc(window._fbDocRef(window._fbDb,'coachspace_files',docToDelete.fileId));}catch(e){console.warn('Could not delete file doc:',e);}
+      }
+      c.docs=c.docs.filter(d=>d.id!==docId);
+    }
     saveState();renderFullClients();showToast('Document supprimé');
   });
+}
+
+async function viewPdfDoc(fileId,name){
+  showToast('⏳ Chargement du PDF...');
+  try{
+    const fileDocRef=window._fbDocRef(window._fbDb,'coachspace_files',fileId);
+    const snap=await window._fbGetDoc(fileDocRef);
+    if(!snap.exists()){showToast('❌ Fichier introuvable');return;}
+    const data=snap.data();
+    const h=`<div style="max-width:90vw;max-height:90vh;display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700">📄 ${name||data.name||'Document'}</div>
+        <a href="${data.data}" download="${data.name||'document.pdf'}" class="btn btn-red btn-xs">⬇️ Télécharger</a>
+      </div>
+      <iframe src="${data.data}" style="width:100%;min-width:min(500px,85vw);height:75vh;border:1px solid var(--border);border-radius:var(--rs);background:#fff"></iframe>
+    </div>`;
+    showModal('',h);
+  }catch(err){
+    console.error('PDF view error:',err);
+    showToast('❌ Erreur : '+err.message);
+  }
 }
 
 function showNotifModal(clientId){
@@ -5628,7 +5765,7 @@ function renderDocsCoach(){
   if(!S.documents||!S.documents.length){el.innerHTML=`<div class="empty"><div class="ei">📄</div><div class="et">Aucun document</div><div class="es">Clique sur "+ Document" pour ajouter un lien (contrat, carte pro...)</div></div>`;return;}
   el.innerHTML=`<div class="res-section"><div class="res-hd"><div class="res-icon-tit"><span class="res-icon">📄</span><div class="res-title">Documents partagés</div></div></div>${S.documents.map(d=>`<div class="doc-card"><div class="doc-icon">${d.type.split(' ')[0]}</div><div class="doc-info"><div class="doc-name">${d.name}</div>${d.desc?`<div class="doc-desc">${d.desc}</div>`:''}</div><div style="display:flex;gap:6px;flex-shrink:0"><a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a><button class="btn btn-danger btn-xs" onclick="deleteDoc('${d.id}')">🗑</button></div></div>`).join('')}</div>`;
 }
-function openAddDoc(){$('mdoc-id').value='';$('mdoc-name').value='';$('mdoc-url').value='';$('mdoc-desc').value='';$('mdoc-title').textContent='Ajouter un document';openModal('mod-doc');}
+function openAddDoc(){$('mdoc-id').value='';$('mdoc-name').value='';$('mdoc-url').value='';$('mdoc-desc').value='';clearDocFile();$('mdoc-title').textContent='Ajouter un document';if($('mdoc-cid'))$('mdoc-cid').value='';openModal('mod-doc');}
 // saveDoc moved to per-client docs section
 function deleteDoc(id){confirm2('Supprimer ce document ?','',()=>{S.documents=S.documents.filter(d=>d.id!==id);saveState();renderDocsCoach();});}
 
@@ -6148,7 +6285,7 @@ function setFeel(pid,exoId,val){
   autoSaveLogDraft();
 }
 
-function openReplaceExo(pid,eid,oldName){
+function openReplaceExo(pid,eid,oldName,currentMethod){
   // Toggle inline replace mode on the exercise
   const wrapper=document.getElementById(`replace-wrap-${pid}-${eid}`);
   if(wrapper){
@@ -6162,12 +6299,17 @@ function openReplaceExo(pid,eid,oldName){
   const replDiv=document.createElement('div');
   replDiv.id=`replace-wrap-${pid}-${eid}`;
   replDiv.style.cssText='background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.2);border-radius:6px;padding:8px 10px;margin:6px 4px';
+  const curMethod=currentMethod||'Classique';
+  const methodOpts=METHODS.map(m=>`<option value="${m}"${m===curMethod?' selected':''}>${m}</option>`).join('');
   replDiv.innerHTML=`
     <div style="font-size:10px;color:var(--info);font-weight:700;margin-bottom:6px">🔄 Remplacer "${oldName}"</div>
     <div style="margin-bottom:6px"><input type="text" id="repl-name-${pid}-${eid}" placeholder="Nouvel exercice" style="width:100%;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:6px 10px;font-size:13px;font-weight:700;color:var(--text);outline:none"></div>
     <div style="display:flex;gap:6px;margin-bottom:6px">
       <input type="text" id="repl-variant-${pid}-${eid}" placeholder="Variante (optionnel)" style="flex:1;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:5px 8px;font-size:11px;color:var(--muted);font-style:italic;outline:none">
-      <button style="background:var(--info);color:#fff;border:none;border-radius:var(--rs);padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer" onclick="confirmReplaceExo('${pid}','${eid}','${oldName.replace(/'/g,"\\'")}')">✅ OK</button>
+      <select id="repl-method-${pid}-${eid}" style="background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:5px 8px;font-size:11px;color:var(--text);outline:none">${methodOpts}</select>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button style="flex:1;background:var(--info);color:#fff;border:none;border-radius:var(--rs);padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer" onclick="confirmReplaceExo('${pid}','${eid}','${oldName.replace(/'/g,"\\'")}')">✅ OK</button>
       <button style="background:var(--s3);color:var(--muted);border:none;border-radius:var(--rs);padding:5px 10px;font-size:11px;cursor:pointer" onclick="this.closest('[id^=replace-wrap]').remove()">✕</button>
     </div>`;
   // Insert at the top of the series-list
@@ -6181,21 +6323,21 @@ function confirmReplaceExo(pid,eid,oldName){
   const newName=document.getElementById(`repl-name-${pid}-${eid}`)?.value.trim();
   if(!newName){showToast('Donne un nom d\'exercice');return;}
   const newVariant=document.getElementById(`repl-variant-${pid}-${eid}`)?.value.trim()||'';
+  const newMethod=document.getElementById(`repl-method-${pid}-${eid}`)?.value||'Classique';
   // Store replacement
   if(!S.exoReplacements) S.exoReplacements={};
   const cid=currentClient?.id;
   if(!S.exoReplacements[cid]) S.exoReplacements[cid]={};
-  S.exoReplacements[cid][`${pid}-${eid}`]={oldName,newName,variant:newVariant};
+  S.exoReplacements[cid][`${pid}-${eid}`]={oldName,newName,variant:newVariant,method:newMethod};
   saveState();
-  // Update the display inline without re-rendering
+  // Update the display inline — re-render the whole seance to apply method change
   const replWrap=document.getElementById(`replace-wrap-${pid}-${eid}`);
   if(replWrap){
-    replWrap.innerHTML=`<div style="font-size:11px;color:var(--info);font-weight:700">🔄 ${oldName} → <strong style="color:var(--text)">${newName}</strong>${newVariant?' <span style="font-style:italic;color:var(--muted)">('+newVariant+')</span>':''}</div>`;
+    replWrap.innerHTML=`<div style="font-size:11px;color:var(--info);font-weight:700">🔄 ${oldName} → <strong style="color:var(--text)">${newName}</strong>${newVariant?' <span style="font-style:italic;color:var(--muted)">('+newVariant+')</span>':''}${newMethod!=='Classique'?' <span style="font-size:9px;padding:1px 5px;border-radius:3px;background:var(--red-dim);color:var(--red);font-weight:700">'+newMethod+'</span>':''}</div>`;
   }
-  // Update the replace button text
-  const btn=document.querySelector(`[onclick*="openReplaceExo('${pid}',${eid}"]`);
-  if(btn){btn.textContent='✅ Remplacé';btn.style.color='var(--info)';}
   showToast(`🔄 ${oldName} → ${newName}`,true);
+  // Re-render programme to apply method change visually
+  try{renderClientProg();}catch(e){}
 }
 
 function skipSeance(progId,seanceIdx,weekIdx){
@@ -6292,6 +6434,7 @@ function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
       const exoName=repl?repl.newName:e.name;
       const exoVariant=repl?repl.variant:(e.variant||'');
       const originalExo=repl?repl.oldName:null;
+      const exoMethod=repl&&repl.method?repl.method:(e.method||'Classique');
       // For Superset/Bi-Set/Tri-Set: create separate entries per exercise
       if(['Superset','Bi-Set','Tri-Set'].includes(e.method) && e.methodData && e.methodData.exercises){
         const md=e.methodData;
@@ -6325,7 +6468,7 @@ function saveSeanceLog(progId,seanceIdx,weekIdx=null,displayPid=null){
           entries.push({exo:st.name,method:'Circuit',circuitGroup:e.id,measureType:st.type||'reps',series:stSeriesStr,seriesData:stSeriesData,feel,note});
         });
       } else {
-        entries.push({exo:exoName,variant:exoVariant,originalExo,method:e.method||'Classique',methodData:e.methodData||null,series:seriesStr,seriesData,feel,note});
+        entries.push({exo:exoName,variant:exoVariant,originalExo,method:exoMethod,methodData:e.methodData||null,series:seriesStr,seriesData,feel,note});
       }
     }
   });
