@@ -1466,7 +1466,7 @@ a.contact-link:hover{text-decoration:underline;}
     <div class="field"><label class="flabel">📎 Joindre un fichier PDF</label>
       <div id="mdoc-file-zone" style="border:2px dashed var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;transition:border-color .2s" onclick="$('mdoc-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--red)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="event.preventDefault();this.style.borderColor='var(--border)';handleDocFileDrop(event)">
         <input type="file" id="mdoc-file-input" accept=".pdf" style="display:none" onchange="handleDocFileSelect(this)">
-        <div id="mdoc-file-label" style="font-size:12px;color:var(--muted)">📄 Glisse un PDF ici ou clique pour sélectionner<br><span style="font-size:10px">(max 700 Ko)</span></div>
+        <div id="mdoc-file-label" style="font-size:12px;color:var(--muted)">📄 Glisse un PDF ici ou clique pour sélectionner<br><span style="font-size:10px">(max 400 Ko)</span></div>
       </div>
     </div>
     <div class="field"><label class="flabel">Ou lien externe (Google Drive, Dropbox...)</label><input type="url" id="mdoc-url" placeholder="https://drive.google.com/..."></div>
@@ -2192,7 +2192,7 @@ function renderFullClients(){
             <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800">📄 Documents personnels</div>
             <button class="btn btn-ghost btn-xs" onclick="openAddClientDoc(${c.id})">+ Ajouter</button>
           </div>
-          ${(c.docs&&c.docs.length)?c.docs.map(d=>`<div class="client-doc-item"><span style="font-size:16px">${d.type.split(' ')[0]}</span><div style="flex:1"><div style="font-weight:700">${d.name}</div>${d.desc?`<div style="font-size:10px;color:var(--muted)">${d.desc}</div>`:''}${d.fileId?`<div style="font-size:9px;color:var(--info)">📎 PDF · ${((d.fileSize||0)/1024).toFixed(0)} Ko</div>`:''}</div>${d.fileId?`<button class="btn btn-info btn-xs" onclick="viewPdfDoc('${d.fileId}','${(d.name||'').replace(/'/g,"\\'")}')">👁 Voir</button>`:`<a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a>`}<button class="btn btn-danger btn-xs" onclick="deleteClientDoc(${c.id},'${d.id}')">🗑</button></div>`).join(''):'<div style="font-size:11px;color:var(--muted);font-style:italic">Aucun document. Clique "+ Ajouter".</div>'}
+          ${(c.docs&&c.docs.length)?c.docs.map(d=>`<div class="client-doc-item"><span style="font-size:16px">${d.type.split(' ')[0]}</span><div style="flex:1"><div style="font-weight:700">${d.name}</div>${d.desc?`<div style="font-size:10px;color:var(--muted)">${d.desc}</div>`:''}${d.fileData?`<div style="font-size:9px;color:var(--info)">📎 PDF · ${((d.fileSize||0)/1024).toFixed(0)} Ko</div>`:''}</div>${d.fileData?`<button class="btn btn-info btn-xs" onclick="viewPdfDoc('${d.id}','${(d.name||'').replace(/'/g,"\\'")}')">👁 Voir</button>`:`<a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a>`}<button class="btn btn-danger btn-xs" onclick="deleteClientDoc(${c.id},'${d.id}')">🗑</button></div>`).join(''):'<div style="font-size:11px;color:var(--muted);font-style:italic">Aucun document. Clique "+ Ajouter".</div>'}
         </div>
         ${(()=>{const _bils=(S.bilans&&S.bilans[c.id])||[];return _bils.length?`<div style="margin-top:8px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800">📋 Bilans (${_bils.length})</div></div>${_bils.slice(0,3).map(b=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--s3);cursor:pointer" onclick="viewBilanFull(${c.id},'${b.id}')"><span style="font-size:10px;font-weight:700">${b.type}</span><span style="font-size:10px;color:var(--muted)">${b.date}</span><span style="font-size:9px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(b.content||'').slice(0,60)}</span></div>`).join('')}${_bils.length>3?`<div style="font-size:10px;color:var(--red);margin-top:4px;cursor:pointer" onclick="openClientDetail(${c.id})">+ ${_bils.length-3} autre${_bils.length-3>1?'s':''}...</div>`:''}</div>`:''})()}
       </div>
@@ -5519,7 +5519,7 @@ let _pendingDocFile=null;
 function handleDocFileSelect(input){
   const file=input.files[0];if(!file)return;
   if(file.type!=='application/pdf'){showToast('Seuls les fichiers PDF sont acceptés');input.value='';return;}
-  if(file.size>700*1024){showToast('Fichier trop volumineux (max 700 Ko)');input.value='';return;}
+  if(file.size>400*1024){showToast('Fichier trop volumineux (max 400 Ko)');input.value='';return;}
   _pendingDocFile=file;
   $('mdoc-file-label').innerHTML=`✅ <strong>${file.name}</strong> (${(file.size/1024).toFixed(0)} Ko)<br><span style="font-size:10px;color:var(--red);cursor:pointer" onclick="event.stopPropagation();clearDocFile()">✕ Retirer</span>`;
   $('mdoc-file-zone').style.borderColor='#22c55e';
@@ -5532,7 +5532,7 @@ function handleDocFileDrop(e){
 }
 function clearDocFile(){
   _pendingDocFile=null;$('mdoc-file-input').value='';
-  $('mdoc-file-label').innerHTML='📄 Glisse un PDF ici ou clique pour sélectionner<br><span style="font-size:10px">(max 700 Ko)</span>';
+  $('mdoc-file-label').innerHTML='📄 Glisse un PDF ici ou clique pour sélectionner<br><span style="font-size:10px">(max 400 Ko)</span>';
   $('mdoc-file-zone').style.borderColor='var(--border)';
 }
 
@@ -5545,7 +5545,7 @@ async function saveDoc(){
   const docObj={id:'d'+Date.now(),name,type:$('mdoc-type').value,desc:$('mdoc-desc').value.trim()};
 
   if(_pendingDocFile){
-    // Read file as base64 and store in separate Firestore document
+    // Read file as base64 and store directly in state
     try{
       showToast('⏳ Upload en cours...');
       const b64=await new Promise((resolve,reject)=>{
@@ -5554,11 +5554,7 @@ async function saveDoc(){
         reader.onerror=()=>reject(reader.error);
         reader.readAsDataURL(_pendingDocFile);
       });
-      const fileDocRef=window._fbDocRef?window._fbDocRef(window._fbDb,'coachspace',docObj.id):null;
-      if(fileDocRef){
-        await window._fbSetDoc(fileDocRef,{data:b64,name:_pendingDocFile.name,size:_pendingDocFile.size,created:Date.now()});
-      }
-      docObj.fileId=docObj.id;
+      docObj.fileData=b64;
       docObj.fileName=_pendingDocFile.name;
       docObj.fileSize=_pendingDocFile.size;
       docObj.url='';
@@ -5583,32 +5579,36 @@ async function saveDoc(){
 }
 
 function deleteClientDoc(cid,docId){
-  confirm2('Supprimer ce document ?','',async()=>{
+  confirm2('Supprimer ce document ?','',()=>{
     const c=S.clients.find(x=>x.id===cid);
     if(c&&c.docs){
-      const docToDelete=c.docs.find(d=>d.id===docId);
-      if(docToDelete&&docToDelete.fileId&&window._fbDocRef&&window._fbDeleteDoc){
-        try{await window._fbDeleteDoc(window._fbDocRef(window._fbDb,'coachspace',docToDelete.fileId));}catch(e){console.warn('Could not delete file doc:',e);}
-      }
       c.docs=c.docs.filter(d=>d.id!==docId);
     }
     saveState();renderFullClients();showToast('Document supprimé');
   });
 }
 
-async function viewPdfDoc(fileId,name){
-  showToast('⏳ Chargement du PDF...');
+function viewPdfDoc(docId,name){
+  // Find the doc in state (search all clients' docs)
+  let fileData=null,fileName=name||'document.pdf';
+  for(const c of S.clients){
+    if(c.docs){
+      const d=c.docs.find(x=>x.id===docId);
+      if(d&&d.fileData){fileData=d.fileData;fileName=d.fileName||fileName;break;}
+    }
+  }
+  if(!fileData&&S.documents){
+    const d=S.documents.find(x=>x.id===docId);
+    if(d&&d.fileData){fileData=d.fileData;fileName=d.fileName||fileName;}
+  }
+  if(!fileData){showToast('❌ Fichier introuvable');return;}
   try{
-    const fileDocRef=window._fbDocRef(window._fbDb,'coachspace',fileId);
-    const snap=await window._fbGetDoc(fileDocRef);
-    if(!snap.exists()){showToast('❌ Fichier introuvable');return;}
-    const data=snap.data();
     const h=`<div style="max-width:90vw;max-height:90vh;display:flex;flex-direction:column">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700">📄 ${name||data.name||'Document'}</div>
-        <a href="${data.data}" download="${data.name||'document.pdf'}" class="btn btn-red btn-xs">⬇️ Télécharger</a>
+        <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700">📄 ${name||fileName}</div>
+        <a href="${fileData}" download="${fileName}" class="btn btn-red btn-xs">⬇️ Télécharger</a>
       </div>
-      <iframe src="${data.data}" style="width:100%;min-width:min(500px,85vw);height:75vh;border:1px solid var(--border);border-radius:var(--rs);background:#fff"></iframe>
+      <iframe src="${fileData}" style="width:100%;min-width:min(500px,85vw);height:75vh;border:1px solid var(--border);border-radius:var(--rs);background:#fff"></iframe>
     </div>`;
     showModal('',h);
   }catch(err){
