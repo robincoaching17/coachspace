@@ -5603,14 +5603,37 @@ function viewPdfDoc(docId,name){
   }
   if(!fileData){showToast('❌ Fichier introuvable');return;}
   try{
-    const h=`<div style="max-width:90vw;max-height:90vh;display:flex;flex-direction:column">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700">📄 ${name||fileName}</div>
-        <a href="${fileData}" download="${fileName}" class="btn btn-red btn-xs">⬇️ Télécharger</a>
-      </div>
-      <iframe src="${fileData}" style="width:100%;min-width:min(500px,85vw);height:75vh;border:1px solid var(--border);border-radius:var(--rs);background:#fff"></iframe>
-    </div>`;
-    showModal('',h);
+    // Convert base64 data URL to Blob for reliable mobile viewing
+    const byteString=atob(fileData.split(',')[1]);
+    const mimeString=fileData.split(',')[0].split(':')[1].split(';')[0];
+    const ab=new ArrayBuffer(byteString.length);
+    const ia=new Uint8Array(ab);
+    for(let i=0;i<byteString.length;i++)ia[i]=byteString.charCodeAt(i);
+    const blob=new Blob([ab],{type:mimeString});
+    const blobUrl=URL.createObjectURL(blob);
+    const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if(isMobile){
+      // On mobile, open blob URL directly in new tab (iframes don't work well)
+      const w=window.open(blobUrl,'_blank');
+      if(!w){
+        // Fallback: trigger download if popup blocked
+        const a=document.createElement('a');a.href=blobUrl;a.download=fileName;document.body.appendChild(a);a.click();document.body.removeChild(a);
+        showToast('📄 Téléchargement lancé');
+      }
+      setTimeout(()=>URL.revokeObjectURL(blobUrl),60000);
+    } else {
+      const h=`<div style="max-width:90vw;max-height:90vh;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700">📄 ${name||fileName}</div>
+          <div style="display:flex;gap:4px">
+            <a href="${blobUrl}" target="_blank" class="btn btn-ghost btn-xs">↗ Nouvel onglet</a>
+            <a href="${blobUrl}" download="${fileName}" class="btn btn-red btn-xs">⬇️ Télécharger</a>
+          </div>
+        </div>
+        <iframe src="${blobUrl}" style="width:100%;min-width:min(500px,85vw);height:75vh;border:1px solid var(--border);border-radius:var(--rs);background:#fff"></iframe>
+      </div>`;
+      showModal('',h);
+    }
   }catch(err){
     console.error('PDF view error:',err);
     showToast('❌ Erreur : '+err.message);
