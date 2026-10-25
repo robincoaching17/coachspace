@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+*<!DOCTYPE html>
 <html lang="fr">
 <head>
 
@@ -2920,14 +2920,14 @@ function onMethodChange(sid,eid){
     if(!tempoWrap){
       tempoWrap=document.createElement('div');tempoWrap.className='tempo-wrap';
       tempoWrap.innerHTML=`<div style="display:flex;gap:4px;align-items:flex-end;margin-bottom:6px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:var(--rs);padding:8px">
-        <div style="font-size:11px;font-weight:700;color:#a855f7;margin-right:4px">⏱ TEMPO</div>
-        <div><div class="plbl" style="font-size:9px">Excent.</div><input class="pinp" type="text" id="tempo-e-${sid}-${eid}" value="4" style="width:36px;text-align:center" oninput="updatePreview()"></div>
+        <div style="font-size:11px;font-weight:700;color:#a855f7;margin-right:4px">⏱</div>
+        <div><div class="plbl" style="font-size:9px">Phase 1</div><input class="pinp" type="text" id="tempo-e-${sid}-${eid}" value="4" style="width:36px;text-align:center" oninput="updatePreview()"></div>
         <div style="color:var(--muted);padding-bottom:6px">-</div>
-        <div><div class="plbl" style="font-size:9px">Pause ↓</div><input class="pinp" type="text" id="tempo-pb-${sid}-${eid}" value="1" style="width:36px;text-align:center" oninput="updatePreview()"></div>
+        <div><div class="plbl" style="font-size:9px">Phase 2</div><input class="pinp" type="text" id="tempo-pb-${sid}-${eid}" value="1" style="width:36px;text-align:center" oninput="updatePreview()"></div>
         <div style="color:var(--muted);padding-bottom:6px">-</div>
-        <div><div class="plbl" style="font-size:9px">Concent.</div><input class="pinp" type="text" id="tempo-c-${sid}-${eid}" value="2" style="width:36px;text-align:center" oninput="updatePreview()"></div>
+        <div><div class="plbl" style="font-size:9px">Phase 3</div><input class="pinp" type="text" id="tempo-c-${sid}-${eid}" value="2" style="width:36px;text-align:center" oninput="updatePreview()"></div>
         <div style="color:var(--muted);padding-bottom:6px">-</div>
-        <div><div class="plbl" style="font-size:9px">Pause ↑</div><input class="pinp" type="text" id="tempo-pt-${sid}-${eid}" value="0" style="width:36px;text-align:center" oninput="updatePreview()"></div>
+        <div><div class="plbl" style="font-size:9px">Phase 4</div><input class="pinp" type="text" id="tempo-pt-${sid}-${eid}" value="0" style="width:36px;text-align:center" oninput="updatePreview()"></div>
       </div>`;
       const cf=card.querySelector('.exo-classic-fields');if(cf)cf.before(tempoWrap);
     }
@@ -4102,8 +4102,11 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
       const replMethod=repl.method||e.method;
       const isMethodChanged=repl.method&&repl.method!==e.method;
       e={...e,name:repl.newName,variant:repl.variant||e.variant,_replaced:true,_originalName:repl.oldName,method:replMethod,_methodChanged:isMethodChanged};
-      // If method changed to a non-custom method, clear methodData to use standard rendering
-      if(isMethodChanged&&!['Drop Set','Rest-Pause','Circuit','Superset','Bi-Set','Tri-Set','EMOM','AMRAP','Tabata','Cluster Set'].includes(replMethod)){
+      // Apply replacement methodData (e.g. tempo values)
+      if(repl.methodData){
+        e.methodData=repl.methodData;
+      } else if(isMethodChanged&&!['Drop Set','Rest-Pause','Circuit','Superset','Bi-Set','Tri-Set','EMOM','AMRAP','Tabata','Cluster Set','Tempo'].includes(replMethod)){
+        // If method changed to a non-custom method, clear methodData to use standard rendering
         e.methodData=null;
       }
     }
@@ -4165,10 +4168,10 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
       });
       h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'AMRAP'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>#</th><th>Exercice</th><th>Prescription</th></tr></thead><tbody>${amHtml}</tbody></table></td></tr>`;
     } else if(e.detail&&e.setDetails&&e.setDetails.length){
-      const _tempoSD=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:flex;gap:4px;align-items:center;margin:4px 0;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:4px;padding:4px 8px;font-size:10px"><span style="font-weight:700;color:#a855f7">⏱ TEMPO</span>${e.methodData.tempo.split('-').map((v,ti)=>'<span style="color:var(--muted)">'+['Exc','Bas','Con','Haut'][ti]+':</span><span style="font-weight:700">'+v+'s</span>').join('<span style="color:var(--border)">·</span>')}</div>`:'';
+      const _tempoSD=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:flex;gap:6px;align-items:center;margin:4px 0;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:4px;padding:6px 10px;font-size:11px"><span style="font-weight:700;color:#a855f7">⏱</span>${e.methodData.tempo.split('-').map(v=>'<span style="font-weight:700;background:rgba(139,92,246,.12);border-radius:3px;padding:2px 6px;min-width:22px;text-align:center">'+v+'s</span>').join('<span style="color:var(--border);font-size:8px">—</span>')}</div>`:'';
       h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${_tempoSD}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
     } else {
-      const tempoInfo=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:flex;gap:4px;align-items:center;margin-top:4px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:4px;padding:4px 8px;font-size:10px"><span style="font-weight:700;color:#a855f7">⏱ TEMPO</span>${e.methodData.tempo.split('-').map((v,ti)=>'<span style="color:var(--muted)">'+['Exc','Bas','Con','Haut'][ti]+':</span><span style="font-weight:700">'+v+'s</span>').join('<span style="color:var(--border)">·</span>')}</div>`:'';
+      const tempoInfo=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:flex;gap:6px;align-items:center;margin-top:4px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:4px;padding:6px 10px;font-size:11px"><span style="font-weight:700;color:#a855f7">⏱</span>${e.methodData.tempo.split('-').map(v=>'<span style="font-weight:700;background:rgba(139,92,246,.12);border-radius:3px;padding:2px 6px;min-width:22px;text-align:center">'+v+'s</span>').join('<span style="color:var(--border);font-size:8px">—</span>')}</div>`:'';
       h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${tempoInfo}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
     }
     if(withLog&&!preview){
@@ -5603,7 +5606,7 @@ function viewPdfDoc(docId,name){
   }
   if(!fileData){showToast('❌ Fichier introuvable');return;}
   try{
-    // Convert base64 data URL to Blob for reliable mobile viewing
+    // Convert base64 data URL to Blob
     const byteString=atob(fileData.split(',')[1]);
     const mimeString=fileData.split(',')[0].split(':')[1].split(';')[0];
     const ab=new ArrayBuffer(byteString.length);
@@ -5612,28 +5615,23 @@ function viewPdfDoc(docId,name){
     const blob=new Blob([ab],{type:mimeString});
     const blobUrl=URL.createObjectURL(blob);
     const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if(isMobile){
-      // On mobile, open blob URL directly in new tab (iframes don't work well)
-      const w=window.open(blobUrl,'_blank');
-      if(!w){
-        // Fallback: trigger download if popup blocked
-        const a=document.createElement('a');a.href=blobUrl;a.download=fileName;document.body.appendChild(a);a.click();document.body.removeChild(a);
-        showToast('📄 Téléchargement lancé');
-      }
-      setTimeout(()=>URL.revokeObjectURL(blobUrl),60000);
-    } else {
-      const h=`<div style="max-width:90vw;max-height:90vh;display:flex;flex-direction:column">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700">📄 ${name||fileName}</div>
-          <div style="display:flex;gap:4px">
-            <a href="${blobUrl}" target="_blank" class="btn btn-ghost btn-xs">↗ Nouvel onglet</a>
-            <a href="${blobUrl}" download="${fileName}" class="btn btn-red btn-xs">⬇️ Télécharger</a>
-          </div>
+    const h=`<div style="max-width:90vw;max-height:${isMobile?'70vh':'90vh'};display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700">📄 ${name||fileName}</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-red btn-xs" onclick="(function(){const a=document.createElement('a');a.href='${blobUrl}';a.download='${fileName.replace(/'/g,"\\'")}';document.body.appendChild(a);a.click();document.body.removeChild(a);})()">⬇️ Télécharger</button>
         </div>
-        <iframe src="${blobUrl}" style="width:100%;min-width:min(500px,85vw);height:75vh;border:1px solid var(--border);border-radius:var(--rs);background:#fff"></iframe>
-      </div>`;
-      showModal('',h);
-    }
+      </div>
+      ${isMobile?
+        `<div style="text-align:center;padding:30px 16px;background:var(--s2);border-radius:var(--rs);border:1px solid var(--border)">
+          <div style="font-size:48px;margin-bottom:12px">📄</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px">${fileName}</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Clique sur Télécharger pour ouvrir le PDF</div>
+          <button class="btn btn-red" onclick="(function(){const a=document.createElement('a');a.href='${blobUrl}';a.download='${fileName.replace(/'/g,"\\'")}';document.body.appendChild(a);a.click();document.body.removeChild(a);})()">⬇️ Télécharger le PDF</button>
+        </div>`
+        :`<iframe src="${blobUrl}" style="width:100%;min-width:min(500px,85vw);height:75vh;border:1px solid var(--border);border-radius:var(--rs);background:#fff"></iframe>`}
+    </div>`;
+    showModal('',h);
   }catch(err){
     console.error('PDF view error:',err);
     showToast('❌ Erreur : '+err.message);
@@ -5786,7 +5784,7 @@ function renderVidEmbed(url){if(!url)return '';const m=url.match(/\/file\/d\/([^
 function renderDocsCoach(){
   const el=$('docs-list');
   if(!S.documents||!S.documents.length){el.innerHTML=`<div class="empty"><div class="ei">📄</div><div class="et">Aucun document</div><div class="es">Clique sur "+ Document" pour ajouter un lien (contrat, carte pro...)</div></div>`;return;}
-  el.innerHTML=`<div class="res-section"><div class="res-hd"><div class="res-icon-tit"><span class="res-icon">📄</span><div class="res-title">Documents partagés</div></div></div>${S.documents.map(d=>`<div class="doc-card"><div class="doc-icon">${d.type.split(' ')[0]}</div><div class="doc-info"><div class="doc-name">${d.name}</div>${d.desc?`<div class="doc-desc">${d.desc}</div>`:''}</div><div style="display:flex;gap:6px;flex-shrink:0"><a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a><button class="btn btn-danger btn-xs" onclick="deleteDoc('${d.id}')">🗑</button></div></div>`).join('')}</div>`;
+  el.innerHTML=`<div class="res-section"><div class="res-hd"><div class="res-icon-tit"><span class="res-icon">📄</span><div class="res-title">Documents partagés</div></div></div>${S.documents.map(d=>`<div class="doc-card"><div class="doc-icon">${d.type.split(' ')[0]}</div><div class="doc-info"><div class="doc-name">${d.name}</div>${d.desc?`<div class="doc-desc">${d.desc}</div>`:''}</div><div style="display:flex;gap:6px;flex-shrink:0">${d.fileData?`<button class="btn btn-info btn-xs" onclick="viewPdfDoc('${d.id}','${(d.name||'').replace(/'/g,"\\'")}')">📄 Voir</button>`:`<a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a>`}<button class="btn btn-danger btn-xs" onclick="deleteDoc('${d.id}')">🗑</button></div></div>`).join('')}</div>`;
 }
 function openAddDoc(){$('mdoc-id').value='';$('mdoc-name').value='';$('mdoc-url').value='';$('mdoc-desc').value='';clearDocFile();$('mdoc-title').textContent='Ajouter un document';if($('mdoc-cid'))$('mdoc-cid').value='';openModal('mod-doc');}
 // saveDoc moved to per-client docs section
@@ -6329,7 +6327,17 @@ function openReplaceExo(pid,eid,oldName,currentMethod){
     <div style="margin-bottom:6px"><input type="text" id="repl-name-${pid}-${eid}" placeholder="Nouvel exercice" style="width:100%;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:6px 10px;font-size:13px;font-weight:700;color:var(--text);outline:none"></div>
     <div style="display:flex;gap:6px;margin-bottom:6px">
       <input type="text" id="repl-variant-${pid}-${eid}" placeholder="Variante (optionnel)" style="flex:1;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:5px 8px;font-size:11px;color:var(--muted);font-style:italic;outline:none">
-      <select id="repl-method-${pid}-${eid}" style="background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:5px 8px;font-size:11px;color:var(--text);outline:none">${methodOpts}</select>
+      <select id="repl-method-${pid}-${eid}" onchange="toggleReplTempo('${pid}','${eid}')" style="background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:5px 8px;font-size:11px;color:var(--text);outline:none">${methodOpts}</select>
+    </div>
+    <div id="repl-tempo-${pid}-${eid}" style="display:${curMethod==='Tempo'?'flex':'none'};gap:4px;align-items:center;margin-bottom:6px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:var(--rs);padding:6px 8px">
+      <span style="font-size:10px;font-weight:700;color:#a855f7">⏱</span>
+      <input type="text" id="repl-t1-${pid}-${eid}" placeholder="P1" value="4" style="width:32px;text-align:center;background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:3px;font-size:11px;font-weight:700;color:var(--text)">
+      <span style="color:var(--muted)">-</span>
+      <input type="text" id="repl-t2-${pid}-${eid}" placeholder="P2" value="1" style="width:32px;text-align:center;background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:3px;font-size:11px;font-weight:700;color:var(--text)">
+      <span style="color:var(--muted)">-</span>
+      <input type="text" id="repl-t3-${pid}-${eid}" placeholder="P3" value="2" style="width:32px;text-align:center;background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:3px;font-size:11px;font-weight:700;color:var(--text)">
+      <span style="color:var(--muted)">-</span>
+      <input type="text" id="repl-t4-${pid}-${eid}" placeholder="P4" value="0" style="width:32px;text-align:center;background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:3px;font-size:11px;font-weight:700;color:var(--text)">
     </div>
     <div style="display:flex;gap:6px">
       <button style="flex:1;background:var(--info);color:#fff;border:none;border-radius:var(--rs);padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer" onclick="confirmReplaceExo('${pid}','${eid}','${oldName.replace(/'/g,"\\'")}')">✅ OK</button>
@@ -6339,7 +6347,29 @@ function openReplaceExo(pid,eid,oldName,currentMethod){
   const seriesList=logRow.querySelector('.series-list');
   if(seriesList) seriesList.before(replDiv);
   else logRow.querySelector('td')?.prepend(replDiv);
+  // Pre-fill if already replaced
+  const _cid=currentClient?.id;
+  const _existRepl=S.exoReplacements?.[_cid]?.[`${pid}-${eid}`];
+  if(_existRepl){
+    const nameInp=document.getElementById(`repl-name-${pid}-${eid}`);
+    if(nameInp) nameInp.value=_existRepl.newName||'';
+    const varInp=document.getElementById(`repl-variant-${pid}-${eid}`);
+    if(varInp) varInp.value=_existRepl.variant||'';
+    if(_existRepl.methodData&&_existRepl.methodData.tempo){
+      const tp=_existRepl.methodData.tempo.split('-');
+      const t1=document.getElementById(`repl-t1-${pid}-${eid}`);if(t1&&tp[0])t1.value=tp[0];
+      const t2=document.getElementById(`repl-t2-${pid}-${eid}`);if(t2&&tp[1])t2.value=tp[1];
+      const t3=document.getElementById(`repl-t3-${pid}-${eid}`);if(t3&&tp[2])t3.value=tp[2];
+      const t4=document.getElementById(`repl-t4-${pid}-${eid}`);if(t4&&tp[3])t4.value=tp[3];
+    }
+  }
   document.getElementById(`repl-name-${pid}-${eid}`)?.focus();
+}
+
+function toggleReplTempo(pid,eid){
+  const sel=document.getElementById(`repl-method-${pid}-${eid}`);
+  const tw=document.getElementById(`repl-tempo-${pid}-${eid}`);
+  if(sel&&tw) tw.style.display=sel.value==='Tempo'?'flex':'none';
 }
 
 function confirmReplaceExo(pid,eid,oldName){
@@ -6347,11 +6377,20 @@ function confirmReplaceExo(pid,eid,oldName){
   if(!newName){showToast('Donne un nom d\'exercice');return;}
   const newVariant=document.getElementById(`repl-variant-${pid}-${eid}`)?.value.trim()||'';
   const newMethod=document.getElementById(`repl-method-${pid}-${eid}`)?.value||'Classique';
+  // Build methodData if Tempo
+  let newMethodData=null;
+  if(newMethod==='Tempo'){
+    const t1=document.getElementById(`repl-t1-${pid}-${eid}`)?.value||'4';
+    const t2=document.getElementById(`repl-t2-${pid}-${eid}`)?.value||'1';
+    const t3=document.getElementById(`repl-t3-${pid}-${eid}`)?.value||'2';
+    const t4=document.getElementById(`repl-t4-${pid}-${eid}`)?.value||'0';
+    newMethodData={tempo:`${t1}-${t2}-${t3}-${t4}`};
+  }
   // Store replacement
   if(!S.exoReplacements) S.exoReplacements={};
   const cid=currentClient?.id;
   if(!S.exoReplacements[cid]) S.exoReplacements[cid]={};
-  S.exoReplacements[cid][`${pid}-${eid}`]={oldName,newName,variant:newVariant,method:newMethod};
+  S.exoReplacements[cid][`${pid}-${eid}`]={oldName,newName,variant:newVariant,method:newMethod,methodData:newMethodData};
   saveState();
   // Update the display inline — re-render the whole seance to apply method change
   const replWrap=document.getElementById(`replace-wrap-${pid}-${eid}`);
@@ -7542,11 +7581,11 @@ function renderClientDocs(){
   let h=`<div style="font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:16px">Mes <span style="color:var(--red)">documents</span></div>`;
   if(clientDocs.length){
     h+=`<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:8px">Documents personnels</div>`;
-    clientDocs.forEach(d=>{h+=`<div class="doc-card" style="margin:0 0 8px"><div class="doc-icon">${d.type.split(' ')[0]}</div><div class="doc-info"><div class="doc-name">${d.name}</div>${d.desc?`<div class="doc-desc">${d.desc}</div>`:''}</div><a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a></div>`;});
+    clientDocs.forEach(d=>{h+=`<div class="doc-card" style="margin:0 0 8px"><div class="doc-icon">${d.type.split(' ')[0]}</div><div class="doc-info"><div class="doc-name">${d.name}</div>${d.desc?`<div class="doc-desc">${d.desc}</div>`:''}</div>${d.fileData?`<button class="btn btn-info btn-xs" onclick="viewPdfDoc('${d.id}','${(d.name||'').replace(/'/g,"\\'")}')">📄 Voir PDF</button>`:`<a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a>`}</div>`;});
   }
   if(globalDocs.length){
     h+=`<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:12px 0 8px">Documents généraux</div>`;
-    globalDocs.forEach(d=>{h+=`<div class="doc-card" style="margin:0 0 8px"><div class="doc-icon">${d.type.split(' ')[0]}</div><div class="doc-info"><div class="doc-name">${d.name}</div>${d.desc?`<div class="doc-desc">${d.desc}</div>`:''}</div><a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a></div>`;});
+    globalDocs.forEach(d=>{h+=`<div class="doc-card" style="margin:0 0 8px"><div class="doc-icon">${d.type.split(' ')[0]}</div><div class="doc-info"><div class="doc-name">${d.name}</div>${d.desc?`<div class="doc-desc">${d.desc}</div>`:''}</div>${d.fileData?`<button class="btn btn-info btn-xs" onclick="viewPdfDoc('${d.id}','${(d.name||'').replace(/'/g,"\\'")}')">📄 Voir PDF</button>`:`<a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a>`}</div>`;});
   }
   el.innerHTML=h;
 }
