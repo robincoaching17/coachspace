@@ -1,4 +1,4 @@
-*<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 
@@ -1643,6 +1643,7 @@ const DEFAULT_STATE={
   exerciseImages:{},
   nutrition:{},
   nutritionFavs:[],
+  customFoods:[],
   nutritionTargets:{},
   recipes:[
     {id:'rd1',name:'Porridge protéiné banane',category:'🌅 Petit-déjeuner',instructions:'80g flocons d\'avoine + 250ml lait + 1 scoop whey vanille. Cuire 3 min au micro-ondes. Ajouter 1 banane tranchée, 10g beurre de cacahuète, cannelle.',calories:480,proteines:35,glucides:60,lipides:12,fibres:6,portions:1},
@@ -1805,6 +1806,7 @@ function showModal(title,html){
 function closeGenericModal(){
   const ov=document.getElementById('generic-modal-ov');
   if(ov) ov.classList.remove('open');
+  if(window._barcodeStream){window._barcodeStream.getTracks().forEach(t=>t.stop());window._barcodeStream=null;}
 }
 function closeModal(id){
   if(id) $(id).classList.remove('open');
@@ -7224,6 +7226,78 @@ function setNutritionTargets(cid){
   showModal('',h);
 }
 
+const COMMON_FOODS=[
+{cat:'🥩 Protéines',name:'Blanc de poulet',cal:110,prot:23,gluc:0,lip:1.5},
+{cat:'🥩 Protéines',name:'Escalope de dinde',cal:104,prot:22,gluc:0,lip:1.5},
+{cat:'🥩 Protéines',name:'Boeuf haché 5%',cal:137,prot:22,gluc:0,lip:5},
+{cat:'🥩 Protéines',name:'Boeuf haché 15%',cal:218,prot:19,gluc:0,lip:15},
+{cat:'🥩 Protéines',name:'Steak de boeuf',cal:158,prot:26,gluc:0,lip:6},
+{cat:'🥩 Protéines',name:'Saumon',cal:208,prot:20,gluc:0,lip:13},
+{cat:'🥩 Protéines',name:'Thon en conserve (naturel)',cal:116,prot:26,gluc:0,lip:1},
+{cat:'🥩 Protéines',name:'Cabillaud',cal:82,prot:18,gluc:0,lip:0.7},
+{cat:'🥩 Protéines',name:'Crevettes',cal:85,prot:20,gluc:0,lip:0.5},
+{cat:'🥩 Protéines',name:'Oeufs (2 ≈ 100g)',cal:155,prot:13,gluc:1,lip:11},
+{cat:'🥩 Protéines',name:'Blanc d\'oeuf (3 ≈ 100g)',cal:52,prot:11,gluc:0.7,lip:0.2},
+{cat:'🥩 Protéines',name:'Jambon blanc',cal:107,prot:18,gluc:1,lip:3.5},
+{cat:'🥛 Produits laitiers',name:'Fromage blanc 0%',cal:45,prot:7,gluc:4,lip:0.1},
+{cat:'🥛 Produits laitiers',name:'Fromage blanc 3.2%',cal:72,prot:6.5,gluc:4,lip:3.2},
+{cat:'🥛 Produits laitiers',name:'Yaourt grec 0%',cal:57,prot:10,gluc:4,lip:0},
+{cat:'🥛 Produits laitiers',name:'Yaourt grec 10%',cal:133,prot:5,gluc:4,lip:10},
+{cat:'🥛 Produits laitiers',name:'Skyr',cal:63,prot:11,gluc:4,lip:0.2},
+{cat:'🥛 Produits laitiers',name:'Lait demi-écrémé',cal:46,prot:3.2,gluc:4.8,lip:1.5},
+{cat:'🥛 Produits laitiers',name:'Lait entier',cal:63,prot:3.2,gluc:4.8,lip:3.5},
+{cat:'🥛 Produits laitiers',name:'Whey protéine (dose 30g)',cal:120,prot:24,gluc:2,lip:1.5},
+{cat:'🥛 Produits laitiers',name:'Mozzarella',cal:254,prot:18,gluc:1,lip:20},
+{cat:'🥛 Produits laitiers',name:'Emmental',cal:368,prot:27,gluc:0,lip:29},
+{cat:'🥛 Produits laitiers',name:'Comté',cal:420,prot:27,gluc:0,lip:35},
+{cat:'🍚 Féculents',name:'Riz blanc (cuit)',cal:130,prot:2.7,gluc:28,lip:0.3},
+{cat:'🍚 Féculents',name:'Riz complet (cuit)',cal:123,prot:2.6,gluc:26,lip:0.9},
+{cat:'🍚 Féculents',name:'Pâtes (cuites)',cal:131,prot:5,gluc:25,lip:1.1},
+{cat:'🍚 Féculents',name:'Pâtes complètes (cuites)',cal:124,prot:5.3,gluc:24,lip:0.5},
+{cat:'🍚 Féculents',name:'Patate douce (cuite)',cal:86,prot:1.6,gluc:20,lip:0.1},
+{cat:'🍚 Féculents',name:'Pomme de terre (cuite)',cal:80,prot:2,gluc:17,lip:0.1},
+{cat:'🍚 Féculents',name:'Flocons d\'avoine',cal:367,prot:14,gluc:58,lip:7},
+{cat:'🍚 Féculents',name:'Pain complet',cal:247,prot:8,gluc:44,lip:3.5},
+{cat:'🍚 Féculents',name:'Pain blanc / Baguette',cal:265,prot:8,gluc:51,lip:2},
+{cat:'🍚 Féculents',name:'Pain de mie',cal:261,prot:8,gluc:47,lip:4},
+{cat:'🍚 Féculents',name:'Quinoa (cuit)',cal:120,prot:4.4,gluc:21,lip:1.9},
+{cat:'🍚 Féculents',name:'Semoule (cuite)',cal:112,prot:3.6,gluc:23,lip:0.2},
+{cat:'🍚 Féculents',name:'Lentilles (cuites)',cal:116,prot:9,gluc:20,lip:0.4},
+{cat:'🍚 Féculents',name:'Pois chiches (cuits)',cal:164,prot:9,gluc:27,lip:2.6},
+{cat:'🍎 Fruits',name:'Banane',cal:89,prot:1.1,gluc:23,lip:0.3},
+{cat:'🍎 Fruits',name:'Pomme',cal:52,prot:0.3,gluc:14,lip:0.2},
+{cat:'🍎 Fruits',name:'Fraises',cal:32,prot:0.7,gluc:8,lip:0.3},
+{cat:'🍎 Fruits',name:'Myrtilles',cal:57,prot:0.7,gluc:14,lip:0.3},
+{cat:'🍎 Fruits',name:'Orange',cal:47,prot:0.9,gluc:12,lip:0.1},
+{cat:'🍎 Fruits',name:'Kiwi',cal:61,prot:1.1,gluc:15,lip:0.5},
+{cat:'🍎 Fruits',name:'Raisin',cal:69,prot:0.7,gluc:18,lip:0.2},
+{cat:'🍎 Fruits',name:'Mangue',cal:60,prot:0.8,gluc:15,lip:0.4},
+{cat:'🥑 Lipides',name:'Avocat',cal:160,prot:2,gluc:9,lip:15},
+{cat:'🥑 Lipides',name:'Beurre de cacahuète',cal:588,prot:25,gluc:20,lip:50},
+{cat:'🥑 Lipides',name:'Amandes',cal:578,prot:21,gluc:22,lip:50},
+{cat:'🥑 Lipides',name:'Noix',cal:654,prot:15,gluc:14,lip:65},
+{cat:'🥑 Lipides',name:'Noix de cajou',cal:553,prot:18,gluc:30,lip:44},
+{cat:'🥑 Lipides',name:'Huile d\'olive (1 cs ≈ 10ml)',cal:884,prot:0,gluc:0,lip:100},
+{cat:'🥑 Lipides',name:'Beurre',cal:717,prot:0.9,gluc:0.1,lip:81},
+{cat:'🥦 Légumes',name:'Brocoli',cal:34,prot:2.8,gluc:7,lip:0.4},
+{cat:'🥦 Légumes',name:'Haricots verts',cal:31,prot:1.8,gluc:7,lip:0.1},
+{cat:'🥦 Légumes',name:'Courgette',cal:17,prot:1.2,gluc:3,lip:0.3},
+{cat:'🥦 Légumes',name:'Tomate',cal:18,prot:0.9,gluc:3.9,lip:0.2},
+{cat:'🥦 Légumes',name:'Concombre',cal:15,prot:0.7,gluc:3.6,lip:0.1},
+{cat:'🥦 Légumes',name:'Épinards',cal:23,prot:2.9,gluc:3.6,lip:0.4},
+{cat:'🥦 Légumes',name:'Carottes',cal:41,prot:0.9,gluc:10,lip:0.2},
+{cat:'🥦 Légumes',name:'Champignons',cal:22,prot:3.1,gluc:3.3,lip:0.3},
+{cat:'🥦 Légumes',name:'Poivron',cal:31,prot:1,gluc:6,lip:0.3},
+{cat:'🥦 Légumes',name:'Salade verte',cal:15,prot:1.4,gluc:2.9,lip:0.2},
+{cat:'🍯 Extras',name:'Miel',cal:304,prot:0.3,gluc:82,lip:0},
+{cat:'🍯 Extras',name:'Chocolat noir 70%',cal:530,prot:8,gluc:33,lip:41},
+{cat:'🍯 Extras',name:'Confiture',cal:260,prot:0.5,gluc:63,lip:0.1},
+{cat:'🍯 Extras',name:'Compote de pommes',cal:42,prot:0.2,gluc:10,lip:0.1},
+{cat:'🍯 Extras',name:'Sirop d\'érable / agave',cal:260,prot:0,gluc:67,lip:0},
+{cat:'🍯 Extras',name:'Galette de riz',cal:387,prot:7,gluc:85,lip:2.5},
+{cat:'🍯 Extras',name:'Barre protéinée (1 barre ≈ 60g)',cal:220,prot:20,gluc:22,lip:7},
+];
+
 function renderNutrition(){
   const el=$('cl-nutrition-view');if(!el)return;
   const cid=currentClient?.id;if(!cid)return;
@@ -7314,24 +7388,85 @@ function renderNutrition(){
 
 function openAddFood(category,date){
   window._foodBase=null;
+  window._addFoodCat=category;window._addFoodDate=date;
   const favs=S.nutritionFavs||[];
+  const customs=S.customFoods||[];
   let h=`<div style="max-width:450px;max-height:80vh;overflow-y:auto">
-    <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;margin-bottom:10px">🍽 Ajouter un aliment</div>
+    <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px">🍽 Ajouter un aliment</div>
     <div style="font-size:10px;color:var(--muted);margin-bottom:10px">${category}</div>
 
-    <!-- Search Open Food Facts -->
-    <div style="margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;margin-bottom:4px">🔍 Rechercher un produit</div>
-      <div style="display:flex;gap:4px">
-        <input type="text" id="food-search-q" placeholder="Ex: Yaourt grec Fage, Flocons avoine..." style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:8px;font-size:12px;color:var(--text)">
-        <button class="btn btn-red btn-xs" onclick="searchFood()">Chercher</button>
-      </div>
-      <div id="food-search-results" style="margin-top:6px;max-height:200px;overflow-y:auto"></div>
+    <!-- Search + Barcode row -->
+    <div style="display:flex;gap:4px;margin-bottom:4px">
+      <input type="text" id="food-search-q" placeholder="Rechercher un produit..." style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:8px;font-size:12px;color:var(--text)" onkeydown="if(event.key==='Enter')searchFood()">
+      <button class="btn btn-red btn-xs" onclick="searchFood()">🔍</button>
+      <button class="btn btn-ghost btn-xs" onclick="openBarcodeScanner('${category}','${date}')" title="Scanner un code-barres">📷</button>
+    </div>
+    <div id="food-search-results" style="max-height:180px;overflow-y:auto;margin-bottom:8px"></div>
+
+    <!-- Tabs: Courants / Favoris / Mes aliments -->
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:8px">
+      <button class="btn btn-ghost btn-xs" id="ftab-common" onclick="switchFoodTab('common')" style="border-radius:var(--rs) var(--rs) 0 0;flex:1;justify-content:center;font-size:10px;font-weight:800;padding:6px 4px;border-bottom:2px solid var(--red);margin-bottom:-2px">📋 Courants</button>
+      <button class="btn btn-ghost btn-xs" id="ftab-favs" onclick="switchFoodTab('favs')" style="border-radius:var(--rs) var(--rs) 0 0;flex:1;justify-content:center;font-size:10px;font-weight:800;padding:6px 4px;margin-bottom:-2px">⭐ Favoris${favs.length?' ('+favs.length+')':''}</button>
+      <button class="btn btn-ghost btn-xs" id="ftab-custom" onclick="switchFoodTab('custom')" style="border-radius:var(--rs) var(--rs) 0 0;flex:1;justify-content:center;font-size:10px;font-weight:800;padding:6px 4px;margin-bottom:-2px">🏷️ Perso${customs.length?' ('+customs.length+')':''}</button>
     </div>
 
-    <!-- Manual entry -->
-    <div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:8px">
-      <div style="font-size:11px;font-weight:700;margin-bottom:6px">✏️ Saisie manuelle</div>
+    <!-- Tab content: Common foods -->
+    <div id="ftab-content-common" style="max-height:180px;overflow-y:auto;margin-bottom:8px">
+      <input type="text" id="common-food-filter" placeholder="Filtrer les aliments courants..." oninput="filterCommonFoods()" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:5px 8px;font-size:11px;color:var(--text);margin-bottom:6px">
+      <div id="common-food-list">`;
+  // Render common foods grouped by category
+  const cats=[...new Set(COMMON_FOODS.map(f=>f.cat))];
+  cats.forEach(c=>{
+    h+=`<div class="cf-group" data-cat="${c}"><div style="font-size:9px;color:var(--muted);text-transform:uppercase;font-weight:800;margin:4px 0 2px">${c}</div>`;
+    COMMON_FOODS.filter(f=>f.cat===c).forEach(f=>{
+      h+=`<div class="cf-item" data-name="${f.name.toLowerCase()}" style="display:flex;align-items:center;gap:4px;padding:4px 6px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:2px;cursor:pointer;font-size:10px" onclick="selectCommonFood(this)" data-cal="${f.cal}" data-prot="${f.prot}" data-gluc="${f.gluc}" data-lip="${f.lip}" data-fname="${f.name.replace(/"/g,'&quot;')}">
+        <span style="flex:1;font-weight:700">${f.name}</span>
+        <span style="color:var(--red);min-width:38px;text-align:right">${f.cal}</span>
+        <span style="color:#3b82f6;min-width:24px;text-align:right">${f.prot}p</span>
+        <span style="color:#f59e0b;min-width:24px;text-align:right">${f.gluc}g</span>
+        <span style="color:#22c55e;min-width:24px;text-align:right">${f.lip}l</span>
+      </div>`;
+    });
+    h+=`</div>`;
+  });
+  h+=`</div></div>
+
+    <!-- Tab content: Favorites -->
+    <div id="ftab-content-favs" style="display:none;max-height:180px;overflow-y:auto;margin-bottom:8px">`;
+  if(favs.length){
+    favs.forEach((f,fi)=>{
+      h+=`<div style="display:flex;align-items:center;gap:4px;padding:5px 8px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:3px;cursor:pointer;font-size:10px" onclick="useFavorite(${fi},'${category}','${date}')">
+        <span style="flex:1;font-weight:700">${f.name}</span>
+        <span style="color:var(--red)">${f.cal}kcal</span>
+        <span style="color:#3b82f6">${f.prot}p</span>
+        <span style="color:#f59e0b">${f.gluc}g</span>
+        <span style="color:#22c55e">${f.lip}l</span>
+        <button style="background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer" onclick="event.stopPropagation();removeFav(${fi})">✕</button>
+      </div>`;
+    });
+  }else{h+=`<div style="text-align:center;color:var(--muted);font-size:11px;padding:12px">Ajoute des aliments en favori avec le bouton ⭐</div>`;}
+  h+=`</div>
+
+    <!-- Tab content: Custom foods -->
+    <div id="ftab-content-custom" style="display:none;max-height:180px;overflow-y:auto;margin-bottom:8px">
+      <button class="btn btn-ghost btn-xs" style="width:100%;justify-content:center;margin-bottom:6px;border:1px dashed var(--border)" onclick="openCreateCustomFood()">+ Créer un aliment personnalisé</button>`;
+  if(customs.length){
+    customs.forEach((f,fi)=>{
+      h+=`<div style="display:flex;align-items:center;gap:4px;padding:5px 8px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:3px;cursor:pointer;font-size:10px" onclick="selectCommonFood(this)" data-fname="${(f.name||'').replace(/"/g,'&quot;')}" data-cal="${f.cal}" data-prot="${f.prot}" data-gluc="${f.gluc}" data-lip="${f.lip}">
+        <span style="flex:1;font-weight:700">🏷️ ${f.name}</span>
+        <span style="color:var(--red)">${f.cal}</span>
+        <span style="color:#3b82f6">${f.prot}p</span>
+        <span style="color:#f59e0b">${f.gluc}g</span>
+        <span style="color:#22c55e">${f.lip}l</span>
+        <button style="background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer" onclick="event.stopPropagation();deleteCustomFood(${fi})">✕</button>
+      </div>`;
+    });
+  }else{h+=`<div style="text-align:center;color:var(--muted);font-size:11px;padding:8px">Crée tes propres aliments avec les macros du paquet</div>`;}
+  h+=`</div>
+
+    <!-- Manual entry (always visible) -->
+    <div style="border-top:1px solid var(--border);padding-top:8px;margin-bottom:4px">
+      <div style="font-size:11px;font-weight:700;margin-bottom:4px">✏️ Saisie manuelle / ajuster</div>
       <input type="text" id="food-name" placeholder="Nom de l'aliment" style="width:100%;margin-bottom:4px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 8px;font-size:12px;color:var(--text)">
       <div style="display:flex;gap:4px;align-items:center;margin-bottom:6px">
         <input type="number" id="food-qty" placeholder="100" value="100" oninput="recalcFood()" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 8px;font-size:12px;color:var(--text)">
@@ -7347,26 +7482,166 @@ function openAddFood(category,date){
         <button class="btn btn-red" style="flex:1;justify-content:center;padding:10px" onclick="addFoodEntry('${category}','${date}')">✅ Ajouter</button>
         <button class="btn btn-ghost btn-xs" onclick="addFoodEntry('${category}','${date}',true)">⭐ + Favori</button>
       </div>
-    </div>`;
-
-  // Favorites
-  if(favs.length){
-    h+=`<div style="border-top:1px solid var(--border);padding-top:10px">
-      <div style="font-size:11px;font-weight:700;margin-bottom:6px">⭐ Mes favoris</div>`;
-    favs.forEach((f,fi)=>{
-      h+=`<div style="display:flex;align-items:center;gap:4px;padding:5px 8px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:3px;cursor:pointer" onclick="useFavorite(${fi},'${category}','${date}')">
-        <span style="flex:1;font-size:11px;font-weight:700">${f.name}</span>
-        <span style="font-size:9px;color:var(--red)">${f.cal}kcal</span>
-        <span style="font-size:9px;color:#3b82f6">${f.prot}p</span>
-        <span style="font-size:9px;color:#f59e0b">${f.gluc}g</span>
-        <span style="font-size:9px;color:#22c55e">${f.lip}l</span>
-        <button style="background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer" onclick="event.stopPropagation();removeFav(${fi})">✕</button>
-      </div>`;
-    });
-    h+=`</div>`;
-  }
-  h+=`</div>`;
+    </div>
+  </div>`;
   showModal('',h);
+}
+
+function switchFoodTab(tab){
+  ['common','favs','custom'].forEach(t=>{
+    const btn=document.getElementById('ftab-'+t);
+    const cont=document.getElementById('ftab-content-'+t);
+    if(btn)btn.style.borderBottom=t===tab?'2px solid var(--red)':'none';
+    if(cont)cont.style.display=t===tab?'':'none';
+  });
+}
+function filterCommonFoods(){
+  const q=(document.getElementById('common-food-filter')?.value||'').toLowerCase().trim();
+  document.querySelectorAll('.cf-item').forEach(el=>{
+    el.style.display=!q||el.dataset.name.includes(q)?'flex':'none';
+  });
+  document.querySelectorAll('.cf-group').forEach(g=>{
+    const visible=[...g.querySelectorAll('.cf-item')].some(el=>el.style.display!=='none');
+    g.style.display=visible?'':'none';
+  });
+}
+function selectCommonFood(el){
+  const name=el.dataset.fname;
+  const cal=parseFloat(el.dataset.cal)||0;
+  const prot=parseFloat(el.dataset.prot)||0;
+  const gluc=parseFloat(el.dataset.gluc)||0;
+  const lip=parseFloat(el.dataset.lip)||0;
+  if($('food-name'))$('food-name').value=name;
+  if($('food-qty'))$('food-qty').value='100';
+  if($('food-cal'))$('food-cal').value=cal;
+  if($('food-prot'))$('food-prot').value=prot;
+  if($('food-gluc'))$('food-gluc').value=gluc;
+  if($('food-lip'))$('food-lip').value=lip;
+  window._foodBase={cal,prot,gluc,lip};
+  showToast('✅ '+name+' sélectionné — ajuste les grammes si besoin');
+}
+
+// ── Barcode Scanner ──
+async function openBarcodeScanner(category,date){
+  const hasBD='BarcodeDetector' in window;
+  let h=`<div style="max-width:450px">
+    <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;margin-bottom:10px">📷 Scanner un code-barres</div>`;
+  if(hasBD){
+    h+=`<div id="barcode-cam-wrap" style="position:relative;border-radius:var(--rs);overflow:hidden;margin-bottom:8px;background:#000">
+      <video id="barcode-video" autoplay playsinline muted style="width:100%;display:block;border-radius:var(--rs)"></video>
+      <div style="position:absolute;top:50%;left:8%;right:8%;height:2px;background:var(--red);opacity:.7;transform:translateY(-50%);box-shadow:0 0 8px var(--red)"></div>
+    </div>
+    <div id="barcode-status" style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:8px">📸 Pointe la caméra vers le code-barres...</div>`;
+  }else{
+    h+=`<div style="text-align:center;color:var(--muted);font-size:11px;padding:12px;background:var(--s2);border-radius:var(--rs);margin-bottom:8px">📱 Le scan caméra n'est pas disponible sur ce navigateur.<br>Entre le code-barres manuellement ci-dessous.</div>`;
+  }
+  h+=`<div style="font-size:10px;color:var(--muted);margin-bottom:4px">Ou entre le numéro du code-barres :</div>
+    <div style="display:flex;gap:4px">
+      <input type="text" id="barcode-manual" placeholder="Ex: 3017620422003" inputmode="numeric" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:8px;font-size:13px;color:var(--text)" onkeydown="if(event.key==='Enter')lookupBarcode($('barcode-manual').value.trim(),'${category}','${date}')">
+      <button class="btn btn-red btn-xs" onclick="lookupBarcode($('barcode-manual').value.trim(),'${category}','${date}')">Chercher</button>
+    </div>
+  </div>`;
+  showModal('',h);
+  if(hasBD){
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});
+      const video=document.getElementById('barcode-video');
+      if(!video){stream.getTracks().forEach(t=>t.stop());return;}
+      video.srcObject=stream;window._barcodeStream=stream;
+      const detector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39']});
+      let scanning=true;
+      const scan=async()=>{
+        if(!scanning||!video.srcObject)return;
+        try{
+          const res=await detector.detect(video);
+          if(res.length>0){
+            scanning=false;
+            const code=res[0].rawValue;
+            stopBarcodeCamera();
+            lookupBarcode(code,category,date);
+            return;
+          }
+        }catch(e){}
+        if(scanning)requestAnimationFrame(scan);
+      };
+      video.onloadedmetadata=()=>{video.play();scan();};
+    }catch(e){
+      const st=document.getElementById('barcode-status');
+      if(st)st.innerHTML='❌ Caméra non disponible. Utilise la saisie manuelle.';
+    }
+  }
+}
+function stopBarcodeCamera(){
+  if(window._barcodeStream){window._barcodeStream.getTracks().forEach(t=>t.stop());window._barcodeStream=null;}
+}
+function lookupBarcode(barcode,category,date){
+  if(!barcode||barcode.length<8){showToast('Code-barres invalide');return;}
+  stopBarcodeCamera();closeGenericModal();
+  showToast('🔍 Recherche du produit...');
+  fetch('https://world.openfoodfacts.org/api/v0/product/'+encodeURIComponent(barcode)+'.json')
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.status===1&&data.product){
+      const p=data.product;const n=p.nutriments||{};
+      openAddFood(category,date);
+      setTimeout(()=>{
+        const name=(p.product_name||'Produit')+(p.brands?' ('+p.brands+')':'');
+        const cal=Math.round(n['energy-kcal_100g']||0);
+        const prot=Math.round((n.proteins_100g||0)*10)/10;
+        const gluc=Math.round((n.carbohydrates_100g||0)*10)/10;
+        const lip=Math.round((n.fat_100g||0)*10)/10;
+        if($('food-name'))$('food-name').value=name;
+        if($('food-qty'))$('food-qty').value='100';
+        if($('food-cal'))$('food-cal').value=cal;
+        if($('food-prot'))$('food-prot').value=prot;
+        if($('food-gluc'))$('food-gluc').value=gluc;
+        if($('food-lip'))$('food-lip').value=lip;
+        window._foodBase={cal,prot,gluc,lip};
+        showToast('✅ '+name+' trouvé !');
+      },200);
+    }else{
+      showToast('❌ Produit non trouvé. Essaie la recherche par nom.');
+      openAddFood(category,date);
+    }
+  })
+  .catch(e=>{showToast('❌ Erreur réseau');openAddFood(category,date);});
+}
+
+// ── Custom foods ──
+function openCreateCustomFood(){
+  let h=`<div style="max-width:400px">
+    <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;margin-bottom:8px">🏷️ Créer un aliment personnalisé</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:8px">Entre les valeurs nutritionnelles pour 100g (voir sur le paquet)</div>
+    <input type="text" id="cf-name" placeholder="Nom du produit (ex: Mon fromage blanc)" style="width:100%;margin-bottom:6px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:8px;font-size:12px;color:var(--text)">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px">
+      <div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Calories</div><input type="number" id="cf-cal" placeholder="kcal" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px;font-size:13px;color:var(--red);font-weight:700;text-align:center"></div>
+      <div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Protéines</div><input type="number" id="cf-prot" placeholder="g" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px;font-size:13px;color:#3b82f6;font-weight:700;text-align:center"></div>
+      <div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Glucides</div><input type="number" id="cf-gluc" placeholder="g" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px;font-size:13px;color:#f59e0b;font-weight:700;text-align:center"></div>
+      <div><div style="font-size:8px;color:var(--muted);text-transform:uppercase">Lipides</div><input type="number" id="cf-lip" placeholder="g" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:6px;font-size:13px;color:#22c55e;font-weight:700;text-align:center"></div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-red" style="flex:1;justify-content:center;padding:10px" onclick="saveCustomFood()">✅ Enregistrer</button>
+      <button class="btn btn-ghost btn-xs" onclick="closeGenericModal();openAddFood(window._addFoodCat,window._addFoodDate)">Retour</button>
+    </div>
+  </div>`;
+  showModal('',h);
+}
+function saveCustomFood(){
+  const name=$('cf-name')?.value.trim();
+  if(!name){showToast('Nom requis');return;}
+  if(!S.customFoods)S.customFoods=[];
+  S.customFoods.push({id:'cf'+Date.now(),name,cal:parseFloat($('cf-cal')?.value)||0,prot:parseFloat($('cf-prot')?.value)||0,gluc:parseFloat($('cf-gluc')?.value)||0,lip:parseFloat($('cf-lip')?.value)||0});
+  saveState();closeGenericModal();
+  showToast('🏷️ '+name+' enregistré !');
+  openAddFood(window._addFoodCat,window._addFoodDate);
+}
+function deleteCustomFood(idx){
+  if(!S.customFoods)return;
+  const name=S.customFoods[idx]?.name||'';
+  S.customFoods.splice(idx,1);
+  saveState();closeGenericModal();
+  showToast('🏷️ '+name+' supprimé');
+  openAddFood(window._addFoodCat,window._addFoodDate);
 }
 
 function searchFood(){
@@ -7576,11 +7851,20 @@ function renderClientDocs(){
   const el=$('cl-docs-view');if(!el)return;
   const globalDocs=S.documents||[];
   const clientDocs=(currentClient.docs)||[];
+  const cid=currentClient.id;
+  const bilans=((S.bilans&&S.bilans[cid])||[]).sort((a,b)=>parseDateFR(b.date)-parseDateFR(a.date));
   const allDocs=[...clientDocs,...globalDocs];
-  if(!allDocs.length){el.innerHTML=`<div class="empty"><div class="ei">📄</div><div class="et">Aucun document partagé</div></div>`;return;}
+  if(!allDocs.length&&!bilans.length){el.innerHTML=`<div class="empty"><div class="ei">📄</div><div class="et">Aucun document partagé</div></div>`;return;}
   let h=`<div style="font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:16px">Mes <span style="color:var(--red)">documents</span></div>`;
+  if(bilans.length){
+    h+=`<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:8px">📋 Mes bilans</div>`;
+    bilans.forEach(b=>{
+      const preview=b.content?(b.content.length>80?b.content.substring(0,80)+'...':b.content):'';
+      h+=`<div class="doc-card" style="margin:0 0 8px"><div class="doc-icon">📋</div><div class="doc-info"><div class="doc-name">${b.type||'Bilan'}</div><div class="doc-desc">${b.date}${preview?' · '+preview:''}</div></div><button class="btn btn-info btn-xs" onclick="viewBilanClient(${cid},'${b.id}')">👁 Voir</button></div>`;
+    });
+  }
   if(clientDocs.length){
-    h+=`<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:8px">Documents personnels</div>`;
+    h+=`<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:${bilans.length?'12px':'0'} 0 8px">Documents personnels</div>`;
     clientDocs.forEach(d=>{h+=`<div class="doc-card" style="margin:0 0 8px"><div class="doc-icon">${d.type.split(' ')[0]}</div><div class="doc-info"><div class="doc-name">${d.name}</div>${d.desc?`<div class="doc-desc">${d.desc}</div>`:''}</div>${d.fileData?`<button class="btn btn-info btn-xs" onclick="viewPdfDoc('${d.id}','${(d.name||'').replace(/'/g,"\\'")}')">📄 Voir PDF</button>`:`<a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a>`}</div>`;});
   }
   if(globalDocs.length){
@@ -7588,6 +7872,19 @@ function renderClientDocs(){
     globalDocs.forEach(d=>{h+=`<div class="doc-card" style="margin:0 0 8px"><div class="doc-icon">${d.type.split(' ')[0]}</div><div class="doc-info"><div class="doc-name">${d.name}</div>${d.desc?`<div class="doc-desc">${d.desc}</div>`:''}</div>${d.fileData?`<button class="btn btn-info btn-xs" onclick="viewPdfDoc('${d.id}','${(d.name||'').replace(/'/g,"\\'")}')">📄 Voir PDF</button>`:`<a href="${d.url}" target="_blank" class="btn btn-ghost btn-xs">Ouvrir</a>`}</div>`;});
   }
   el.innerHTML=h;
+}
+function viewBilanClient(cid,bid){
+  const bilans=(S.bilans&&S.bilans[cid])||[];
+  const b=bilans.find(x=>x.id===bid);if(!b)return;
+  let h=`<div style="max-width:600px;max-height:85vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div><div style="font-family:'Oswald',sans-serif;font-size:18px;font-weight:700">${b.type||'Bilan'}</div>
+      <div style="font-size:11px;color:var(--muted)">${b.date}</div></div>
+    </div>
+    ${b.url?`<a href="${b.url}" target="_blank" class="btn btn-ghost btn-xs" style="margin-bottom:10px;display:inline-flex">📎 Document joint</a>`:''}
+    <div style="font-size:13px;line-height:1.8;white-space:pre-wrap;color:var(--text);background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 16px">${b.content||'<em style="color:var(--muted)">Aucun contenu</em>'}</div>
+  </div>`;
+  showModal('',h);
 }
 
 // ════════════════════════════════════════════
