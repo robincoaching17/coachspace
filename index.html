@@ -2747,6 +2747,7 @@ function renderAccordion(prog, withLog=false, openFirstWeek=true, useClassicAcco
           }
         });
         h+=`</tbody></table>`;
+        h+=`<div style="display:flex;justify-content:flex-end;padding:6px 0"><button class="btn btn-ghost btn-xs" onclick="openCopySeance(${prog.id},${wi},${si})">📋 Copier cette séance</button></div>`;
       }
       h+=`</div>`;
     });
@@ -4415,6 +4416,12 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
   });
   h+=`</tbody></table>`;
 
+  if(!withLog&&!preview){
+    const _copyProgId=progIdOverride||pid;
+    const _copyWeekIdx=weekIdxOverride!==null?weekIdxOverride:null;
+    h+=`<div style="display:flex;justify-content:flex-end;padding:6px 0"><button class="btn btn-ghost btn-xs" onclick="openCopySeance(${_copyProgId},${_copyWeekIdx!==null?_copyWeekIdx:'null'},${idx})">📋 Copier cette séance</button></div>`;
+  }
+
   if(withLog&&!preview){
     const effectivePid=progIdOverride||pid;
     const effectiveWeekIdx=weekIdxOverride!==null?weekIdxOverride:null;
@@ -4762,6 +4769,133 @@ function copyProgTo(id){
 }
 
 function deleteProg(id){confirm2('Supprimer ce programme ?','',()=>{S.programmes=S.programmes.filter(p=>p.id!==id);saveState();renderStats();renderProgs();showToast('Programme supprimé');});}
+
+// ── COPY SEANCE ──
+function openCopySeance(progId,weekIdx,seanceIdx){
+  const srcProg=S.programmes.find(p=>p.id===progId);
+  if(!srcProg)return;
+  let srcSeance;
+  if(weekIdx!==null&&srcProg.weeks&&srcProg.weeks[weekIdx]){
+    srcSeance=srcProg.weeks[weekIdx].seances[seanceIdx];
+  } else if(srcProg.seances){
+    srcSeance=srcProg.seances[seanceIdx];
+  }
+  if(!srcSeance){showToast('Séance introuvable');return;}
+  const escapedName=(srcSeance.name||'').replace(/</g,'&lt;');
+  let h=`<div style="padding:20px">
+    <div style="font-size:14px;font-weight:800;margin-bottom:12px">📋 Copier « ${escapedName} »</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Source : ${srcProg.name}${weekIdx!==null&&srcProg.weeks?' · '+srcProg.weeks[weekIdx].name:''}</div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:700;display:block;margin-bottom:6px">Destination :</label>
+      <select id="copy-dest-type" onchange="updateCopySeanceDest(${progId},${weekIdx})" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px">
+        <option value="same-week">Même semaine (dupliquer)</option>`;
+  if(srcProg.weeks&&srcProg.weeks.length>1){
+    h+=`<option value="other-week">Autre semaine du même programme</option>`;
+  }
+  h+=`<option value="other-prog">Autre programme (même coaché ou autre)</option>`;
+  h+=`</select></div>
+    <div id="copy-dest-detail"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeModal('mod-copy-seance')">Annuler</button>
+      <button class="btn btn-red" onclick="executeCopySeance(${progId},${weekIdx},${seanceIdx})">📋 Copier</button>
+    </div>
+  </div>`;
+  let modal=$('mod-copy-seance');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.className='modal-ov';
+    modal.id='mod-copy-seance';
+    modal.onclick=function(ev){if(ev.target===modal)closeModal('mod-copy-seance');};
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML=`<div class="modal" style="max-width:480px">${h}</div>`;
+  modal.classList.add('open');
+  updateCopySeanceDest(progId,weekIdx);
+}
+
+function updateCopySeanceDest(srcProgId,srcWeekIdx){
+  const type=$('copy-dest-type')?.value;
+  const wrap=$('copy-dest-detail');
+  if(!wrap)return;
+  const srcProg=S.programmes.find(p=>p.id===srcProgId);
+  if(!srcProg){wrap.innerHTML='';return;}
+  if(type==='same-week'){
+    wrap.innerHTML=`<div style="font-size:11px;color:var(--muted)">La séance sera dupliquée dans la même semaine.</div>`;
+  }
+  else if(type==='other-week'){
+    let opts='';
+    (srcProg.weeks||[]).forEach((w,wi)=>{
+      if(wi===srcWeekIdx) return;
+      opts+=`<option value="${wi}">${w.name}</option>`;
+    });
+    wrap.innerHTML=`<label style="font-size:12px;font-weight:700;display:block;margin-bottom:6px">Semaine cible :</label>
+      <select id="copy-dest-week" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px">${opts}</select>`;
+  }
+  else if(type==='other-prog'){
+    let opts='';
+    S.clients.forEach(c=>{
+      const progs=S.programmes.filter(p=>p.clientId===c.id&&p.weeks&&p.weeks.length);
+      if(!progs.length)return;
+      opts+=`<optgroup label="${c.prenom} ${c.nom}">`;
+      progs.forEach(p=>{
+        (p.weeks||[]).forEach((w,wi)=>{
+          opts+=`<option value="${p.id}|${wi}">${p.name} · ${w.name}</option>`;
+        });
+      });
+      opts+=`</optgroup>`;
+    });
+    if(!opts){wrap.innerHTML=`<div style="font-size:11px;color:var(--muted)">Aucun autre programme disponible.</div>`;return;}
+    wrap.innerHTML=`<label style="font-size:12px;font-weight:700;display:block;margin-bottom:6px">Programme & semaine cible :</label>
+      <select id="copy-dest-prog" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px">${opts}</select>`;
+  }
+}
+
+function executeCopySeance(srcProgId,srcWeekIdx,srcSeanceIdx){
+  const srcProg=S.programmes.find(p=>p.id===srcProgId);
+  if(!srcProg)return;
+  let srcSeance;
+  if(srcWeekIdx!==null&&srcProg.weeks&&srcProg.weeks[srcWeekIdx]){
+    srcSeance=srcProg.weeks[srcWeekIdx].seances[srcSeanceIdx];
+  } else if(srcProg.seances){
+    srcSeance=srcProg.seances[srcSeanceIdx];
+  }
+  if(!srcSeance){showToast('Séance introuvable');return;}
+  const copy=JSON.parse(JSON.stringify(srcSeance));
+  copy.name=copy.name+' (copie)';
+  if(copy.exos){copy.exos.forEach((ex,i)=>{ex.id=`${Date.now()}-c${i}`;});}
+  const type=$('copy-dest-type')?.value;
+  if(type==='same-week'){
+    if(srcWeekIdx!==null&&srcProg.weeks){
+      srcProg.weeks[srcWeekIdx].seances.push(copy);
+    } else if(srcProg.seances){
+      srcProg.seances.push(copy);
+    }
+    saveState();renderProgs();
+    closeModal('mod-copy-seance');
+    showToast('✅ Séance dupliquée !',true);
+  }
+  else if(type==='other-week'){
+    const targetWi=parseInt($('copy-dest-week')?.value);
+    if(isNaN(targetWi)||!srcProg.weeks[targetWi]){showToast('Semaine invalide');return;}
+    srcProg.weeks[targetWi].seances.push(copy);
+    saveState();renderProgs();
+    closeModal('mod-copy-seance');
+    showToast(`✅ Séance copiée vers ${srcProg.weeks[targetWi].name} !`,true);
+  }
+  else if(type==='other-prog'){
+    const val=$('copy-dest-prog')?.value;
+    if(!val){showToast('Destination invalide');return;}
+    const parts=val.split('|');
+    const destProg=S.programmes.find(p=>p.id===parseInt(parts[0]));
+    if(!destProg||!destProg.weeks||!destProg.weeks[parseInt(parts[1])]){showToast('Programme/semaine invalide');return;}
+    const targetWeek=destProg.weeks[parseInt(parts[1])];
+    targetWeek.seances.push(copy);
+    saveState();renderProgs();
+    closeModal('mod-copy-seance');
+    const destClient=S.clients.find(c=>c.id===destProg.clientId);
+    showToast(`✅ Séance copiée vers ${destProg.name} · ${targetWeek.name}${destClient?' ('+destClient.prenom+')':''}`,true);
+  }
+}
 
 // ── TEMPLATES ──
 function saveAsTemplate(progId){
