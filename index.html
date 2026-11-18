@@ -789,6 +789,27 @@ a.contact-link:hover{text-decoration:underline;}
 .pr-nav{display:flex;gap:8px;margin-top:16px;}
 .pr-nav .btn{flex:1;justify-content:center;padding:12px;}
 
+/* TIMETABLE GRID */
+.timetable{width:100%;border-collapse:collapse;min-width:660px}
+.timetable th{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;padding:6px 2px;text-align:center;position:sticky;top:0;background:var(--s1);z-index:2;border-bottom:2px solid var(--border)}
+.timetable th.tt-today{background:var(--red);color:#fff;border-radius:6px 6px 0 0}
+.timetable td{border:1px solid var(--border);height:34px;font-size:10px;text-align:center;vertical-align:middle;padding:1px 2px;transition:background .15s}
+.timetable .tt-hour{font-family:'Oswald',sans-serif;font-size:10px;color:var(--muted);border:none;width:36px;text-align:right;padding-right:5px;font-weight:600}
+.timetable .tt-empty{cursor:pointer;background:var(--s1)}
+.timetable .tt-empty:hover{background:var(--red-dim);box-shadow:inset 0 0 0 1px var(--red)}
+.timetable .tt-avail{background:rgba(34,197,94,.12);cursor:pointer;border-color:rgba(34,197,94,.25)}
+.timetable .tt-avail:hover{background:rgba(34,197,94,.22)}
+.timetable .tt-pending{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.3);cursor:pointer}
+.timetable .tt-confirmed{background:rgba(34,197,94,.25);border-color:rgba(34,197,94,.4);cursor:pointer}
+.timetable .tt-past{opacity:.4;pointer-events:none}
+.timetable .tt-unavail{background:var(--s1);color:var(--muted)}
+.timetable .tt-mine-pending{background:rgba(245,158,11,.18);border-color:rgba(245,158,11,.35);cursor:pointer}
+.timetable .tt-mine-confirmed{background:rgba(56,189,248,.18);border-color:rgba(56,189,248,.35)}
+.timetable .tt-cell-label{font-size:9px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timetable .tt-cell-badge{display:inline-block;font-size:8px;font-weight:700;border-radius:6px;padding:0 4px;margin-top:1px}
+.tt-scroll{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 320px);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:16px}
+@media(max-width:900px){.tt-scroll{max-height:calc(100vh - 280px)}}
+
 /* LANDING 3 CARDS */
 .l-card.l-card-prospect{border-color:rgba(192,21,42,.4);background:linear-gradient(135deg,var(--s1),rgba(192,21,42,.05));}
 .l-card.l-card-prospect:hover{border-color:var(--red);}
@@ -1568,10 +1589,18 @@ a.contact-link:hover{text-decoration:underline;}
   <div class="modal">
     <div class="modal-title" id="slot-modal-title">Ajouter un créneau</div>
     <input type="hidden" id="slot-edit-id">
-    <div class="field"><label class="flabel">📅 Date</label><input type="date" id="slot-date"></div>
     <div style="display:flex;gap:10px">
-      <div class="field" style="flex:1"><label class="flabel">🕐 Début</label><input type="time" id="slot-start" value="09:00"></div>
-      <div class="field" style="flex:1"><label class="flabel">🕐 Fin</label><input type="time" id="slot-end" value="10:00"></div>
+      <div class="field" style="flex:1"><label class="flabel">📅 Date</label><input type="date" id="slot-date"></div>
+      <div class="field" style="flex:1"><label class="flabel">🕐 Heure</label>
+        <select id="slot-hour">
+          <option value="5">05h – 06h</option><option value="6">06h – 07h</option><option value="7">07h – 08h</option>
+          <option value="8">08h – 09h</option><option value="9" selected>09h – 10h</option><option value="10">10h – 11h</option>
+          <option value="11">11h – 12h</option><option value="12">12h – 13h</option><option value="13">13h – 14h</option>
+          <option value="14">14h – 15h</option><option value="15">15h – 16h</option><option value="16">16h – 17h</option>
+          <option value="17">17h – 18h</option><option value="18">18h – 19h</option><option value="19">19h – 20h</option>
+          <option value="20">20h – 21h</option><option value="21">21h – 22h</option><option value="22">22h – 23h</option>
+        </select>
+      </div>
     </div>
     <div class="field"><label class="flabel">🏷 Type de séance</label>
       <select id="slot-type">
@@ -1581,7 +1610,7 @@ a.contact-link:hover{text-decoration:underline;}
         <option value="Bilan">Bilan</option>
       </select>
     </div>
-    <div class="field"><label class="flabel">👥 Places (max)</label><input type="number" id="slot-capacity" value="1" min="1" max="10"></div>
+    <input type="hidden" id="slot-capacity" value="1">
     <div class="field"><label class="flabel">📝 Note (optionnel)</label><input type="text" id="slot-note" placeholder="ex: Fitness Park Aix"></div>
     <div class="field" style="margin-top:8px">
       <label class="flabel">🔁 Répéter chaque semaine ?</label>
@@ -7611,6 +7640,7 @@ function renderClientProfil(){
 // =========================================
 
 let planningWeekOffset = 0;
+let clientWeekOffset = 0;
 
 function _ensureSlots(){ if(!S.slots) S.slots=[]; if(!S.bookings) S.bookings=[]; }
 
@@ -7630,13 +7660,16 @@ function fmtDateFull(d){ return d.toLocaleDateString('fr-FR',{weekday:'long',day
 function shiftPlanningWeek(dir){ planningWeekOffset+=dir; renderPlanning(); }
 function goToPlanningToday(){ planningWeekOffset=0; renderPlanning(); }
 
-function openAddSlot(){
+function openAddSlot(prefillDate, prefillHour){
   $('slot-edit-id').value='';
   $('slot-modal-title').textContent='Ajouter un créneau';
-  const tomorrow=new Date(); tomorrow.setDate(tomorrow.getDate()+1);
-  $('slot-date').value=fmtDateISO(tomorrow);
-  $('slot-start').value='09:00';
-  $('slot-end').value='10:00';
+  if(prefillDate){
+    $('slot-date').value=prefillDate;
+  } else {
+    const tomorrow=new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+    $('slot-date').value=fmtDateISO(tomorrow);
+  }
+  $('slot-hour').value=prefillHour!==undefined?prefillHour:9;
   $('slot-type').value='Coaching salle';
   $('slot-capacity').value='1';
   $('slot-note').value='';
@@ -7650,8 +7683,7 @@ function openEditSlot(id){
   $('slot-edit-id').value=id;
   $('slot-modal-title').textContent='Modifier le créneau';
   $('slot-date').value=s.date;
-  $('slot-start').value=s.start;
-  $('slot-end').value=s.end;
+  $('slot-hour').value=parseInt(s.start);
   $('slot-type').value=s.type||'Coaching salle';
   $('slot-capacity').value=s.capacity||1;
   $('slot-note').value=s.note||'';
@@ -7661,9 +7693,11 @@ function openEditSlot(id){
 
 function saveSlot(){
   _ensureSlots();
-  const date=$('slot-date').value, start=$('slot-start').value, end=$('slot-end').value;
-  if(!date||!start||!end){showToast('Date et horaires requis !');return;}
-  if(start>=end){showToast('L\'heure de fin doit être après le début !');return;}
+  const date=$('slot-date').value;
+  const hour=parseInt($('slot-hour').value);
+  if(!date||isNaN(hour)){showToast('Date et heure requis !');return;}
+  const start=String(hour).padStart(2,'0')+':00';
+  const end=String(hour+1).padStart(2,'0')+':00';
   const type=$('slot-type').value, capacity=parseInt($('slot-capacity').value)||1;
   const note=$('slot-note').value.trim(), repeat=parseInt($('slot-repeat').value)||0;
   const editId=$('slot-edit-id').value;
@@ -7675,7 +7709,10 @@ function saveSlot(){
     const weeks=repeat||1;
     for(let w=0;w<weeks;w++){
       const d=new Date(date+'T00:00:00'); d.setDate(d.getDate()+w*7);
-      S.slots.push({id:'sl'+Date.now()+w, date:fmtDateISO(d), start, end, type, capacity, note});
+      const iso=fmtDateISO(d);
+      // Check no existing slot at same date+hour
+      if(S.slots.some(x=>x.date===iso&&x.start===start)){ continue; }
+      S.slots.push({id:'sl'+Date.now()+w, date:iso, start, end, type, capacity, note});
     }
   }
   saveState(); closeModal('mod-slot'); renderPlanning();
@@ -7692,53 +7729,75 @@ function deleteSlot(id){
   });
 }
 
+function quickAddSlot(dateISO, hour){
+  _ensureSlots();
+  const start=String(hour).padStart(2,'0')+':00';
+  // If slot already exists, edit it
+  const existing=S.slots.find(s=>s.date===dateISO&&s.start===start);
+  if(existing){ openEditSlot(existing.id); return; }
+  // Otherwise open add modal pre-filled
+  openAddSlot(dateISO, hour);
+}
+
+function _buildTimetable(days, cellRenderer){
+  const todayISO=fmtDateISO(new Date());
+  const nowH=new Date().getHours();
+  let h='<div class="tt-scroll"><table class="timetable"><thead><tr><th></th>';
+  days.forEach(d=>{
+    const iso=fmtDateISO(d);
+    const cls=iso===todayISO?' class="tt-today"':'';
+    h+=`<th${cls}>${d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'})}</th>`;
+  });
+  h+='</tr></thead><tbody>';
+  for(let hour=5;hour<=22;hour++){
+    h+=`<tr><td class="tt-hour">${hour}h</td>`;
+    days.forEach(d=>{
+      const iso=fmtDateISO(d);
+      const isPast=(iso<todayISO)||(iso===todayISO&&hour<nowH);
+      h+=cellRenderer(iso, hour, isPast);
+    });
+    h+='</tr>';
+  }
+  h+='</tbody></table></div>';
+  return h;
+}
+
 function renderPlanning(){
   _ensureSlots();
   const days=getWeekDates(planningWeekOffset);
   const mon=days[0], sun=days[6];
   $('planning-week-label').textContent=`${fmtDateShort(mon)} — ${fmtDateShort(sun)}`;
 
-  // Grid
-  let g='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;min-width:700px">';
-  const today=fmtDateISO(new Date());
-  days.forEach(d=>{
-    const iso=fmtDateISO(d);
-    const isToday=iso===today;
-    const daySlots=S.slots.filter(s=>s.date===iso).sort((a,b)=>a.start.localeCompare(b.start));
-    g+=`<div style="background:var(--s1);border:1px solid ${isToday?'var(--red)':'var(--border)'};border-radius:var(--rs);padding:8px;min-height:120px">`;
-    g+=`<div style="font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;text-align:center;padding:4px;margin-bottom:6px;border-radius:4px;${isToday?'background:var(--red);color:#fff':'color:var(--muted)'}">${d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'})}</div>`;
-    if(!daySlots.length){
-      g+=`<div style="font-size:10px;color:var(--muted);text-align:center;padding:8px 0">—</div>`;
+  // Build timetable grid
+  const grid=_buildTimetable(days, (iso, hour, isPast)=>{
+    const hStr=String(hour).padStart(2,'0')+':00';
+    const slot=S.slots.find(s=>s.date===iso&&s.start===hStr);
+    if(!slot){
+      if(isPast) return `<td class="tt-empty tt-past"></td>`;
+      return `<td class="tt-empty" onclick="quickAddSlot('${iso}',${hour})" title="Cliquer pour ajouter ${hour}h–${hour+1}h"></td>`;
     }
-    daySlots.forEach(s=>{
-      const booked=S.bookings.filter(b=>b.slotId===s.id);
-      const pending=booked.filter(b=>b.status==='pending').length;
-      const confirmed=booked.filter(b=>b.status==='confirmed').length;
-      const full=confirmed>=s.capacity;
-      const statusColor=pending?'var(--warn)':confirmed?'var(--success)':'var(--muted)';
-      g+=`<div style="background:var(--s2);border-left:3px solid ${statusColor};border-radius:4px;padding:6px;margin-bottom:4px;font-size:10px;cursor:pointer" onclick="openEditSlot('${s.id}')">`;
-      g+=`<div style="font-weight:700;font-size:11px">${s.start}–${s.end}</div>`;
-      g+=`<div style="color:var(--muted);margin-top:2px">${s.type}</div>`;
-      if(s.note) g+=`<div style="color:var(--muted);font-style:italic;margin-top:1px">${s.note}</div>`;
-      g+=`<div style="margin-top:3px;display:flex;gap:4px;align-items:center">`;
-      if(pending) g+=`<span style="background:var(--warn);color:#000;border-radius:8px;padding:1px 5px;font-size:9px;font-weight:700">${pending} en attente</span>`;
-      if(confirmed) g+=`<span style="background:var(--success);color:#000;border-radius:8px;padding:1px 5px;font-size:9px;font-weight:700">${confirmed}/${s.capacity}</span>`;
-      if(!pending&&!confirmed) g+=`<span style="color:var(--muted);font-size:9px">${full?'Complet':'Dispo'}</span>`;
-      g+=`</div>`;
-      g+=`<div style="margin-top:4px;display:flex;gap:4px"><button class="btn" style="font-size:9px;padding:2px 6px" onclick="event.stopPropagation();deleteSlot('${s.id}')">🗑</button></div>`;
-      g+=`</div>`;
-    });
-    g+=`</div>`;
+    const booked=S.bookings.filter(b=>b.slotId===slot.id);
+    const pending=booked.filter(b=>b.status==='pending').length;
+    const confirmed=booked.filter(b=>b.status==='confirmed').length;
+    let cls='tt-avail';
+    if(pending) cls='tt-pending';
+    if(confirmed) cls='tt-confirmed';
+    if(isPast) cls+=' tt-past';
+    const shortType=slot.type?slot.type.replace('Coaching ','').substring(0,6):'';
+    let badge='';
+    if(pending) badge=`<div class="tt-cell-badge" style="background:var(--warn);color:#000">⏳ ${pending}</div>`;
+    else if(confirmed) badge=`<div class="tt-cell-badge" style="background:var(--success);color:#000">✅ ${confirmed}</div>`;
+    return `<td class="${cls}" onclick="openEditSlot('${slot.id}')" title="${slot.type}${slot.note?' · '+slot.note:''}&#10;Cliquer pour modifier">
+      <div class="tt-cell-label">${shortType}</div>${badge}</td>`;
   });
-  g+=`</div>`;
-  $('planning-grid').innerHTML=g;
+  $('planning-grid').innerHTML=grid;
 
   // Pending bookings
-  const pending=S.bookings.filter(b=>b.status==='pending').sort((a,b)=>a.date.localeCompare(b.date));
-  if(!pending.length){
+  const pendingB=S.bookings.filter(b=>b.status==='pending').sort((a,b)=>a.date.localeCompare(b.date));
+  if(!pendingB.length){
     $('pending-bookings-list').innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px">Aucune demande en attente 👌</div>';
   } else {
-    $('pending-bookings-list').innerHTML=pending.map(b=>{
+    $('pending-bookings-list').innerHTML=pendingB.map(b=>{
       const slot=S.slots.find(s=>s.id===b.slotId);
       const cl=S.clients.find(c=>c.id===b.clientId);
       const name=cl?`${cl.prenom} ${cl.nom}`:'Inconnu';
@@ -7747,7 +7806,6 @@ function renderPlanning(){
         <div style="flex:1;min-width:0">
           <div style="font-weight:700;font-size:13px">${name}</div>
           <div style="font-size:11px;color:var(--muted)">${dStr}${slot?' · '+slot.type:''}</div>
-          ${b.message?`<div style="font-size:11px;color:var(--info);margin-top:2px">💬 ${b.message}</div>`:''}
         </div>
         <button class="btn" style="background:var(--success);color:#000;border:none;font-size:11px;padding:6px 10px" onclick="confirmBooking('${b.id}')">✅ Valider</button>
         <button class="btn" style="font-size:11px;padding:6px 10px" onclick="rejectBooking('${b.id}')">❌ Refuser</button>
@@ -7757,11 +7815,11 @@ function renderPlanning(){
 
   // Confirmed upcoming
   const nowISO=fmtDateISO(new Date());
-  const confirmed=S.bookings.filter(b=>b.status==='confirmed'&&b.date>=nowISO).sort((a,b)=>a.date.localeCompare(b.date));
-  if(!confirmed.length){
+  const confirmedB=S.bookings.filter(b=>b.status==='confirmed'&&b.date>=nowISO).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!confirmedB.length){
     $('confirmed-bookings-list').innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px">Aucune séance confirmée à venir</div>';
   } else {
-    $('confirmed-bookings-list').innerHTML=confirmed.map(b=>{
+    $('confirmed-bookings-list').innerHTML=confirmedB.map(b=>{
       const slot=S.slots.find(s=>s.id===b.slotId);
       const cl=S.clients.find(c=>c.id===b.clientId);
       const name=cl?`${cl.prenom} ${cl.nom}`:'Inconnu';
@@ -7824,81 +7882,75 @@ function renderClientBooking(){
   const cid=currentClient.id;
   const nowISO=fmtDateISO(new Date());
 
-  // Available slots (future, with capacity)
-  const available=S.slots.filter(s=>{
-    if(s.date<nowISO) return false;
-    const booked=S.bookings.filter(b=>b.slotId===s.id&&b.status==='confirmed').length;
-    return booked<s.capacity;
-  }).sort((a,b)=>a.date===b.date?a.start.localeCompare(b.start):a.date.localeCompare(b.date));
-
-  // My bookings
-  const myBookings=S.bookings.filter(b=>b.clientId===cid).sort((a,b)=>b.date.localeCompare(a.date));
-
   let h='<div style="padding:4px 0">';
+  h+=`<div class="ph"><div><div class="pt">Mon <span>planning</span></div><div class="ps">Consulte les disponibilités et réserve ta séance</div></div></div>`;
 
-  // My reservations
-  h+=`<div style="font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;letter-spacing:1px;margin-bottom:10px">Mes réservations</div>`;
-  const active=myBookings.filter(b=>b.status!=='rejected'&&b.date>=nowISO);
-  const past=myBookings.filter(b=>b.status==='rejected'||b.date<nowISO);
+  // Week nav for client
+  h+=`<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px">`;
+  h+=`<button class="btn" onclick="clientWeekOffset--;renderClientBooking()" style="padding:6px 12px;font-size:16px">◀</button>`;
+  h+=`<span id="cl-week-label" style="font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;min-width:200px;text-align:center"></span>`;
+  h+=`<button class="btn" onclick="clientWeekOffset++;renderClientBooking()" style="padding:6px 12px;font-size:16px">▶</button>`;
+  h+=`<button class="btn" onclick="clientWeekOffset=0;renderClientBooking()" style="padding:6px 10px;font-size:11px">Aujourd'hui</button>`;
+  h+=`</div>`;
 
-  if(!active.length){
-    h+=`<div style="font-size:12px;color:var(--muted);padding:12px;background:var(--s2);border-radius:var(--rs);margin-bottom:16px">Aucune réservation en cours</div>`;
-  } else {
+  const days=getWeekDates(clientWeekOffset);
+
+  // Client timetable
+  h+=_buildTimetable(days, (iso, hour, isPast)=>{
+    const hStr=String(hour).padStart(2,'0')+':00';
+    const slot=S.slots.find(s=>s.date===iso&&s.start===hStr);
+    if(!slot){
+      return `<td class="tt-unavail${isPast?' tt-past':''}"></td>`;
+    }
+    // Check bookings for this slot
+    const myBooking=S.bookings.find(b=>b.slotId===slot.id&&b.clientId===cid&&(b.status==='pending'||b.status==='confirmed'));
+    const confirmedCount=S.bookings.filter(b=>b.slotId===slot.id&&b.status==='confirmed').length;
+    const isFull=confirmedCount>=slot.capacity;
+    const shortType=slot.type?slot.type.replace('Coaching ','').substring(0,6):'';
+
+    if(myBooking){
+      if(myBooking.status==='confirmed'){
+        return `<td class="tt-mine-confirmed" title="${slot.type} · Confirmée">
+          <div class="tt-cell-label" style="color:var(--info)">${shortType}</div>
+          <div class="tt-cell-badge" style="background:var(--info);color:#fff">✅</div></td>`;
+      }
+      return `<td class="tt-mine-pending" onclick="cancelMyBooking('${myBooking.id}')" title="${slot.type} · En attente — cliquer pour annuler">
+        <div class="tt-cell-label" style="color:var(--warn)">${shortType}</div>
+        <div class="tt-cell-badge" style="background:var(--warn);color:#000">⏳</div></td>`;
+    }
+    if(isPast||isFull){
+      return `<td class="tt-unavail tt-past" title="${isFull?'Complet':'Passé'}">
+        <div class="tt-cell-label">${shortType}</div></td>`;
+    }
+    // Available to book!
+    return `<td class="tt-avail" onclick="bookSlot('${slot.id}')" title="${slot.type}${slot.note?' · '+slot.note:''}&#10;Cliquer pour réserver">
+      <div class="tt-cell-label" style="color:var(--success)">${shortType}</div>
+      <div class="tt-cell-badge" style="background:var(--success);color:#000">Dispo</div></td>`;
+  });
+
+  // Set week label after render (need to wait for DOM)
+  const mon=days[0], sun=days[6];
+  // Set week label directly after innerHTML is set
+  setTimeout(()=>{
+    const lbl=document.getElementById('cl-week-label');
+    if(lbl) lbl.textContent=fmtDateShort(mon)+' — '+fmtDateShort(sun);
+  },0);
+
+  // My reservations summary
+  const active=S.bookings.filter(b=>b.clientId===cid&&b.status!=='rejected'&&b.date>=nowISO).sort((a,b)=>a.date.localeCompare(b.date));
+  if(active.length){
+    h+=`<div class="panel" style="margin-top:12px"><div class="panel-hd"><div class="panel-title">📋 Mes réservations</div></div><div class="panel-body">`;
     active.forEach(b=>{
       const slot=S.slots.find(s=>s.id===b.slotId);
-      const statusMap={pending:{label:'⏳ En attente',color:'var(--warn)'},confirmed:{label:'✅ Confirmée',color:'var(--success)'}};
-      const st=statusMap[b.status]||{label:b.status,color:'var(--muted)'};
-      h+=`<div style="background:var(--s2);border-left:3px solid ${st.color};border-radius:var(--rs);padding:10px 12px;margin-bottom:8px">`;
-      h+=`<div style="display:flex;justify-content:space-between;align-items:center">`;
-      h+=`<div><div style="font-weight:700;font-size:13px">${slot?fmtDateFull(new Date(b.date+'T00:00:00')):'—'}</div>`;
-      h+=`<div style="font-size:11px;color:var(--muted)">${slot?slot.start+'–'+slot.end+' · '+slot.type:'Créneau non trouvé'}</div></div>`;
-      h+=`<span style="font-size:11px;font-weight:700;color:${st.color}">${st.label}</span>`;
-      h+=`</div>`;
-      if(b.status==='pending') h+=`<button class="btn" style="font-size:10px;padding:4px 8px;margin-top:6px" onclick="cancelMyBooking('${b.id}')">Annuler ma demande</button>`;
-      h+=`</div>`;
+      const st=b.status==='confirmed'?{l:'✅ Confirmée',c:'var(--success)'}:{l:'⏳ En attente',c:'var(--warn)'};
+      h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--s2);border-left:3px solid ${st.c};border-radius:var(--rs);margin-bottom:4px">
+        <div style="flex:1"><span style="font-weight:700;font-size:12px">${slot?fmtDateShort(new Date(b.date+'T00:00:00')):'—'}</span>
+        <span style="font-size:11px;color:var(--muted)"> ${slot?slot.start+'–'+slot.end+' · '+slot.type:''}</span></div>
+        <span style="font-size:10px;font-weight:700;color:${st.c}">${st.l}</span>
+        ${b.status==='pending'?`<button class="btn" style="font-size:9px;padding:3px 6px" onclick="cancelMyBooking('${b.id}')">Annuler</button>`:''}
+      </div>`;
     });
-  }
-
-  // Available slots to book
-  h+=`<div style="font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;letter-spacing:1px;margin:20px 0 10px">Créneaux disponibles</div>`;
-  if(!available.length){
-    h+=`<div style="font-size:12px;color:var(--muted);padding:12px;background:var(--s2);border-radius:var(--rs)">Aucun créneau disponible pour le moment. Ton coach ajoutera bientôt ses disponibilités 😊</div>`;
-  } else {
-    // Group by date
-    const byDate={};
-    available.forEach(s=>{
-      if(!byDate[s.date])byDate[s.date]=[];
-      byDate[s.date].push(s);
-    });
-    Object.keys(byDate).sort().forEach(date=>{
-      const d=new Date(date+'T00:00:00');
-      h+=`<div style="font-size:12px;font-weight:700;color:var(--red);margin:12px 0 6px;text-transform:capitalize">${fmtDateFull(d)}</div>`;
-      byDate[date].forEach(s=>{
-        const alreadyBooked=S.bookings.some(b=>b.slotId===s.id&&b.clientId===cid&&(b.status==='pending'||b.status==='confirmed'));
-        const confirmedCount=S.bookings.filter(b=>b.slotId===s.id&&b.status==='confirmed').length;
-        const remaining=s.capacity-confirmedCount;
-        h+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border-radius:var(--rs);margin-bottom:6px">`;
-        h+=`<div style="flex:1"><div style="font-weight:700;font-size:13px">${s.start} – ${s.end}</div>`;
-        h+=`<div style="font-size:11px;color:var(--muted)">${s.type}${s.note?' · '+s.note:''}${remaining<=2?' · '+remaining+' place'+(remaining>1?'s':'')+' restante'+(remaining>1?'s':''):''}</div></div>`;
-        if(alreadyBooked){
-          h+=`<span style="font-size:11px;color:var(--warn);font-weight:700">Déjà réservé</span>`;
-        } else {
-          h+=`<button class="btn btn-red" style="font-size:11px;padding:6px 12px" onclick="bookSlot('${s.id}')">Réserver</button>`;
-        }
-        h+=`</div>`;
-      });
-    });
-  }
-
-  // Past/rejected
-  if(past.length){
-    h+=`<details style="margin-top:20px"><summary style="font-size:12px;color:var(--muted);cursor:pointer">Historique (${past.length})</summary>`;
-    past.forEach(b=>{
-      const slot=S.slots.find(s=>s.id===b.slotId);
-      const st=b.status==='rejected'?'❌ Refusée':'Passée';
-      h+=`<div style="font-size:11px;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border)">${b.date} · ${slot?slot.start+'-'+slot.end:'-'} · ${st}</div>`;
-    });
-    h+=`</details>`;
+    h+=`</div></div>`;
   }
 
   h+=`</div>`;
