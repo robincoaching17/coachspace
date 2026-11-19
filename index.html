@@ -1706,6 +1706,8 @@ a.contact-link:hover{text-decoration:underline;}
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('mod-slot')">Annuler</button>
+      <button class="btn btn-danger" id="slot-del-btn" style="display:none;margin-right:auto" onclick="deleteSlot($('slot-edit-id').value)">🗑 Supprimer</button>
+      <button class="btn btn-danger" id="slot-del-series-btn" style="display:none" onclick="deleteSlotSeries($('slot-edit-id').value)">🗑 + semaines suivantes</button>
       <button class="btn btn-red" onclick="saveSlot()">Enregistrer</button>
     </div>
   </div>
@@ -8737,6 +8739,8 @@ function openAddSlot(prefillDate, prefillHour){
   $('slot-capacity').value='1';
   $('slot-note').value='';
   $('slot-repeat').value='0';
+  $('slot-del-btn').style.display='none';
+  $('slot-del-series-btn').style.display='none';
   openModal('mod-slot');
 }
 
@@ -8751,6 +8755,10 @@ function openEditSlot(id){
   $('slot-capacity').value=s.capacity||1;
   $('slot-note').value=s.note||'';
   $('slot-repeat').value='0';
+  $('slot-del-btn').style.display='';
+  const nSeries=_slotSeries(s).length;
+  $('slot-del-series-btn').style.display=nSeries>1?'':'none';
+  $('slot-del-series-btn').textContent=`🗑 + semaines suivantes (${nSeries})`;
   openModal('mod-slot');
 }
 
@@ -8785,12 +8793,34 @@ function saveSlot(){
   updateBookingBadge();
 }
 
+// Créneaux identiques les semaines suivantes (même jour, même heure, même type)
+function _slotSeries(slot){
+  const wd=new Date(slot.date+'T00:00:00').getDay();
+  return S.slots.filter(x=>x.date>=slot.date&&x.start===slot.start&&(x.type||'')===(slot.type||'')&&new Date(x.date+'T00:00:00').getDay()===wd);
+}
+function _slotBookingsWarn(ids){
+  const n=S.bookings.filter(b=>ids.includes(b.slotId)&&_bkActive(b)).length;
+  return n?`⚠️ ${n} réservation(s) sur ce(s) créneau(x) seront annulées (les séances de carnet sont rendues).`:'Aucune réservation dessus.';
+}
 function deleteSlot(id){
   _ensureSlots();
-  confirm2('Supprimer ce créneau ?','Les réservations associées seront aussi annulées.',()=>{
+  const slot=S.slots.find(x=>x.id===id); if(!slot) return;
+  closeModal('mod-slot');
+  confirm2('Supprimer ce créneau ?',`${fmtDateFull(new Date(slot.date+'T00:00:00'))} · ${slot.start}–${slot.end}. ${_slotBookingsWarn([id])}`,()=>{
     S.slots=S.slots.filter(x=>x.id!==id);
     S.bookings=S.bookings.filter(x=>x.slotId!==id);
     saveState(); renderPlanning(); showToast('🗑 Créneau supprimé',true); updateBookingBadge();
+  });
+}
+function deleteSlotSeries(id){
+  _ensureSlots();
+  const slot=S.slots.find(x=>x.id===id); if(!slot) return;
+  const ids=_slotSeries(slot).map(x=>x.id);
+  closeModal('mod-slot');
+  confirm2(`Supprimer ${ids.length} créneau(x) ?`,`Tous les ${new Date(slot.date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long'})}s à ${slot.start} à partir du ${fmtDateShort(new Date(slot.date+'T00:00:00'))} — ${_slotBookingsWarn(ids)}`,()=>{
+    S.slots=S.slots.filter(x=>!ids.includes(x.id));
+    S.bookings=S.bookings.filter(x=>!ids.includes(x.slotId));
+    saveState(); renderPlanning(); showToast(`🗑 ${ids.length} créneau(x) supprimé(s)`,true); updateBookingBadge();
   });
 }
 
