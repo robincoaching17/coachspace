@@ -1219,9 +1219,10 @@ a.contact-link:hover{text-decoration:underline;}
 <div id="client-login" class="screen">
   <div class="login-box">
     <div class="login-title">Mon <span style="color:var(--red)">Espace</span></div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Sélectionne ton profil puis entre ton mot de passe</div>
-    <div class="field"><label class="flabel">Mon profil</label><select id="cl-select" onchange="onClientSelect()"><option value="">— Choisir —</option></select></div>
-    <div class="field" id="cl-pwd-wrap" style="display:none">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Entre ton prénom et nom puis ton mot de passe</div>
+    <div class="field"><label class="flabel">Prénom</label><input type="text" id="cl-prenom" placeholder="Ton prénom" autocomplete="off" onkeydown="if(event.key==='Enter')$('cl-nom').focus()"></div>
+    <div class="field"><label class="flabel">Nom</label><input type="text" id="cl-nom" placeholder="Ton nom" autocomplete="off" onkeydown="if(event.key==='Enter')$('cl-pwd').focus()"></div>
+    <div class="field">
       <label class="flabel">Mot de passe</label>
       <input type="password" id="cl-pwd" placeholder="••••" onkeydown="if(event.key==='Enter')clientLogin()">
       <div style="font-size:11px;color:var(--info);background:rgba(56,189,248,.08);border-radius:5px;padding:5px 8px;margin-top:4px">💡 Ton mot de passe = ta date de naissance en JJMM</div>
@@ -2031,15 +2032,9 @@ function goLanding(){showScreen('landing');currentClient=null;}
 function goCoachLogin(){showScreen('coach-login');$('coach-pwd').value='';setTimeout(()=>$('coach-pwd').focus(),100);}
 function goClientLogin(){
   showScreen('client-login');
-  const sel=$('cl-select');
-  sel.innerHTML='<option value="">— Choisir —</option>';
-  S.clients.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.prenom+' '+c.nom;sel.appendChild(o);});
-  $('cl-pwd-wrap').style.display='none';
-}
-function onClientSelect(){
-  const id=parseInt($('cl-select').value);
-  $('cl-pwd-wrap').style.display=id?'block':'none';
-  if(id) setTimeout(()=>$('cl-pwd').focus(),100);
+  const pi=$('cl-prenom');const ni=$('cl-nom');const pw=$('cl-pwd');
+  if(pi)pi.value='';if(ni)ni.value='';if(pw)pw.value='';
+  setTimeout(()=>pi?.focus(),100);
 }
 function coachLogin(){
   try{
@@ -2051,11 +2046,12 @@ function coachLogin(){
   }
 }
 function clientLogin(){
-  const id=parseInt($('cl-select').value);
-  if(!id){showToast('Sélectionne ton profil !');return;}
-  const c=S.clients.find(x=>x.id===id);
-  if(!c){showToast('Profil introuvable');return;}
-  if($('cl-pwd').value.trim()!==getClientPwd(c)){showToast('Mot de passe incorrect ❌');return;}
+  const prenomInput=normalizeExoName($('cl-prenom')?.value||'');
+  const nomInput=normalizeExoName($('cl-nom')?.value||'');
+  if(!prenomInput||!nomInput){showToast('Entre ton prénom et ton nom !');return;}
+  const c=S.clients.find(x=>normalizeExoName(x.prenom)===prenomInput && normalizeExoName(x.nom)===nomInput);
+  if(!c||$('cl-pwd').value.trim()!==getClientPwd(c)){showToast('Prénom, nom ou mot de passe incorrect ❌');return;}
+  if(c.accessEnabled===false){showToast('Ton accès a été désactivé par ton coach. Contacte-le pour plus d\'infos.');return;}
   currentClient=c;loadClientApp();showScreen('client-app');
 }
 
