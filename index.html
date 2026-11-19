@@ -806,9 +806,56 @@ a.contact-link:hover{text-decoration:underline;}
 .timetable .tt-mine-pending{background:rgba(245,158,11,.18);border-color:rgba(245,158,11,.35);cursor:pointer}
 .timetable .tt-mine-confirmed{background:rgba(56,189,248,.18);border-color:rgba(56,189,248,.35)}
 .timetable .tt-cell-label{font-size:9px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.timetable .tt-cell-badge{display:inline-block;font-size:8px;font-weight:700;border-radius:6px;padding:0 4px;margin-top:1px}
+.timetable{table-layout:fixed}
+.timetable .tt-cell-badge{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;display:inline-block;font-size:8px;font-weight:700;border-radius:6px;padding:0 4px;margin-top:1px}
 .tt-scroll{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 320px);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:16px}
 @media(max-width:900px){.tt-scroll{max-height:calc(100vh - 280px)}}
+/* ---- Réservations : carnets, demandes, prix ---- */
+:root{--purple:#a855f7;--orange:#fb923c}
+.timetable .tt-proposed{background:rgba(168,85,247,.16);border-color:rgba(168,85,247,.35);cursor:pointer}
+.timetable .tt-request{background:var(--s1);cursor:pointer;border:1px dashed rgba(168,85,247,.25)!important}
+.timetable .tt-request:hover{background:rgba(168,85,247,.12);border-color:var(--purple)!important}
+.timetable .tt-req-plus{font-size:12px;font-weight:800;color:var(--purple);opacity:0;transition:opacity .15s}
+.timetable .tt-request:hover .tt-req-plus{opacity:1}
+.tt-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:10px;color:var(--muted);margin-bottom:8px;justify-content:center}
+.tt-legend span{display:inline-flex;align-items:center;gap:5px}
+.tt-legend .lg{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--border)}
+.lg-avail{background:rgba(34,197,94,.35)}.lg-pending{background:rgba(245,158,11,.45)}.lg-proposed{background:rgba(168,85,247,.45)}
+.lg-confirmed{background:rgba(34,197,94,.6)}.lg-mine{background:rgba(56,189,248,.5)}.lg-empty{background:var(--s1)}
+.lg-request{background:var(--s1);border:1px dashed var(--purple)!important}
+.bk-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;background:var(--s2);border-radius:var(--rs);margin-bottom:6px;border-left:3px solid var(--border)}
+.bk-actions{display:flex;gap:6px;flex-wrap:wrap}
+.bk-chip{display:inline-block;font-size:10px;font-weight:700;border-radius:10px;padding:1px 8px;margin-right:4px;white-space:nowrap}
+.bk-chip-pack{background:rgba(168,85,247,.18);color:var(--purple)}
+.bk-chip-unit{background:rgba(56,189,248,.16);color:var(--info)}
+.bk-chip-paid{background:rgba(34,197,94,.16);color:var(--success)}
+.bk-chip-due{background:rgba(192,21,42,.16);color:var(--red2)}
+.bk-chip-req{background:rgba(251,146,60,.18);color:var(--orange)}
+.bk-chip-slot{background:rgba(34,197,94,.14);color:var(--success)}
+.formula-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:640px){.formula-grid{grid-template-columns:1fr}}
+.formula-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;border-top:3px solid var(--border)}
+.formula-pack{border-top-color:var(--purple)}.formula-due{border-top-color:var(--red)}
+.formula-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px}
+.formula-big{font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;line-height:1.2;margin-bottom:4px}
+.formula-big span{font-family:inherit;font-size:12px;font-weight:400;color:var(--muted)}
+.pack-bar{height:6px;background:var(--s3);border-radius:4px;overflow:hidden;margin:4px 0}
+.pack-bar>div{height:100%;background:linear-gradient(90deg,var(--purple),var(--red2));border-radius:4px}
+.due-line{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px dashed var(--border)}
+.propose-card{background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.35);border-radius:var(--rs);padding:12px 14px;margin-bottom:10px}
+.pack-client{background:var(--s2);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border-left:3px solid var(--purple)}
+.pack-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0;border-top:1px solid var(--border)}
+.due-pill{font-size:11px;font-weight:800;border-radius:12px;padding:3px 10px}
+.due-pill-red{background:rgba(192,21,42,.18);color:var(--red2)}.due-pill-ok{background:rgba(34,197,94,.16);color:var(--success)}
+.book-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px;cursor:pointer}
+.book-opt:has(input:checked){border-color:var(--purple);background:rgba(168,85,247,.10)}
+.book-opt input{accent-color:var(--purple);width:16px;height:16px}
+.pack-opt{display:flex;align-items:center;gap:14px;padding:12px 14px;background:var(--s2);border:2px solid var(--border);border-radius:var(--rs);margin-bottom:8px;cursor:pointer;transition:all .15s}
+.pack-opt:hover{border-color:rgba(168,85,247,.5)}
+.pack-opt.sel{border-color:var(--purple);background:rgba(168,85,247,.12)}
+.pack-opt-n{font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;color:var(--purple);text-align:center;min-width:56px;line-height:1}
+.pack-opt-n span{display:block;font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+
 
 /* LANDING 3 CARDS */
 .l-card.l-card-prospect{border-color:rgba(192,21,42,.4);background:linear-gradient(135deg,var(--s1),rgba(192,21,42,.05));}
@@ -1348,6 +1395,12 @@ a.contact-link:hover{text-decoration:underline;}
           <div class="panel-hd"><div class="panel-title">✅ Séances confirmées à venir</div></div>
           <div class="panel-body" id="confirmed-bookings-list"></div>
         </div>
+
+        <!-- Carnets & paiements -->
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-hd"><div class="panel-title">🎟 Carnets & paiements</div><button class="btn" style="background:var(--purple);color:#fff;border:none;font-size:11px;padding:6px 10px" onclick="openAssignPack()">+ Carnet pour un coaché</button></div>
+          <div class="panel-body" id="packs-coach-list"></div>
+        </div>
       </div>
 
       <!-- SETTINGS -->
@@ -1369,6 +1422,10 @@ a.contact-link:hover{text-decoration:underline;}
             <div class="field"><label class="flabel">Nouveau mot de passe</label><input type="password" id="set-pwd" placeholder="Laisser vide pour ne pas changer"></div>
             <button class="btn btn-red" onclick="saveSettings()">Sauvegarder</button>
           </div>
+        </div>
+        <div class="panel" style="max-width:460px;margin-top:12px">
+          <div class="panel-hd"><div class="panel-title">💶 Tarifs des séances</div></div>
+          <div class="panel-body" id="pricing-settings"></div>
         </div>
         <div class="panel" style="max-width:460px;margin-top:12px">
           <div class="panel-hd"><div class="panel-title">📱 Accès mobile coachés</div></div>
@@ -1628,6 +1685,61 @@ a.contact-link:hover{text-decoration:underline;}
   </div>
 </div>
 
+<div class="modal-ov" id="mod-book">
+  <div class="modal">
+    <div class="modal-title" id="book-title">Réserver</div>
+    <div id="book-when" style="font-size:14px;margin-bottom:6px"></div>
+    <div id="book-explain" style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px"></div>
+    <label class="flabel">Comment veux-tu payer cette séance ?</label>
+    <div id="book-options" style="margin-bottom:10px"></div>
+    <div class="field"><label class="flabel">💬 Message pour ton coach (optionnel)</label><input type="text" id="book-note" placeholder="ex : plutôt jambes cette fois"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('mod-book')">Annuler</button>
+      <button class="btn btn-red" id="book-submit" onclick="submitBooking()">Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="mod-pack">
+  <div class="modal">
+    <div class="modal-title">🎟 Choisir un carnet</div>
+    <div id="pack-options"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('mod-pack')">Annuler</button>
+      <button class="btn btn-red" onclick="confirmPack()">Prendre ce carnet</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="mod-propose">
+  <div class="modal">
+    <div class="modal-title">🔁 Proposer un autre créneau</div>
+    <div id="propose-info" style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6"></div>
+    <div style="display:flex;gap:10px">
+      <div class="field" style="flex:1"><label class="flabel">📅 Date</label><input type="date" id="propose-date"></div>
+      <div class="field" style="flex:1"><label class="flabel">🕐 Heure</label><select id="propose-hour"><option value="5">05h – 06h</option><option value="6">06h – 07h</option><option value="7">07h – 08h</option><option value="8">08h – 09h</option><option value="9">09h – 10h</option><option value="10">10h – 11h</option><option value="11">11h – 12h</option><option value="12">12h – 13h</option><option value="13">13h – 14h</option><option value="14">14h – 15h</option><option value="15">15h – 16h</option><option value="16">16h – 17h</option><option value="17">17h – 18h</option><option value="18">18h – 19h</option><option value="19">19h – 20h</option><option value="20">20h – 21h</option><option value="21">21h – 22h</option><option value="22">22h – 23h</option></select></div>
+    </div>
+    <div class="field"><label class="flabel">💬 Message (optionnel)</label><input type="text" id="propose-msg" placeholder="ex : je suis pris à 10h, 11h ça te va ?"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('mod-propose')">Annuler</button>
+      <button class="btn btn-red" onclick="saveProposeSlot()">Envoyer la proposition</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="mod-assign-pack">
+  <div class="modal">
+    <div class="modal-title">🎟 Ajouter un carnet à un coaché</div>
+    <div class="field"><label class="flabel">Coaché</label><select id="assign-pack-client"></select></div>
+    <div class="field"><label class="flabel">Carnet</label><select id="assign-pack-size"></select></div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;margin:6px 0 4px;cursor:pointer"><input type="checkbox" id="assign-pack-paid"> Déjà payé</label>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('mod-assign-pack')">Annuler</button>
+      <button class="btn btn-red" onclick="saveAssignPack()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM -->
 <div class="confirm-ov" id="confirm-ov">
   <div class="confirm-box">
@@ -1823,6 +1935,8 @@ window._applyRemoteState = function(remoteState){
   localStorage.setItem('cs_v5', JSON.stringify(S));
   if(wasCoachLoggedIn){ try{renderStats();renderDashboard();}catch(e){} }
   if(wasClientLoggedIn){ try{renderClientProg();}catch(e){} }
+  if(wasCoachLoggedIn && $('tp-planning')?.classList.contains('active')){ try{renderPlanning();}catch(e){} }
+  if(wasClientLoggedIn && $('clp-booking')?.classList.contains('active')){ try{renderClientBooking();}catch(e){} }
 };
 window._fbSyncEnabled = true;
 
@@ -1887,7 +2001,7 @@ function closeModal(id){
   else closeGenericModal();
 }
 $('conf-ok').onclick=()=>{if(confirmCb)confirmCb();closeConfirm();};
-['mod-client','mod-res','mod-recipe','mod-recipe-view','mod-video','mod-doc','mod-mesure','mod-client-detail','mod-bilan','mod-slot'].forEach(id=>{
+['mod-client','mod-res','mod-recipe','mod-recipe-view','mod-video','mod-doc','mod-mesure','mod-client-detail','mod-bilan','mod-slot','mod-book','mod-pack','mod-propose','mod-assign-pack'].forEach(id=>{
   $(id).addEventListener('click',e=>{if(e.target===$(id))closeModal(id);});
 });
 $('confirm-ov').addEventListener('click',e=>{if(e.target===$('confirm-ov'))closeConfirm();});
@@ -1970,7 +2084,7 @@ function cTab(tab,btn){
   if(tab==='planning')renderPlanning();
   if(tab==='prospects')renderProspects();
   if(tab==='builder'){renderClientSelect();if(!weekCount){clearBuilder();addWeek();}}
-  if(tab==='settings'){$('set-name').value=S.coachName;updateThemeUI(S.lightTheme||false);}
+  if(tab==='settings'){$('set-name').value=S.coachName;updateThemeUI(S.lightTheme||false);try{renderPricingSettings();}catch(e){}}
 }
 
 function renderStats(){
@@ -7637,12 +7751,67 @@ function renderClientProfil(){
 
 // =========================================
 // PLANNING & BOOKING SYSTEM
+// (créneaux, demandes hors créneau, carnets, prix)
 // =========================================
 
 let planningWeekOffset = 0;
 let clientWeekOffset = 0;
+let _bookCtx = null;     // contexte du modal de réservation côté coaché
+let _proposeId = null;   // réservation pour laquelle le coach propose un autre créneau
+let _packChoice = null;  // taille de carnet choisie côté coaché
 
-function _ensureSlots(){ if(!S.slots) S.slots=[]; if(!S.bookings) S.bookings=[]; }
+const DEFAULT_PRICING = {unit:52, packs:[{n:5,price:260},{n:10,price:520},{n:15,price:780}]};
+
+function _ensureSlots(){
+  if(!S.slots) S.slots=[];
+  if(!S.bookings) S.bookings=[];
+  if(!S.packs) S.packs=[];
+  if(!S.pricing) S.pricing=JSON.parse(JSON.stringify(DEFAULT_PRICING));
+  // Migration des anciennes réservations (avant carnets/demandes)
+  S.bookings.forEach(b=>{
+    if(!b.start){
+      const sl=S.slots.find(s=>s.id===b.slotId);
+      if(sl){ b.start=sl.start; b.end=sl.end; if(!b.type) b.type=sl.type; }
+    }
+    if(!b.kind) b.kind=b.slotId?'slot':'request';
+    if(!b.formula) b.formula='unit';
+    if(b.formula==='unit' && b.price==null) b.price=S.pricing.unit;
+  });
+}
+
+const _hStr=h=>String(h).padStart(2,'0')+':00';
+const _eur=v=>(Math.round((v||0)*100)/100).toLocaleString('fr-FR')+' €';
+function _bkActive(b){ return b.status==='pending'||b.status==='confirmed'||b.status==='proposed'; }
+function _bkWhen(b){ return `${fmtDateShort(new Date(b.date+'T00:00:00'))} · ${b.start||'?'}–${b.end||'?'}`; }
+function _bkWhenFull(b){ return `${fmtDateFull(new Date(b.date+'T00:00:00'))} · ${b.start||'?'}–${b.end||'?'}`; }
+function _clientName(cid){ const c=S.clients.find(x=>x.id===cid); return c?`${c.prenom} ${c.nom}`:'Inconnu'; }
+function _clientFirst(cid){ const c=S.clients.find(x=>x.id===cid); return c?c.prenom:'?'; }
+function _packUsed(p){ return S.bookings.filter(b=>b.packId===p.id&&_bkActive(b)).length; }
+function _packLeft(p){ return p.size-_packUsed(p); }
+function _clientPacks(cid){ return S.packs.filter(p=>p.clientId===cid&&p.status!=='cancelled').sort((a,b)=>a.createdAt-b.createdAt); }
+function _clientUsablePack(cid){ return _clientPacks(cid).find(p=>_packLeft(p)>0)||null; }
+function _bookingsAt(iso,hStr){ return S.bookings.filter(b=>b.date===iso&&b.start===hStr&&_bkActive(b)); }
+function _formulaBadge(b){
+  if(b.formula==='pack'){
+    const p=S.packs.find(x=>x.id===b.packId);
+    return `<span class="bk-chip bk-chip-pack">🎟 Carnet${p?' '+p.size:''}</span>`;
+  }
+  return `<span class="bk-chip bk-chip-unit">💶 Unité ${_eur(b.price)}</span>`;
+}
+function _paidBadge(paid){
+  return paid?`<span class="bk-chip bk-chip-paid">✅ Payé</span>`:`<span class="bk-chip bk-chip-due">⏳ À régler</span>`;
+}
+
+// Montants dus par un coaché
+function _clientDue(cid){
+  const unitConf=S.bookings.filter(b=>b.clientId===cid&&b.formula==='unit'&&b.status==='confirmed'&&!b.paid);
+  const unitWait=S.bookings.filter(b=>b.clientId===cid&&b.formula==='unit'&&(b.status==='pending'||b.status==='proposed'));
+  const packs=_clientPacks(cid).filter(p=>!p.paid);
+  const unitTotal=unitConf.reduce((s,b)=>s+(b.price||0),0);
+  const waitTotal=unitWait.reduce((s,b)=>s+(b.price||0),0);
+  const packTotal=packs.reduce((s,p)=>s+(p.price||0),0);
+  return {unitConf,unitWait,packs,unitTotal,waitTotal,packTotal,total:unitTotal+packTotal};
+}
 
 function getWeekDates(offset=0){
   const now=new Date(); now.setHours(0,0,0,0);
@@ -7653,12 +7822,39 @@ function getWeekDates(offset=0){
   return days;
 }
 
-function fmtDateISO(d){ return d.toISOString().split('T')[0]; }
+function fmtDateISO(d){ const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`; }
 function fmtDateShort(d){ return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); }
 function fmtDateFull(d){ return d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}); }
 
 function shiftPlanningWeek(dir){ planningWeekOffset+=dir; renderPlanning(); }
 function goToPlanningToday(){ planningWeekOffset=0; renderPlanning(); }
+
+// ---------- TARIFS (Paramètres) ----------
+
+function renderPricingSettings(){
+  _ensureSlots();
+  const el=$('pricing-settings'); if(!el) return;
+  const p=S.pricing;
+  let h=`<div class="field"><label class="flabel">💶 Séance à l'unité (€)</label><input type="number" min="0" step="0.5" id="price-unit" value="${p.unit}"></div>`;
+  p.packs.forEach((pk,i)=>{
+    h+=`<div class="field"><label class="flabel">🎟 Carnet de ${pk.n} séances (€ au total)</label><input type="number" min="0" step="0.5" id="price-pack-${i}" value="${pk.price}"></div>`;
+  });
+  h+=`<div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6">Indique le prix total que le coaché paie (frais CoachSpace compris). Les nouveaux tarifs s'appliquent aux prochaines réservations ; les séances déjà réservées gardent leur prix.</div>`;
+  h+=`<button class="btn btn-red" onclick="savePricing()">Enregistrer les tarifs</button>`;
+  el.innerHTML=h;
+}
+
+function savePricing(){
+  _ensureSlots();
+  const u=parseFloat($('price-unit').value);
+  if(isNaN(u)||u<0){ showToast('Prix à l\'unité invalide'); return; }
+  S.pricing.unit=u;
+  S.pricing.packs.forEach((pk,i)=>{ const v=parseFloat($('price-pack-'+i).value); if(!isNaN(v)&&v>=0) pk.price=v; });
+  saveState(); renderPricingSettings();
+  showToast('✅ Tarifs enregistrés',true);
+}
+
+// ---------- CRÉNEAUX (coach) ----------
 
 function openAddSlot(prefillDate, prefillHour){
   $('slot-edit-id').value='';
@@ -7696,21 +7892,23 @@ function saveSlot(){
   const date=$('slot-date').value;
   const hour=parseInt($('slot-hour').value);
   if(!date||isNaN(hour)){showToast('Date et heure requis !');return;}
-  const start=String(hour).padStart(2,'0')+':00';
-  const end=String(hour+1).padStart(2,'0')+':00';
+  const start=_hStr(hour), end=_hStr(hour+1);
   const type=$('slot-type').value, capacity=parseInt($('slot-capacity').value)||1;
   const note=$('slot-note').value.trim(), repeat=parseInt($('slot-repeat').value)||0;
   const editId=$('slot-edit-id').value;
 
   if(editId){
     const s=S.slots.find(x=>x.id===editId);
-    if(s){s.date=date;s.start=start;s.end=end;s.type=type;s.capacity=capacity;s.note=note;}
+    if(s){
+      s.date=date;s.start=start;s.end=end;s.type=type;s.capacity=capacity;s.note=note;
+      // Les réservations du créneau suivent le créneau
+      S.bookings.filter(b=>b.slotId===s.id).forEach(b=>{b.date=date;b.start=start;b.end=end;b.type=type;});
+    }
   } else {
     const weeks=repeat||1;
     for(let w=0;w<weeks;w++){
       const d=new Date(date+'T00:00:00'); d.setDate(d.getDate()+w*7);
       const iso=fmtDateISO(d);
-      // Check no existing slot at same date+hour
       if(S.slots.some(x=>x.date===iso&&x.start===start)){ continue; }
       S.slots.push({id:'sl'+Date.now()+w, date:iso, start, end, type, capacity, note});
     }
@@ -7731,11 +7929,9 @@ function deleteSlot(id){
 
 function quickAddSlot(dateISO, hour){
   _ensureSlots();
-  const start=String(hour).padStart(2,'0')+':00';
-  // If slot already exists, edit it
+  const start=_hStr(hour);
   const existing=S.slots.find(s=>s.date===dateISO&&s.start===start);
   if(existing){ openEditSlot(existing.id); return; }
-  // Otherwise open add modal pre-filled
   openAddSlot(dateISO, hour);
 }
 
@@ -7753,7 +7949,7 @@ function _buildTimetable(days, cellRenderer){
     h+=`<tr><td class="tt-hour">${hour}h</td>`;
     days.forEach(d=>{
       const iso=fmtDateISO(d);
-      const isPast=(iso<todayISO)||(iso===todayISO&&hour<nowH);
+      const isPast=(iso<todayISO)||(iso===todayISO&&hour<=nowH);
       h+=cellRenderer(iso, hour, isPast);
     });
     h+='</tr>';
@@ -7762,78 +7958,190 @@ function _buildTimetable(days, cellRenderer){
   return h;
 }
 
+function _scrollToPending(){ const el=$('pending-bookings-list'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); }
+
 function renderPlanning(){
   _ensureSlots();
   const days=getWeekDates(planningWeekOffset);
   const mon=days[0], sun=days[6];
   $('planning-week-label').textContent=`${fmtDateShort(mon)} — ${fmtDateShort(sun)}`;
 
-  // Build timetable grid
+  const legend=`<div class="tt-legend">
+    <span><i class="lg lg-avail"></i>Créneau libre</span>
+    <span><i class="lg lg-pending"></i>Demande à traiter</span>
+    <span><i class="lg lg-proposed"></i>Proposition envoyée</span>
+    <span><i class="lg lg-confirmed"></i>Séance confirmée</span>
+    <span><i class="lg lg-empty"></i>Clic = ajouter un créneau</span>
+  </div>`;
+
   const grid=_buildTimetable(days, (iso, hour, isPast)=>{
-    const hStr=String(hour).padStart(2,'0')+':00';
+    const hStr=_hStr(hour);
     const slot=S.slots.find(s=>s.date===iso&&s.start===hStr);
+    const here=_bookingsAt(iso,hStr);
+    const pending=here.filter(b=>b.status==='pending');
+    const proposed=here.filter(b=>b.status==='proposed');
+    const confirmed=here.filter(b=>b.status==='confirmed');
+    const past=isPast?' tt-past':'';
+
     if(!slot){
-      if(isPast) return `<td class="tt-empty tt-past"></td>`;
-      return `<td class="tt-empty" onclick="quickAddSlot('${iso}',${hour})" title="Cliquer pour ajouter ${hour}h–${hour+1}h"></td>`;
+      if(!here.length){
+        if(isPast) return `<td class="tt-empty tt-past"></td>`;
+        return `<td class="tt-empty" onclick="quickAddSlot('${iso}',${hour})" title="Cliquer pour ajouter ${hour}h–${hour+1}h"></td>`;
+      }
+      // Demande(s) hors créneau
+      if(confirmed.length) return `<td class="tt-confirmed${past}" title="Séance confirmée (demande)"><div class="tt-cell-label">${confirmed.map(b=>_clientFirst(b.clientId)).join(', ')}</div><div class="tt-cell-badge" style="background:var(--success);color:#000">✅</div></td>`;
+      if(pending.length) return `<td class="tt-pending tt-req${past}" onclick="_scrollToPending()" title="Demande de créneau à traiter"><div class="tt-cell-label">${pending.map(b=>_clientFirst(b.clientId)).join(', ')}</div><div class="tt-cell-badge" style="background:var(--warn);color:#000">📩 ${pending.length}</div></td>`;
+      return `<td class="tt-proposed${past}" onclick="_scrollToPending()" title="Autre créneau proposé, en attente du coaché"><div class="tt-cell-label">${proposed.map(b=>_clientFirst(b.clientId)).join(', ')}</div><div class="tt-cell-badge" style="background:var(--purple);color:#fff">💬</div></td>`;
     }
-    const booked=S.bookings.filter(b=>b.slotId===slot.id);
-    const pending=booked.filter(b=>b.status==='pending').length;
-    const confirmed=booked.filter(b=>b.status==='confirmed').length;
+
     let cls='tt-avail';
-    if(pending) cls='tt-pending';
-    if(confirmed) cls='tt-confirmed';
-    if(isPast) cls+=' tt-past';
+    if(proposed.length) cls='tt-proposed';
+    if(pending.length) cls='tt-pending';
+    if(confirmed.length) cls='tt-confirmed';
     const shortType=slot.type?slot.type.replace('Coaching ','').substring(0,6):'';
     let badge='';
-    if(pending) badge=`<div class="tt-cell-badge" style="background:var(--warn);color:#000">⏳ ${pending}</div>`;
-    else if(confirmed) badge=`<div class="tt-cell-badge" style="background:var(--success);color:#000">✅ ${confirmed}</div>`;
-    return `<td class="${cls}" onclick="openEditSlot('${slot.id}')" title="${slot.type}${slot.note?' · '+slot.note:''}&#10;Cliquer pour modifier">
+    if(pending.length) badge=`<div class="tt-cell-badge" style="background:var(--warn);color:#000">⏳ ${pending.length}</div>`;
+    else if(confirmed.length) badge=`<div class="tt-cell-badge" style="background:var(--success);color:#000">✅ ${confirmed.map(b=>_clientFirst(b.clientId)).join(', ')}</div>`;
+    return `<td class="${cls}${past}" onclick="openEditSlot('${slot.id}')" title="${slot.type}${slot.note?' · '+slot.note:''}&#10;Cliquer pour modifier">
       <div class="tt-cell-label">${shortType}</div>${badge}</td>`;
   });
-  $('planning-grid').innerHTML=grid;
+  $('planning-grid').innerHTML=legend+grid;
 
-  // Pending bookings
-  const pendingB=S.bookings.filter(b=>b.status==='pending').sort((a,b)=>a.date.localeCompare(b.date));
-  if(!pendingB.length){
-    $('pending-bookings-list').innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px">Aucune demande en attente 👌</div>';
-  } else {
-    $('pending-bookings-list').innerHTML=pendingB.map(b=>{
-      const slot=S.slots.find(s=>s.id===b.slotId);
-      const cl=S.clients.find(c=>c.id===b.clientId);
-      const name=cl?`${cl.prenom} ${cl.nom}`:'Inconnu';
-      const dStr=slot?`${fmtDateFull(new Date(b.date+'T00:00:00'))} · ${slot.start}–${slot.end}`:'Créneau supprimé';
-      return `<div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--s2);border-radius:var(--rs);margin-bottom:6px;border-left:3px solid var(--warn)">
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:13px">${name}</div>
-          <div style="font-size:11px;color:var(--muted)">${dStr}${slot?' · '+slot.type:''}</div>
-        </div>
-        <button class="btn" style="background:var(--success);color:#000;border:none;font-size:11px;padding:6px 10px" onclick="confirmBooking('${b.id}')">✅ Valider</button>
-        <button class="btn" style="font-size:11px;padding:6px 10px" onclick="rejectBooking('${b.id}')">❌ Refuser</button>
-      </div>`;
-    }).join('');
+  // ---- Demandes en attente ----
+  const pendingB=S.bookings.filter(b=>b.status==='pending').sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
+  const proposedB=S.bookings.filter(b=>b.status==='proposed').sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
+  let ph='';
+  if(!pendingB.length&&!proposedB.length){
+    ph='<div style="font-size:12px;color:var(--muted);padding:8px">Aucune demande en attente 👌</div>';
   }
+  pendingB.forEach(b=>{
+    const isReq=b.kind==='request';
+    ph+=`<div class="bk-row" style="border-left-color:${isReq?'var(--orange)':'var(--warn)'}">
+      <div style="flex:1;min-width:180px">
+        <div style="font-weight:700;font-size:13px">${_clientName(b.clientId)} ${isReq?'<span class="bk-chip bk-chip-req">📩 Demande hors créneau</span>':'<span class="bk-chip bk-chip-slot">📅 Sur un créneau</span>'}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${_bkWhenFull(b)} · ${b.type||'Coaching salle'}</div>
+        <div style="margin-top:4px">${_formulaBadge(b)}</div>
+        ${b.note?`<div style="font-size:11px;margin-top:4px;font-style:italic">💬 « ${b.note} »</div>`:''}
+      </div>
+      <div class="bk-actions">
+        <button class="btn" style="background:var(--success);color:#000;border:none;font-size:11px;padding:6px 10px" onclick="confirmBooking('${b.id}')">✅ Valider</button>
+        <button class="btn" style="background:var(--purple);color:#fff;border:none;font-size:11px;padding:6px 10px" onclick="openProposeSlot('${b.id}')">🔁 Proposer</button>
+        <button class="btn" style="font-size:11px;padding:6px 10px" onclick="rejectBooking('${b.id}')">❌ Refuser</button>
+      </div>
+    </div>`;
+  });
+  if(proposedB.length){
+    ph+=`<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px">💬 Propositions en attente de réponse du coaché</div>`;
+    proposedB.forEach(b=>{
+      ph+=`<div class="bk-row" style="border-left-color:var(--purple)">
+        <div style="flex:1;min-width:180px">
+          <div style="font-weight:700;font-size:13px">${_clientName(b.clientId)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Demandé : <s>${_bkWhen(b)}</s></div>
+          <div style="font-size:12px;color:var(--purple);font-weight:700;margin-top:2px">➡️ Proposé : ${fmtDateFull(new Date(b.proposedDate+'T00:00:00'))} · ${b.proposedStart}–${b.proposedEnd}</div>
+          <div style="margin-top:4px">${_formulaBadge(b)}</div>
+        </div>
+        <div class="bk-actions"><button class="btn" style="font-size:11px;padding:6px 10px" onclick="withdrawProposal('${b.id}')">↩️ Retirer</button></div>
+      </div>`;
+    });
+  }
+  $('pending-bookings-list').innerHTML=ph;
 
-  // Confirmed upcoming
+  // ---- Séances confirmées à venir ----
   const nowISO=fmtDateISO(new Date());
-  const confirmedB=S.bookings.filter(b=>b.status==='confirmed'&&b.date>=nowISO).sort((a,b)=>a.date.localeCompare(b.date));
+  const confirmedB=S.bookings.filter(b=>b.status==='confirmed'&&b.date>=nowISO).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
   if(!confirmedB.length){
     $('confirmed-bookings-list').innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px">Aucune séance confirmée à venir</div>';
   } else {
-    $('confirmed-bookings-list').innerHTML=confirmedB.map(b=>{
-      const slot=S.slots.find(s=>s.id===b.slotId);
-      const cl=S.clients.find(c=>c.id===b.clientId);
-      const name=cl?`${cl.prenom} ${cl.nom}`:'Inconnu';
-      const dStr=slot?`${fmtDateFull(new Date(b.date+'T00:00:00'))} · ${slot.start}–${slot.end}`:'—';
-      return `<div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--s2);border-radius:var(--rs);margin-bottom:6px;border-left:3px solid var(--success)">
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:13px">${name}</div>
-          <div style="font-size:11px;color:var(--muted)">${dStr}${slot?' · '+slot.type:''}</div>
+    $('confirmed-bookings-list').innerHTML=confirmedB.map(b=>`<div class="bk-row" style="border-left-color:var(--success)">
+        <div style="flex:1;min-width:180px">
+          <div style="font-weight:700;font-size:13px">${_clientName(b.clientId)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${_bkWhenFull(b)} · ${b.type||'Coaching salle'}</div>
+          <div style="margin-top:4px">${_formulaBadge(b)} ${b.formula==='unit'?_paidBadge(b.paid):''}</div>
         </div>
-        <button class="btn" style="font-size:10px;padding:4px 8px" onclick="cancelBooking('${b.id}')">Annuler</button>
-      </div>`;
-    }).join('');
+        <div class="bk-actions">
+          ${b.formula==='unit'?`<button class="btn" style="font-size:10px;padding:4px 8px" onclick="toggleBookingPaid('${b.id}')">${b.paid?'↩️ Non payé':'💶 Marquer payé'}</button>`:''}
+          <button class="btn" style="font-size:10px;padding:4px 8px" onclick="cancelBooking('${b.id}')">Annuler</button>
+        </div>
+      </div>`).join('');
   }
+
+  renderPacksCoach();
   updateBookingBadge();
+}
+
+// ---- Carnets & paiements (coach) ----
+function renderPacksCoach(){
+  const el=$('packs-coach-list'); if(!el) return;
+  _ensureSlots();
+  const cids=[...new Set([
+    ...S.packs.filter(p=>p.status!=='cancelled').map(p=>p.clientId),
+    ...S.bookings.filter(b=>b.formula==='unit'&&b.status==='confirmed'&&!b.paid).map(b=>b.clientId)
+  ])];
+  if(!cids.length){ el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px">Aucun carnet ni séance à régler pour l\'instant</div>'; return; }
+  let h='';
+  let grand=0;
+  cids.forEach(cid=>{
+    const due=_clientDue(cid);
+    grand+=due.total;
+    h+=`<div class="pack-client">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        <div style="font-weight:700;font-size:14px">${_clientName(cid)}</div>
+        <div class="due-pill ${due.total?'due-pill-red':'due-pill-ok'}">${due.total?'À régler : '+_eur(due.total):'✅ Tout est réglé'}</div>
+      </div>`;
+    _clientPacks(cid).forEach(p=>{
+      const used=_packUsed(p), pct=Math.round(used/p.size*100);
+      h+=`<div class="pack-line">
+        <div style="flex:1;min-width:160px">
+          <div style="font-size:12px;font-weight:700">🎟 Carnet de ${p.size} séances · ${_eur(p.price)} ${_paidBadge(p.paid)}</div>
+          <div class="pack-bar"><div style="width:${pct}%"></div></div>
+          <div style="font-size:10px;color:var(--muted)">${used}/${p.size} utilisée(s) · ${p.size-used} restante(s) · pris le ${new Date(p.createdAt).toLocaleDateString('fr-FR')}</div>
+        </div>
+        <button class="btn" style="font-size:10px;padding:4px 8px" onclick="togglePackPaid('${p.id}')">${p.paid?'↩️ Non payé':'💶 Marquer payé'}</button>
+        <button class="btn" style="font-size:10px;padding:4px 8px" onclick="cancelPack('${p.id}')">🗑</button>
+      </div>`;
+    });
+    if(due.unitConf.length){
+      h+=`<div class="pack-line"><div style="flex:1;font-size:12px">💶 ${due.unitConf.length} séance(s) à l'unité non payée(s) = <strong>${_eur(due.unitTotal)}</strong></div>
+        <button class="btn" style="font-size:10px;padding:4px 8px" onclick="markClientUnitsPaid(${JSON.stringify(cid).replace(/"/g,'&quot;')})">💶 Tout marquer payé</button></div>`;
+    }
+    h+=`</div>`;
+  });
+  h+=`<div style="text-align:right;font-family:'Oswald',sans-serif;font-size:15px;margin-top:8px">Total à encaisser : <span style="color:var(--red2)">${_eur(grand)}</span></div>`;
+  el.innerHTML=h;
+}
+
+function openAssignPack(){
+  _ensureSlots();
+  const sel=$('assign-pack-client');
+  sel.innerHTML=S.clients.map(c=>`<option value="${c.id}">${c.prenom} ${c.nom}</option>`).join('');
+  $('assign-pack-size').innerHTML=S.pricing.packs.map((pk,i)=>`<option value="${i}">${pk.n} séances — ${_eur(pk.price)}</option>`).join('');
+  $('assign-pack-paid').checked=false;
+  openModal('mod-assign-pack');
+}
+
+function saveAssignPack(){
+  _ensureSlots();
+  const raw=$('assign-pack-client').value;
+  const cl=S.clients.find(c=>String(c.id)===raw); if(!cl) return;
+  const pk=S.pricing.packs[parseInt($('assign-pack-size').value)]; if(!pk) return;
+  S.packs.push({id:'pk'+Date.now(), clientId:cl.id, size:pk.n, price:pk.price, paid:$('assign-pack-paid').checked, status:'active', createdAt:Date.now(), by:'coach'});
+  saveState(); closeModal('mod-assign-pack'); renderPlanning();
+  showToast(`🎟 Carnet de ${pk.n} ajouté à ${cl.prenom}`,true);
+}
+
+function togglePackPaid(id){ const p=S.packs.find(x=>x.id===id); if(!p) return; p.paid=!p.paid; p.paidAt=p.paid?Date.now():null; saveState(); renderPlanning(); }
+function toggleBookingPaid(id){ const b=S.bookings.find(x=>x.id===id); if(!b) return; b.paid=!b.paid; b.paidAt=b.paid?Date.now():null; saveState(); renderPlanning(); }
+function markClientUnitsPaid(cid){
+  S.bookings.filter(b=>b.clientId===cid&&b.formula==='unit'&&b.status==='confirmed'&&!b.paid).forEach(b=>{b.paid=true;b.paidAt=Date.now();});
+  saveState(); renderPlanning(); showToast('✅ Séances marquées payées',true);
+}
+function cancelPack(id){
+  confirm2('Supprimer ce carnet ?','Les séances réservées avec ce carnet passeront en séances à l\'unité.',()=>{
+    const p=S.packs.find(x=>x.id===id); if(!p) return;
+    p.status='cancelled';
+    S.bookings.filter(b=>b.packId===id&&_bkActive(b)).forEach(b=>{b.formula='unit';b.packId=null;b.price=S.pricing.unit;});
+    saveState(); renderPlanning(); showToast('Carnet supprimé',false);
+  });
 }
 
 function confirmBooking(id){
@@ -7846,21 +8154,48 @@ function confirmBooking(id){
 
 function rejectBooking(id){
   _ensureSlots();
-  confirm2('Refuser cette réservation ?','Le coaché sera informé.',()=>{
+  confirm2('Refuser cette demande ?','Le coaché verra la demande refusée. Tu peux aussi lui proposer un autre créneau.',()=>{
     const b=S.bookings.find(x=>x.id===id); if(!b)return;
     b.status='rejected'; b.rejectedAt=Date.now();
     saveState(); renderPlanning();
-    showToast('Réservation refusée',false);
+    showToast('Demande refusée',false);
   });
 }
 
 function cancelBooking(id){
   _ensureSlots();
-  confirm2('Annuler cette séance ?','La réservation sera supprimée.',()=>{
+  confirm2('Annuler cette séance ?','La réservation sera supprimée (et la séance rendue au carnet si besoin).',()=>{
     S.bookings=S.bookings.filter(x=>x.id!==id);
     saveState(); renderPlanning();
     showToast('Réservation annulée',false);
   });
+}
+
+function openProposeSlot(id){
+  _ensureSlots();
+  const b=S.bookings.find(x=>x.id===id); if(!b) return;
+  _proposeId=id;
+  $('propose-info').innerHTML=`<strong>${_clientName(b.clientId)}</strong> a demandé <strong>${_bkWhenFull(b)}</strong>`;
+  $('propose-date').value=b.date;
+  $('propose-hour').value=Math.min(22,parseInt(b.start)+1);
+  $('propose-msg').value='';
+  openModal('mod-propose');
+}
+
+function saveProposeSlot(){
+  const b=S.bookings.find(x=>x.id===_proposeId); if(!b) return;
+  const date=$('propose-date').value, hour=parseInt($('propose-hour').value);
+  if(!date||isNaN(hour)){ showToast('Date et heure requis !'); return; }
+  b.status='proposed'; b.proposedDate=date; b.proposedStart=_hStr(hour); b.proposedEnd=_hStr(hour+1);
+  b.coachMsg=$('propose-msg').value.trim(); b.proposedAt=Date.now();
+  saveState(); closeModal('mod-propose'); renderPlanning();
+  showToast('🔁 Proposition envoyée au coaché',true);
+}
+
+function withdrawProposal(id){
+  const b=S.bookings.find(x=>x.id===id); if(!b) return;
+  b.status='pending'; delete b.proposedDate; delete b.proposedStart; delete b.proposedEnd; delete b.coachMsg;
+  saveState(); renderPlanning();
 }
 
 function updateBookingBadge(){
@@ -7881,71 +8216,126 @@ function renderClientBooking(){
   const el=$('cl-booking-view'); if(!el)return;
   const cid=currentClient.id;
   const nowISO=fmtDateISO(new Date());
+  const pack=_clientUsablePack(cid);
+  const due=_clientDue(cid);
 
   let h='<div style="padding:4px 0">';
-  h+=`<div class="ph"><div><div class="pt">Mon <span>planning</span></div><div class="ps">Consulte les disponibilités et réserve ta séance</div></div></div>`;
+  h+=`<div class="ph"><div><div class="pt">Mon <span>planning</span></div><div class="ps">Réserve tes séances à l'unité ou avec un carnet</div></div></div>`;
 
-  // Week nav for client
-  h+=`<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px">`;
+  // ---- Ma formule + À régler ----
+  h+=`<div class="formula-grid">`;
+  h+=`<div class="formula-card formula-pack">
+      <div class="formula-title">🎟 Mon carnet</div>`;
+  if(pack){
+    const used=_packUsed(pack), pct=Math.round(used/pack.size*100);
+    h+=`<div class="formula-big">${pack.size-used} <span>séance(s) restante(s)</span></div>
+      <div class="pack-bar"><div style="width:${pct}%"></div></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Carnet de ${pack.size} · ${used}/${pack.size} utilisée(s) · ${_eur(pack.price)} ${_paidBadge(pack.paid)}</div>`;
+  } else {
+    h+=`<div style="font-size:12px;color:var(--muted);margin:6px 0 10px;line-height:1.6">Pas de carnet en cours. Tu peux réserver à l'unité (<strong style="color:var(--text)">${_eur(S.pricing.unit)}</strong> la séance) ou prendre un carnet.</div>`;
+  }
+  h+=`<button class="btn" style="background:var(--purple);color:#fff;border:none;font-size:11px;padding:6px 12px" onclick="openPackModal()">🎟 ${pack?'Prendre un autre carnet':'Prendre un carnet'}</button>
+    </div>`;
+
+  h+=`<div class="formula-card formula-due">
+      <div class="formula-title">💳 À régler</div>`;
+  if(!due.total&&!due.waitTotal){
+    h+=`<div class="formula-big" style="color:var(--success)">0 € <span>tout est réglé ✅</span></div>`;
+  } else {
+    h+=`<div class="formula-big" style="color:var(--red2)">${_eur(due.total)}</div>`;
+    if(due.unitConf.length) h+=`<div class="due-line"><span>💶 ${due.unitConf.length} séance(s) à l'unité × ${_eur(due.unitConf[0].price)}</span><strong>${_eur(due.unitTotal)}</strong></div>`;
+    due.packs.forEach(p=>{ h+=`<div class="due-line"><span>🎟 Carnet de ${p.size} séances</span><strong>${_eur(p.price)}</strong></div>`; });
+    if(due.unitWait.length) h+=`<div class="due-line" style="color:var(--warn)"><span>⏳ + ${due.unitWait.length} séance(s) en attente de validation</span><strong>${_eur(due.waitTotal)}</strong></div>`;
+    h+=`<div style="font-size:10px;color:var(--muted);margin-top:6px">À régler directement auprès de ton coach.</div>`;
+  }
+  h+=`</div></div>`;
+
+  // ---- Propositions du coach ----
+  const props=S.bookings.filter(b=>b.clientId===cid&&b.status==='proposed');
+  props.forEach(b=>{
+    h+=`<div class="propose-card">
+      <div style="font-weight:700;font-size:13px;margin-bottom:4px">💬 Ton coach te propose un autre créneau</div>
+      <div style="font-size:12px;color:var(--muted)">Ta demande : <s>${_bkWhen(b)}</s></div>
+      <div style="font-size:14px;font-weight:700;color:var(--purple);margin:4px 0">➡️ ${fmtDateFull(new Date(b.proposedDate+'T00:00:00'))} · ${b.proposedStart}–${b.proposedEnd}</div>
+      ${b.coachMsg?`<div style="font-size:12px;font-style:italic;margin-bottom:6px">« ${b.coachMsg} »</div>`:''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" style="background:var(--success);color:#000;border:none;font-size:11px;padding:6px 12px" onclick="acceptProposal('${b.id}')">✅ J'accepte</button>
+        <button class="btn" style="font-size:11px;padding:6px 12px" onclick="declineProposal('${b.id}')">❌ Ça ne me va pas</button>
+      </div>
+    </div>`;
+  });
+
+  // ---- Navigation semaine ----
+  const days=getWeekDates(clientWeekOffset);
+  h+=`<div style="display:flex;align-items:center;justify-content:center;gap:8px 12px;margin:12px 0;flex-wrap:wrap">`;
   h+=`<button class="btn" onclick="clientWeekOffset--;renderClientBooking()" style="padding:6px 12px;font-size:16px">◀</button>`;
-  h+=`<span id="cl-week-label" style="font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;min-width:200px;text-align:center"></span>`;
+  h+=`<span style="font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;min-width:200px;text-align:center">${fmtDateShort(days[0])} — ${fmtDateShort(days[6])}</span>`;
   h+=`<button class="btn" onclick="clientWeekOffset++;renderClientBooking()" style="padding:6px 12px;font-size:16px">▶</button>`;
   h+=`<button class="btn" onclick="clientWeekOffset=0;renderClientBooking()" style="padding:6px 10px;font-size:11px">Aujourd'hui</button>`;
   h+=`</div>`;
 
-  const days=getWeekDates(clientWeekOffset);
+  h+=`<div class="tt-legend">
+    <span><i class="lg lg-avail"></i>Dispo : réserver</span>
+    <span><i class="lg lg-request"></i>Libre : demander</span>
+    <span><i class="lg lg-pending"></i>En attente</span>
+    <span><i class="lg lg-proposed"></i>Proposition</span>
+    <span><i class="lg lg-mine"></i>Confirmée</span>
+  </div>`;
 
-  // Client timetable
+  // ---- Grille ----
   h+=_buildTimetable(days, (iso, hour, isPast)=>{
-    const hStr=String(hour).padStart(2,'0')+':00';
+    const hStr=_hStr(hour);
     const slot=S.slots.find(s=>s.date===iso&&s.start===hStr);
-    if(!slot){
-      return `<td class="tt-unavail${isPast?' tt-past':''}"></td>`;
-    }
-    // Check bookings for this slot
-    const myBooking=S.bookings.find(b=>b.slotId===slot.id&&b.clientId===cid&&(b.status==='pending'||b.status==='confirmed'));
-    const confirmedCount=S.bookings.filter(b=>b.slotId===slot.id&&b.status==='confirmed').length;
-    const isFull=confirmedCount>=slot.capacity;
-    const shortType=slot.type?slot.type.replace('Coaching ','').substring(0,6):'';
+    const here=_bookingsAt(iso,hStr);
+    const mine=here.find(b=>b.clientId===cid);
+    const myProposalHere=S.bookings.find(b=>b.clientId===cid&&b.status==='proposed'&&b.proposedDate===iso&&b.proposedStart===hStr);
+    const shortType=slot&&slot.type?slot.type.replace('Coaching ','').substring(0,6):'';
 
-    if(myBooking){
-      if(myBooking.status==='confirmed'){
-        return `<td class="tt-mine-confirmed" title="${slot.type} · Confirmée">
-          <div class="tt-cell-label" style="color:var(--info)">${shortType}</div>
+    if(myProposalHere&&!isPast){
+      return `<td class="tt-proposed" onclick="acceptProposal('${myProposalHere.id}')" title="Proposition du coach — cliquer pour accepter">
+        <div class="tt-cell-label" style="color:var(--purple)">Proposé</div>
+        <div class="tt-cell-badge" style="background:var(--purple);color:#fff">💬</div></td>`;
+    }
+    if(mine){
+      if(mine.status==='confirmed'){
+        return `<td class="tt-mine-confirmed" title="${mine.type||''} · Confirmée">
+          <div class="tt-cell-label" style="color:var(--info)">${shortType||'Séance'}</div>
           <div class="tt-cell-badge" style="background:var(--info);color:#fff">✅</div></td>`;
       }
-      return `<td class="tt-mine-pending" onclick="cancelMyBooking('${myBooking.id}')" title="${slot.type} · En attente — cliquer pour annuler">
-        <div class="tt-cell-label" style="color:var(--warn)">${shortType}</div>
+      if(mine.status==='proposed'){
+        return `<td class="tt-proposed${isPast?' tt-past':''}" title="Ton coach propose un autre horaire">
+          <div class="tt-cell-label" style="color:var(--purple)">Demande</div>
+          <div class="tt-cell-badge" style="background:var(--purple);color:#fff">🔁</div></td>`;
+      }
+      return `<td class="tt-mine-pending${isPast?' tt-past':''}" onclick="cancelMyBooking('${mine.id}')" title="En attente — cliquer pour annuler">
+        <div class="tt-cell-label" style="color:var(--warn)">${mine.kind==='request'?'Demande':shortType}</div>
         <div class="tt-cell-badge" style="background:var(--warn);color:#000">⏳</div></td>`;
     }
-    if(isPast||isFull){
-      return `<td class="tt-unavail tt-past" title="${isFull?'Complet':'Passé'}">
-        <div class="tt-cell-label">${shortType}</div></td>`;
+    if(!slot){
+      const taken=here.some(b=>b.status==='confirmed');
+      if(isPast||taken) return `<td class="tt-unavail${isPast?' tt-past':''}"></td>`;
+      return `<td class="tt-request" onclick="openBookModal(null,'${iso}',${hour})" title="Pas de créneau ouvert — cliquer pour demander ${hour}h–${hour+1}h"><div class="tt-req-plus">+</div></td>`;
     }
-    // Available to book!
-    return `<td class="tt-avail" onclick="bookSlot('${slot.id}')" title="${slot.type}${slot.note?' · '+slot.note:''}&#10;Cliquer pour réserver">
+    const confirmedCount=here.filter(b=>b.status==='confirmed').length;
+    const isFull=confirmedCount>=(slot.capacity||1);
+    if(isPast||isFull){
+      return `<td class="tt-unavail tt-past" title="${isFull?'Complet':'Passé'}"><div class="tt-cell-label">${shortType}</div></td>`;
+    }
+    return `<td class="tt-avail" onclick="openBookModal('${slot.id}')" title="${slot.type}${slot.note?' · '+slot.note:''}&#10;Cliquer pour réserver">
       <div class="tt-cell-label" style="color:var(--success)">${shortType}</div>
       <div class="tt-cell-badge" style="background:var(--success);color:#000">Dispo</div></td>`;
   });
 
-  // Set week label after render (need to wait for DOM)
-  const mon=days[0], sun=days[6];
-  // Set week label directly after innerHTML is set
-  setTimeout(()=>{
-    const lbl=document.getElementById('cl-week-label');
-    if(lbl) lbl.textContent=fmtDateShort(mon)+' — '+fmtDateShort(sun);
-  },0);
-
-  // My reservations summary
-  const active=S.bookings.filter(b=>b.clientId===cid&&b.status!=='rejected'&&b.date>=nowISO).sort((a,b)=>a.date.localeCompare(b.date));
+  // ---- Mes réservations ----
+  const active=S.bookings.filter(b=>b.clientId===cid&&(b.status!=='rejected'||b.date>=nowISO)&&b.date>=nowISO).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
   if(active.length){
     h+=`<div class="panel" style="margin-top:12px"><div class="panel-hd"><div class="panel-title">📋 Mes réservations</div></div><div class="panel-body">`;
     active.forEach(b=>{
-      const slot=S.slots.find(s=>s.id===b.slotId);
-      const st=b.status==='confirmed'?{l:'✅ Confirmée',c:'var(--success)'}:{l:'⏳ En attente',c:'var(--warn)'};
-      h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--s2);border-left:3px solid ${st.c};border-radius:var(--rs);margin-bottom:4px">
-        <div style="flex:1"><span style="font-weight:700;font-size:12px">${slot?fmtDateShort(new Date(b.date+'T00:00:00')):'—'}</span>
-        <span style="font-size:11px;color:var(--muted)"> ${slot?slot.start+'–'+slot.end+' · '+slot.type:''}</span></div>
+      const st={confirmed:{l:'✅ Confirmée',c:'var(--success)'},pending:{l:'⏳ En attente',c:'var(--warn)'},proposed:{l:'🔁 Autre horaire proposé',c:'var(--purple)'},rejected:{l:'❌ Refusée',c:'var(--red2)'}}[b.status]||{l:b.status,c:'var(--muted)'};
+      h+=`<div class="bk-row" style="border-left-color:${st.c};padding:6px 8px">
+        <div style="flex:1;min-width:150px"><span style="font-weight:700;font-size:12px">${_bkWhen(b)}</span>
+        <span style="font-size:11px;color:var(--muted)"> · ${b.kind==='request'?'Demande':(b.type||'')}</span>
+        <div style="margin-top:3px">${_formulaBadge(b)}${b.formula==='unit'&&b.status==='confirmed'?' '+_paidBadge(b.paid):''}</div></div>
         <span style="font-size:10px;font-weight:700;color:${st.c}">${st.l}</span>
         ${b.status==='pending'?`<button class="btn" style="font-size:9px;padding:3px 6px" onclick="cancelMyBooking('${b.id}')">Annuler</button>`:''}
       </div>`;
@@ -7957,27 +8347,86 @@ function renderClientBooking(){
   el.innerHTML=h;
 }
 
-function bookSlot(slotId){
+// Modal de réservation (créneau ouvert OU demande hors créneau)
+function openBookModal(slotId, iso, hour){
   _ensureSlots();
   if(!currentClient) return;
-  const slot=S.slots.find(s=>s.id===slotId); if(!slot)return;
-  const confirmedCount=S.bookings.filter(b=>b.slotId===slotId&&b.status==='confirmed').length;
-  if(confirmedCount>=slot.capacity){showToast('Ce créneau est complet !');return;}
-  const already=S.bookings.some(b=>b.slotId===slotId&&b.clientId===currentClient.id&&(b.status==='pending'||b.status==='confirmed'));
-  if(already){showToast('Tu as déjà réservé ce créneau !');return;}
+  const cid=currentClient.id;
+  let ctx;
+  if(slotId){
+    const slot=S.slots.find(s=>s.id===slotId); if(!slot) return;
+    const confirmedCount=_bookingsAt(slot.date,slot.start).filter(b=>b.status==='confirmed').length;
+    if(confirmedCount>=(slot.capacity||1)){ showToast('Ce créneau est complet !'); return; }
+    ctx={slotId, date:slot.date, start:slot.start, end:slot.end, type:slot.type, kind:'slot'};
+  } else {
+    ctx={slotId:null, date:iso, start:_hStr(hour), end:_hStr(hour+1), type:'Coaching salle', kind:'request'};
+  }
+  if(S.bookings.some(b=>b.clientId===cid&&b.date===ctx.date&&b.start===ctx.start&&_bkActive(b))){ showToast('Tu as déjà une demande sur ce créneau !'); return; }
+  _bookCtx=ctx;
+  const pack=_clientUsablePack(cid);
+  $('book-title').textContent=ctx.kind==='slot'?'📅 Réserver ce créneau':'📩 Demander ce créneau';
+  $('book-when').innerHTML=`<strong>${fmtDateFull(new Date(ctx.date+'T00:00:00'))}</strong> · ${ctx.start}–${ctx.end}${ctx.kind==='slot'?' · '+ctx.type:''}`;
+  $('book-explain').innerHTML=ctx.kind==='slot'
+    ?'Ton coach validera ta réservation.'
+    :'Ce créneau n\'est pas encore ouvert. Ton coach recevra ta demande : il pourra la <strong style="color:var(--success)">valider</strong>, la <strong style="color:var(--red2)">refuser</strong> ou te <strong style="color:var(--purple)">proposer un autre horaire</strong>.';
+  let opts='';
+  if(pack){
+    opts+=`<label class="book-opt"><input type="radio" name="book-formula" value="pack" checked>
+      <div><div style="font-weight:700">🎟 Utiliser mon carnet</div><div style="font-size:11px;color:var(--muted)">${_packLeft(pack)} séance(s) restante(s) sur ${pack.size}</div></div></label>`;
+  }
+  opts+=`<label class="book-opt"><input type="radio" name="book-formula" value="unit"${pack?'':' checked'}>
+    <div><div style="font-weight:700">💶 Séance à l'unité</div><div style="font-size:11px;color:var(--muted)">${_eur(S.pricing.unit)} à régler</div></div></label>`;
+  if(!pack) opts+=`<div style="font-size:11px;color:var(--muted);margin-top:6px">Pas de carnet en cours · <a style="color:var(--purple);cursor:pointer;font-weight:700" onclick="closeModal('mod-book');openPackModal()">prendre un carnet</a></div>`;
+  $('book-options').innerHTML=opts;
+  $('book-note').value='';
+  $('book-submit').textContent=ctx.kind==='slot'?'Réserver':'Envoyer la demande';
+  openModal('mod-book');
+}
 
+function submitBooking(){
+  _ensureSlots();
+  if(!currentClient||!_bookCtx) return;
+  const cid=currentClient.id;
+  const sel=document.querySelector('input[name="book-formula"]:checked');
+  const formula=sel?sel.value:'unit';
+  let packId=null, price=S.pricing.unit;
+  if(formula==='pack'){
+    const pack=_clientUsablePack(cid);
+    if(!pack){ showToast('Plus de séance dans ton carnet'); return; }
+    packId=pack.id; price=0;
+  }
+  const c=_bookCtx;
   S.bookings.push({
-    id:'bk'+Date.now(),
-    slotId,
-    clientId:currentClient.id,
-    date:slot.date,
-    status:'pending',
-    createdAt:Date.now(),
-    message:''
+    id:'bk'+Date.now(), slotId:c.slotId, kind:c.kind, clientId:cid,
+    date:c.date, start:c.start, end:c.end, type:c.type,
+    status:'pending', formula, packId, price, paid:false,
+    createdAt:Date.now(), note:$('book-note').value.trim()
   });
-  saveState();
-  renderClientBooking();
-  showToast('📅 Demande envoyée ! En attente de validation.',true);
+  _bookCtx=null;
+  saveState(); closeModal('mod-book'); renderClientBooking();
+  showToast(c.kind==='slot'?'📅 Réservation envoyée ! En attente de validation.':'📩 Demande envoyée à ton coach !',true);
+}
+
+function acceptProposal(id){
+  const b=S.bookings.find(x=>x.id===id); if(!b) return;
+  confirm2('Accepter ce créneau ?',`${fmtDateFull(new Date(b.proposedDate+'T00:00:00'))} · ${b.proposedStart}–${b.proposedEnd}`,()=>{
+    b.date=b.proposedDate; b.start=b.proposedStart; b.end=b.proposedEnd;
+    const sl=S.slots.find(s=>s.date===b.date&&s.start===b.start);
+    b.slotId=sl?sl.id:null; if(sl) b.type=sl.type;
+    b.status='confirmed'; b.confirmedAt=Date.now();
+    delete b.proposedDate; delete b.proposedStart; delete b.proposedEnd;
+    saveState(); renderClientBooking();
+    showToast('✅ Séance confirmée !',true);
+  });
+}
+
+function declineProposal(id){
+  confirm2('Refuser la proposition ?','Ta demande sera annulée (la séance est rendue à ton carnet). Tu pourras refaire une demande.',()=>{
+    const b=S.bookings.find(x=>x.id===id); if(!b) return;
+    b.status='rejected'; b.declinedByClient=true; b.rejectedAt=Date.now();
+    saveState(); renderClientBooking();
+    showToast('Proposition refusée',false);
+  });
 }
 
 function cancelMyBooking(id){
@@ -7987,6 +8436,39 @@ function cancelMyBooking(id){
     saveState(); renderClientBooking();
     showToast('Demande annulée',false);
   });
+}
+
+// Choix d'un carnet côté coaché
+function openPackModal(){
+  _ensureSlots();
+  _packChoice=null;
+  const u=S.pricing.unit;
+  $('pack-options').innerHTML=S.pricing.packs.map((pk,i)=>{
+    const per=pk.price/pk.n, save=u*pk.n-pk.price;
+    return `<div class="pack-opt" id="pack-opt-${i}" onclick="selectPack(${i})">
+      <div class="pack-opt-n">${pk.n}<span>séances</span></div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:15px">${_eur(pk.price)}</div>
+        <div style="font-size:11px;color:var(--muted)">soit ${_eur(per)} / séance</div>
+        ${save>0?`<div style="font-size:11px;color:var(--success);font-weight:700">Économie de ${_eur(save)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('')+`<div style="font-size:11px;color:var(--muted);margin-top:8px">Pour comparaison : séance à l'unité ${_eur(u)}. Le carnet est à régler auprès de ton coach.</div>`;
+  openModal('mod-pack');
+}
+
+function selectPack(i){
+  _packChoice=i;
+  document.querySelectorAll('.pack-opt').forEach(e=>e.classList.remove('sel'));
+  const el=$('pack-opt-'+i); if(el) el.classList.add('sel');
+}
+
+function confirmPack(){
+  if(_packChoice===null){ showToast('Choisis un carnet'); return; }
+  const pk=S.pricing.packs[_packChoice]; if(!pk||!currentClient) return;
+  S.packs.push({id:'pk'+Date.now(), clientId:currentClient.id, size:pk.n, price:pk.price, paid:false, status:'active', createdAt:Date.now(), by:'client'});
+  saveState(); closeModal('mod-pack'); renderClientBooking();
+  showToast(`🎟 Carnet de ${pk.n} séances activé ! Tu peux réserver.`,true);
 }
 
 </script>
