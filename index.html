@@ -813,6 +813,23 @@ a.contact-link:hover{text-decoration:underline;}
 .timetable .tt-cell-badge{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;display:inline-block;font-size:8px;font-weight:700;border-radius:6px;padding:0 4px;margin-top:1px}
 .tt-scroll{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 320px);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:16px}
 @media(max-width:900px){.tt-scroll{max-height:calc(100vh - 280px)}}
+
+/* ---- Sélection multiple de créneaux ---- */
+.tt-selmode{user-select:none;-webkit-user-select:none}
+.timetable .tt-selectable{cursor:pointer}
+.timetable td.tt-sel,.timetable td.tt-sel:hover{background:rgba(56,189,248,.35)!important;box-shadow:inset 0 0 0 2px var(--info)!important;position:relative}
+.timetable td.tt-sel::after{content:'✓';position:absolute;top:1px;right:4px;font-size:10px;font-weight:800;color:var(--info)}
+.timetable .tt-hd-sel{cursor:pointer}
+.timetable th.tt-hd-sel:hover,.timetable td.tt-hd-sel:hover{color:var(--info);text-decoration:underline}
+.lg-sel{background:rgba(56,189,248,.6)}
+.selbar{position:sticky;top:0;z-index:5;background:var(--s2);border:1px solid var(--info);border-radius:var(--rs);padding:10px 12px;margin-bottom:10px;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.selbar-top{font-size:13px;margin-bottom:8px;display:flex;align-items:baseline;gap:4px;flex-wrap:wrap}
+.selbar-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.selbar-row select,.selbar-row input{width:auto!important;margin:0!important;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:7px 9px;font-size:12px;color:var(--text)}
+.selbar-row input{min-width:130px;flex:1 1 160px}
+@media(max-width:640px){.selbar-row select,.selbar-row input{flex:1 1 100%}.selbar-row .btn{flex:1 1 auto;justify-content:center}}
+.selbar .btn[disabled]{opacity:.4;pointer-events:none}
+.btn-sel-on{background:var(--info)!important;color:#fff!important;border-color:var(--info)!important}
 /* ---- Réservations : carnets, demandes, prix ---- */
 :root{--purple:#a855f7;--orange:#fb923c}
 .timetable .tt-proposed{background:rgba(168,85,247,.16);border-color:rgba(168,85,247,.35);cursor:pointer}
@@ -1391,10 +1408,10 @@ a.contact-link:hover{text-decoration:underline;}
 
       <!-- PLANNING / RÉSERVATIONS -->
       <div class="tab-page" id="tp-planning">
-        <div class="ph"><div><div class="pt">Mon <span>planning</span></div><div class="ps">Définis tes créneaux et gère les réservations</div></div><button class="btn btn-red" onclick="openAddSlot()">+ Créneau</button></div>
+        <div class="ph"><div><div class="pt">Mon <span>planning</span></div><div class="ps">Définis tes créneaux et gère les réservations</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="btn-sel-mode" onclick="toggleSelMode()">☑️ Sélection multiple</button><button class="btn btn-red" onclick="openAddSlot()">+ Créneau</button></div></div>
 
         <!-- Week navigation -->
-        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px 12px;margin-bottom:16px;flex-wrap:wrap">
           <button class="btn" onclick="shiftPlanningWeek(-1)" style="padding:6px 12px;font-size:16px">◀</button>
           <span id="planning-week-label" style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;letter-spacing:1px;min-width:200px;text-align:center"></span>
           <button class="btn" onclick="shiftPlanningWeek(1)" style="padding:6px 12px;font-size:16px">▶</button>
@@ -1402,6 +1419,7 @@ a.contact-link:hover{text-decoration:underline;}
         </div>
 
         <!-- Weekly calendar grid -->
+        <div id="planning-selbar" class="selbar" style="display:none"></div>
         <div id="planning-grid" style="overflow-x:auto;margin-bottom:24px"></div>
 
         <!-- Pending bookings -->
@@ -2114,7 +2132,7 @@ function cTab(tab,btn){
   if(tab==='suivi')renderSuivi();
   if(tab==='ressources')renderResCoach();
   if(tab==='documents')renderDocsCoach();
-  if(tab==='planning')renderPlanning();
+  if(tab==='planning'){_selMode=false;_sel.clear();const _b=$('btn-sel-mode');if(_b){_b.textContent='☑️ Sélection multiple';_b.classList.remove('btn-sel-on');}renderPlanning();}
   if(tab==='prospects')renderProspects();
   if(tab==='builder'){renderClientSelect();if(!weekCount){clearBuilder();addWeek();}}
   if(tab==='settings'){$('set-name').value=S.coachName;updateThemeUI(S.lightTheme||false);try{renderPricingSettings();}catch(e){}}
@@ -8832,18 +8850,19 @@ function quickAddSlot(dateISO, hour){
   openAddSlot(dateISO, hour);
 }
 
-function _buildTimetable(days, cellRenderer){
+function _buildTimetable(days, cellRenderer, opts={}){
   const todayISO=fmtDateISO(new Date());
   const nowH=new Date().getHours();
-  let h='<div class="tt-scroll"><table class="timetable"><thead><tr><th></th>';
+  const sel=!!opts.selectable;
+  let h=`<div class="tt-scroll${sel?' tt-selmode':''}"><table class="timetable"><thead><tr><th></th>`;
   days.forEach(d=>{
     const iso=fmtDateISO(d);
-    const cls=iso===todayISO?' class="tt-today"':'';
-    h+=`<th${cls}>${d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'})}</th>`;
+    const cls=[iso===todayISO?'tt-today':'',sel?'tt-hd-sel':''].filter(Boolean).join(' ');
+    h+=`<th${cls?` class="${cls}"`:''}${sel?` onclick="selToggleDay('${iso}')" title="Sélectionner toute la journée"`:''}>${d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'})}</th>`;
   });
   h+='</tr></thead><tbody>';
   for(let hour=5;hour<=22;hour++){
-    h+=`<tr><td class="tt-hour">${hour}h</td>`;
+    h+=`<tr><td class="tt-hour${sel?' tt-hd-sel':''}"${sel?` onclick="selToggleHour(${hour})" title="Sélectionner ${hour}h toute la semaine"`:''}>${hour}h</td>`;
     days.forEach(d=>{
       const iso=fmtDateISO(d);
       const isPast=(iso<todayISO)||(iso===todayISO&&hour<=nowH);
@@ -8853,6 +8872,157 @@ function _buildTimetable(days, cellRenderer){
   }
   h+='</tbody></table></div>';
   return h;
+}
+
+
+// ---------- SÉLECTION MULTIPLE DE CRÉNEAUX (coach) ----------
+let _selMode=false;
+const _sel=new Set();          // clés "AAAA-MM-JJ|heure"
+let _selDrag=null;             // {add:bool} pendant un glisser à la souris
+
+function toggleSelMode(on){
+  _selMode=on===undefined?!_selMode:on;
+  _sel.clear();
+  const btn=$('btn-sel-mode');
+  if(btn){
+    btn.textContent=_selMode?'✖ Quitter la sélection':'☑️ Sélection multiple';
+    btn.classList.toggle('btn-sel-on',_selMode);
+  }
+  renderPlanning();
+}
+
+function _selKeyFree(key){
+  const [iso,h]=key.split('|');
+  return !S.slots.some(s=>s.date===iso&&s.start===_hStr(+h));
+}
+function _selSlotsInSel(){
+  return [..._sel].map(k=>{const [iso,h]=k.split('|');return S.slots.find(s=>s.date===iso&&s.start===_hStr(+h));}).filter(Boolean);
+}
+
+function _selPaint(td,add){
+  if(!td||!td.dataset.cell) return;
+  const k=td.dataset.cell;
+  if(add){_sel.add(k);td.classList.add('tt-sel');}
+  else{_sel.delete(k);td.classList.remove('tt-sel');}
+}
+
+function selToggleDay(iso){
+  if(!_selMode) return;
+  const cells=[...document.querySelectorAll(`#planning-grid td[data-cell^="${iso}|"]`)];
+  const add=cells.some(td=>!_sel.has(td.dataset.cell));
+  cells.forEach(td=>_selPaint(td,add));
+  renderSelBar();
+}
+function selToggleHour(h){
+  if(!_selMode) return;
+  const cells=[...document.querySelectorAll(`#planning-grid td[data-cell$="|${h}"]`)];
+  const add=cells.some(td=>!_sel.has(td.dataset.cell));
+  cells.forEach(td=>_selPaint(td,add));
+  renderSelBar();
+}
+function selClear(){
+  _sel.clear();
+  document.querySelectorAll('#planning-grid td.tt-sel').forEach(td=>td.classList.remove('tt-sel'));
+  renderSelBar();
+}
+
+// Clic (souris + doigt) et glisser à la souris sur la grille
+function _initSelEvents(){
+  const grid=$('planning-grid');
+  if(!grid||grid._selInit) return;
+  grid._selInit=true;
+  grid.addEventListener('pointerdown',e=>{
+    if(!_selMode) return;
+    const td=e.target.closest('td[data-cell]'); if(!td) return;
+    const add=!_sel.has(td.dataset.cell);
+    _selPaint(td,add); renderSelBar();
+    if(e.pointerType==='mouse'){ _selDrag={add}; e.preventDefault(); }
+  });
+  grid.addEventListener('pointermove',e=>{
+    if(!_selMode||!_selDrag) return;
+    const el=document.elementFromPoint(e.clientX,e.clientY);
+    const td=el&&el.closest?el.closest('#planning-grid td[data-cell]'):null;
+    if(td&&_sel.has(td.dataset.cell)!==_selDrag.add){ _selPaint(td,_selDrag.add); renderSelBar(); }
+  });
+  document.addEventListener('pointerup',()=>{ _selDrag=null; });
+}
+
+function renderSelBar(){
+  const bar=$('planning-selbar'); if(!bar) return;
+  if(!_selMode){ bar.innerHTML=''; bar.style.display='none'; return; }
+  bar.style.display='';
+  const n=_sel.size;
+  const free=[..._sel].filter(_selKeyFree).length;
+  const existing=_selSlotsInSel();
+  const keep=id=>{const el=$(id);return el?el.value:null;};
+  const type=keep('sel-type')||'Coaching salle', note=keep('sel-note')||'', rep=keep('sel-repeat')||'0';
+  let h=`<div class="selbar-top"><strong>${n}</strong>&nbsp;case(s) sélectionnée(s)
+    <span style="color:var(--muted);font-size:11px">· clique ou glisse sur les cases · clique sur un jour ou une heure pour tout prendre</span></div>`;
+  h+=`<div class="selbar-row">
+    <select id="sel-type">${['Coaching salle','Coaching en ligne','Coaching domicile','Bilan'].map(t=>`<option${t===type?' selected':''}>${t}</option>`).join('')}</select>
+    <input type="text" id="sel-note" placeholder="Note (optionnel)" value="${_escT(note)}">
+    <select id="sel-repeat">
+      <option value="0"${rep==='0'?' selected':''}>Cette semaine seulement</option>
+      <option value="4"${rep==='4'?' selected':''}>Répéter 4 semaines</option>
+      <option value="8"${rep==='8'?' selected':''}>Répéter 8 semaines</option>
+      <option value="12"${rep==='12'?' selected':''}>Répéter 12 semaines</option>
+    </select>
+    <button class="btn" style="background:var(--success);color:#000;border:none;font-weight:700" ${free?'':'disabled'} onclick="selMakeAvailable()">✅ Rendre disponible (${free})</button>
+    ${existing.length?`<button class="btn btn-danger" onclick="selDeleteSlots()">🗑 Supprimer (${existing.length})</button>`:''}
+    <button class="btn" ${n?'':'disabled'} onclick="selClear()">Tout désélectionner</button>
+  </div>`;
+  bar.innerHTML=h;
+}
+
+function selMakeAvailable(){
+  _ensureSlots();
+  const keys=[..._sel].filter(_selKeyFree);
+  if(!keys.length){ showToast('Sélectionne des cases vides'); return; }
+  const type=$('sel-type').value, note=$('sel-note').value.trim();
+  const weeks=parseInt($('sel-repeat').value)||1;
+  let added=0, i=0;
+  keys.forEach(k=>{
+    const [iso,h]=k.split('|'); const hour=+h;
+    for(let w=0;w<weeks;w++){
+      const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+w*7);
+      const date=fmtDateISO(d), start=_hStr(hour);
+      if(S.slots.some(x=>x.date===date&&x.start===start)) continue;
+      S.slots.push({id:'sl'+Date.now()+'_'+(i++), date, start, end:_hStr(hour+1), type, capacity:1, note});
+      added++;
+    }
+  });
+  saveState(); _sel.clear(); renderPlanning();
+  showToast(`✅ ${added} créneau(x) ajouté(s)`,true);
+}
+
+function selDeleteSlots(){
+  _ensureSlots();
+  const slots=_selSlotsInSel(); if(!slots.length) return;
+  const ids=slots.map(s=>s.id);
+  confirm2(`Supprimer ${ids.length} créneau(x) ?`,_slotBookingsWarn(ids),()=>{
+    S.slots=S.slots.filter(x=>!ids.includes(x.id));
+    S.bookings=S.bookings.filter(x=>!ids.includes(x.slotId));
+    saveState(); _sel.clear(); renderPlanning(); updateBookingBadge();
+    showToast(`🗑 ${ids.length} créneau(x) supprimé(s)`,true);
+  });
+}
+
+// Cellule de la grille en mode sélection
+function _selCell(iso,hour,isPast){
+  const hStr=_hStr(hour), key=`${iso}|${hour}`;
+  const slot=S.slots.find(s=>s.date===iso&&s.start===hStr);
+  const here=_bookingsAt(iso,hStr);
+  if(isPast) return `<td class="${slot?'tt-avail':'tt-empty'} tt-past"></td>`;
+  if(!slot&&here.length){
+    // Demande hors créneau : pas sélectionnable ici
+    return `<td class="tt-pending" style="opacity:.6" title="Demande d'un coaché"><div class="tt-cell-label">${here.map(b=>_clientFirst(b.clientId)).join(', ')}</div></td>`;
+  }
+  const sel=_sel.has(key)?' tt-sel':'';
+  if(slot){
+    const conf=here.filter(b=>b.status==='confirmed').length;
+    return `<td class="tt-avail tt-selectable${sel}" data-cell="${key}" title="Créneau existant${conf?' · réservé':''}"><div class="tt-cell-label">${slot.type?slot.type.replace('Coaching ','').substring(0,6):''}</div>${conf?'<div class="tt-cell-badge" style="background:var(--success);color:#000">✅</div>':''}</td>`;
+  }
+  return `<td class="tt-empty tt-selectable${sel}" data-cell="${key}"></td>`;
 }
 
 function _scrollToPending(){ const el=$('pending-bookings-list'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); }
@@ -8871,6 +9041,13 @@ function renderPlanning(){
     <span><i class="lg lg-empty"></i>Clic = ajouter un créneau</span>
   </div>`;
 
+  if(_selMode){
+    $('planning-grid').innerHTML=`<div class="tt-legend"><span><i class="lg lg-sel"></i>Sélectionné</span><span><i class="lg lg-avail"></i>Déjà disponible</span><span><i class="lg lg-empty"></i>Vide</span></div>`+_buildTimetable(days,_selCell,{selectable:true});
+    _initSelEvents(); renderSelBar();
+    renderPacksCoach(); updateBookingBadge();
+    return;
+  }
+  renderSelBar();
   const grid=_buildTimetable(days, (iso, hour, isPast)=>{
     const hStr=_hStr(hour);
     const slot=S.slots.find(s=>s.date===iso&&s.start===hStr);
