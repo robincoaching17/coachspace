@@ -50,7 +50,9 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font
 #prospect-screen .login-box{height:auto;margin:20px auto;}
 
 /* LANDING */
-#landing{flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+#landing{flex-direction:column;align-items:center;justify-content:flex-start;position:relative;overflow-x:hidden;overflow-y:auto;padding:24px 0 18px;}
+#landing>img:first-of-type{margin-top:auto!important}
+#landing>.l-ver{margin-bottom:auto}
 #landing::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(192,21,42,.07),transparent 70%);pointer-events:none;}
 .l-logo{font-family:'Oswald',sans-serif;font-size:52px;font-weight:700;letter-spacing:4px;margin-bottom:4px;}
 .l-logo span{color:var(--red);}
@@ -61,10 +63,12 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font
 .l-card .lci{font-size:38px;margin-bottom:12px;}
 .l-card .lct{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;letter-spacing:1px;margin-bottom:4px;}
 .l-card .lcd{font-size:11px;color:var(--muted);line-height:1.5;}
-.l-ver{position:absolute;bottom:18px;font-size:10px;color:var(--s3);letter-spacing:1px;}
+.l-ver{position:static;margin-top:18px;font-size:10px;color:var(--s3);letter-spacing:1px;text-align:center;padding:0 16px;}
+@media(max-height:820px){#landing>img:first-of-type{width:104px!important}.l-card{padding:22px 26px}.btn-install{margin-top:12px}}
 
 /* LOGIN */
-#coach-login,#client-login{flex-direction:column;align-items:center;justify-content:center;}
+#coach-login,#client-login{flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;padding:16px 0;}
+#coach-login>.login-box,#client-login>.login-box{margin:auto 0;flex-shrink:0}
 .login-box{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);padding:36px;width:360px;max-width:95vw;box-sizing:border-box;}
 .login-title{font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:4px;}
 .login-back{margin-top:18px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;}
