@@ -80,7 +80,14 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font
 .snav{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:var(--rs);cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);transition:all .15s;border:none;background:none;width:100%;text-align:left;margin-bottom:2px;font-family:'Nunito',sans-serif;}
 .snav:hover{background:var(--s2);color:var(--text);}
 .snav.active{background:var(--red);color:#fff;}
-.snav .si{font-size:15px;width:18px;text-align:center;}
+.snav .si{font-size:15px;width:18px;height:18px;text-align:center;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;flex-shrink:0}
+.ic .a{stroke:var(--red2)}
+.snav:hover .ic .a{stroke:var(--red2)}
+.snav.active .ic .a{stroke:#fff;opacity:.7}
+.ctab{display:inline-flex;align-items:center;gap:6px}
+.ctab .ic{opacity:.85}
+.ctab.active .ic{opacity:1}
 .snav-div{height:1px;background:var(--border);margin:8px 10px;}
 .sidebar-foot{padding:14px 10px 0;border-top:1px solid var(--border);}
 .cpill{background:var(--s2);border-radius:10px;padding:10px;display:flex;align-items:center;gap:9px;}
@@ -1270,18 +1277,18 @@ a.contact-link:hover{text-decoration:underline;}
       <div class="sl-sub" style="text-align:center">Espace Pro</div><div id="sync-badge" class="sync-badge" style="margin-top:4px;display:inline-block">☁️ Connecté</div>
     </div>
     <nav class="snav-group">
-      <button class="snav active" onclick="cTab('dashboard',this)"><span class="si">⚡</span>Dashboard</button>
-      <button class="snav" onclick="cTab('clients',this)"><span class="si">👥</span>Mes coachés</button>
-      <button class="snav" onclick="cTab('builder',this)"><span class="si">📋</span>Créer programme</button>
-      <button class="snav" onclick="cTab('programmes',this)"><span class="si">📁</span>Programmes</button>
+      <button class="snav active" onclick="cTab('dashboard',this)"><span class="si"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8" class="a"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></svg></span>Dashboard</button>
+      <button class="snav" onclick="cTab('clients',this)"><span class="si"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19.5c0-3.3 2.5-5.6 5.5-5.6s5.5 2.3 5.5 5.6"/><circle cx="16.5" cy="9" r="2.5" class="a"/><path d="M15.8 14.1c2.6.2 4.7 2.3 4.7 5.4" class="a"/></svg></span>Mes coachés</button>
+      <button class="snav" onclick="cTab('builder',this)"><span class="si"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 4.5V3.5h6v1"/><path d="M12 10v6M9 13h6" class="a"/></svg></span>Créer programme</button>
+      <button class="snav" onclick="cTab('programmes',this)"><span class="si"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.2h7a2 2 0 0 1 2 2v8.3a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M8 12.5h8M8 15.5h5" class="a"/></svg></span>Programmes</button>
       <div class="snav-div"></div>
-      <button class="snav" onclick="cTab('suivi',this)"><span class="si">📊</span>Suivi coachés</button>
-      <button class="snav" onclick="cTab('ressources',this)"><span class="si">🎯</span>Ressources</button>
-      <button class="snav" onclick="cTab('documents',this)"><span class="si">📄</span>Documents</button>
-      <button class="snav" onclick="cTab('planning',this)" id="nav-planning"><span class="si">📅</span>Planning <span id="booking-count-badge" style="background:var(--warn);color:#fff;border-radius:20px;font-size:9px;padding:1px 6px;margin-left:4px;display:none">0</span></button>
-      <button class="snav" onclick="cTab('prospects',this)" id="nav-prospects"><span class="si">🎯</span>Prospects <span id="prospect-count-badge" style="background:var(--red);color:#fff;border-radius:20px;font-size:9px;padding:1px 6px;margin-left:4px;display:none">0</span></button>
+      <button class="snav" onclick="cTab('suivi',this)"><span class="si"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 4v16h16"/><path d="M7.5 15l3.5-4 3 2.5 5-6" class="a"/><circle cx="19" cy="7.5" r="1.2" class="a"/></svg></span>Suivi coachés</button>
+      <button class="snav" onclick="cTab('ressources',this)"><span class="si"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 6.5c-2-1.6-4.7-2-8-1.6v13.2c3.3-.4 6 0 8 1.6 2-1.6 4.7-2 8-1.6V4.9c-3.3-.4-6 0-8 1.6z"/><path d="M12 6.5v13.2" class="a"/></svg></span>Ressources</button>
+      <button class="snav" onclick="cTab('documents',this)"><span class="si"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6.5 3.5h7.5l4.5 4.5v12.5h-12z"/><path d="M14 3.5V8h4.5"/><path d="M9.5 12.5h5M9.5 16h5" class="a"/></svg></span>Documents</button>
+      <button class="snav" onclick="cTab('planning',this)" id="nav-planning"><span class="si"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.2"/><path d="M3.5 10h17M8 3.5v3M16 3.5v3"/><rect x="13.5" y="13.5" width="3.5" height="3.5" rx=".8" class="a"/></svg></span>Planning <span id="booking-count-badge" style="background:var(--warn);color:#fff;border-radius:20px;font-size:9px;padding:1px 6px;margin-left:4px;display:none">0</span></button>
+      <button class="snav" onclick="cTab('prospects',this)" id="nav-prospects"><span class="si"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.4" class="a"/></svg></span>Prospects <span id="prospect-count-badge" style="background:var(--red);color:#fff;border-radius:20px;font-size:9px;padding:1px 6px;margin-left:4px;display:none">0</span></button>
       <div class="snav-div"></div>
-      <button class="snav" onclick="cTab('settings',this)"><span class="si">⚙️</span>Paramètres</button>
+      <button class="snav" onclick="cTab('settings',this)"><span class="si"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2" class="a"/><circle cx="9" cy="17" r="2.2" class="a"/></svg></span>Paramètres</button>
     </nav>
     <div class="sidebar-foot">
       <div class="cpill"><div class="cpill-av" id="c-av">R</div><div><div class="cpill-name" id="c-name">Robin</div><div class="cpill-role">Coach · BPJEPS</div></div></div>
@@ -1494,14 +1501,14 @@ a.contact-link:hover{text-decoration:underline;}
     </div>
   </div>
   <div class="ctabs">
-    <button class="ctab active" onclick="clTab('programme',this)">Mon programme</button>
-    <button class="ctab" onclick="clTab('journal',this)">Journal</button>
-    <button class="ctab" onclick="clTab('nutrition',this)">🍽 Nutrition</button>
-    <button class="ctab" onclick="clTab('ressources',this)">Ressources</button>
-    <button class="ctab" onclick="clTab('documents',this)">Documents</button>
-    <button class="ctab" onclick="clTab('booking',this)">📅 Réserver</button>
-    <button class="ctab" onclick="clTab('contact',this)">Contact</button>
-    <button class="ctab" onclick="clTab('profil',this)">Mon profil</button>
+    <button class="ctab active" onclick="clTab('programme',this)"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6.5 8v8M17.5 8v8"/><path d="M3.5 10v4M20.5 10v4"/><path d="M6.5 12h11" class="a"/></svg><span>Mon programme</span></button>
+    <button class="ctab" onclick="clTab('journal',this)"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5v17"/><path d="M12 9h4M12 12.5h4" class="a"/></svg><span>Journal</span></button>
+    <button class="ctab" onclick="clTab('nutrition',this)"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 7.5c-1.4-1.5-4.5-1.6-6 .5-1.7 2.5-.6 7 1.6 9.6 1.3 1.5 2.6 1.4 4.4.6 1.8.8 3.1.9 4.4-.6 2.2-2.6 3.3-7.1 1.6-9.6-1.5-2.1-4.6-2-6-.5z"/><path d="M12 7.5c0-1.6.6-3 2.2-4" class="a"/></svg><span>Nutrition</span></button>
+    <button class="ctab" onclick="clTab('ressources',this)"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 6.5c-2-1.6-4.7-2-8-1.6v13.2c3.3-.4 6 0 8 1.6 2-1.6 4.7-2 8-1.6V4.9c-3.3-.4-6 0-8 1.6z"/><path d="M12 6.5v13.2" class="a"/></svg><span>Ressources</span></button>
+    <button class="ctab" onclick="clTab('documents',this)"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6.5 3.5h7.5l4.5 4.5v12.5h-12z"/><path d="M14 3.5V8h4.5"/><path d="M9.5 12.5h5M9.5 16h5" class="a"/></svg><span>Documents</span></button>
+    <button class="ctab" onclick="clTab('booking',this)"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.2"/><path d="M3.5 10h17M8 3.5v3M16 3.5v3"/><path d="M9 15l2 2 4-4" class="a"/></svg><span>Réserver</span></button>
+    <button class="ctab" onclick="clTab('contact',this)"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4.5 6.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H11l-4.5 3.5v-3.5h0a2 2 0 0 1-2-2z"/><path d="M8.5 9.5h7M8.5 12.5h4" class="a"/></svg><span>Contact</span></button>
+    <button class="ctab" onclick="clTab('profil',this)"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M5 20c0-3.9 3.1-6.5 7-6.5s7 2.6 7 6.5"/><path d="M10 20h4" class="a"/></svg><span>Mon profil</span></button>
   </div>
   <div class="cbody">
     <div class="tab-page active" id="clp-programme"><div id="cl-prog-view"></div></div>
