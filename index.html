@@ -851,6 +851,7 @@ a.contact-link:hover{text-decoration:underline;}
 .bk-chip-paid{background:rgba(34,197,94,.16);color:var(--success)}
 .bk-chip-due{background:rgba(192,21,42,.16);color:var(--red2)}
 .bk-chip-req{background:rgba(251,146,60,.18);color:var(--orange)}
+.bk-chip-bilan{background:rgba(192,21,42,.18);color:var(--red2)}
 .bk-chip-slot{background:rgba(34,197,94,.14);color:var(--success)}
 .formula-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 @media(max-width:640px){.formula-grid{grid-template-columns:1fr}}
@@ -8533,7 +8534,17 @@ function renderProspects(){
     el.innerHTML='<div class="empty"><div class="ei">🎯</div><div class="et">Aucun prospect</div><div class="es">Les demandes de bilan apparaîtront ici automatiquement</div></div>';
     return;
   }
-  el.innerHTML=prospects.map(p=>`
+  el.innerHTML=prospects.map(p0=>{
+    const p=Object.fromEntries(Object.entries(p0).map(([k,v])=>[k,typeof v==='string'?_escT(v):Array.isArray(v)?v.map(x=>typeof x==='string'?_escT(x):x):v]));
+    const bk=p0.bookingId?(S.bookings||[]).find(b=>b.id===p0.bookingId):null;
+    const st=bk?({pending:['⏳ À valider','var(--warn)'],confirmed:['✅ Confirmé','var(--success)'],rejected:['❌ Refusé','var(--red2)']}[bk.status]||[bk.status,'var(--muted)']):null;
+    const bilanBox=bk?`<div style="margin-top:6px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.25);border-radius:var(--rs);padding:7px 9px;font-size:11px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span>📅 <strong>Bilan réservé :</strong> ${_bkWhenFull(bk)}</span><span style="font-weight:800;color:${st[1]}">${st[0]}</span>
+        ${bk.status==='pending'?`<button class="btn btn-xs" style="background:var(--success);color:#000;border:none" onclick="confirmBooking('${bk.id}');renderProspects()">✅ Valider</button>`:''}
+      </div>`
+      :p0.callback?`<div style="margin-top:6px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.3);border-radius:var(--rs);padding:7px 9px;font-size:11px">📞 <strong>Souhaite être rappelé(e)</strong>${(p.callbackMoments||[]).length?' · '+p.callbackMoments.join(', '):''}</div>`
+      :(p0.bilanSlot?`<div style="margin-top:6px;font-size:11px;color:var(--muted)">📅 Créneau demandé : ${p0.bilanSlot.date} ${p0.bilanSlot.start} (réservation supprimée)</div>`:'');
+    return `
     <div class="prospect-card" id="pcard-${p.id}">
       <div class="prospect-avatar">${(p.prenom||'?')[0].toUpperCase()}</div>
       <div class="prospect-info">
@@ -8546,6 +8557,7 @@ function renderProspects(){
           ${p.email?`📧 <a href="mailto:${p.email}" style="color:var(--red2)">${p.email}</a>`:''} 
           ${p.tel?`📱 <a href="tel:${p.tel}" style="color:var(--red2)">${p.tel}</a>`:''}
         </div>
+        ${bilanBox}
         <div class="prospect-meta" style="margin-top:3px;color:var(--text)">🎯 ${p.objectif||'—'}</div>
         ${p.objectifDetail?`<div style="font-size:10px;color:var(--muted);margin-top:2px;font-style:italic">"${p.objectifDetail}"</div>`:''}
         ${p.niveau||p.frequence||p.anciennete?`<div class="prospect-tags" style="margin-top:6px">
@@ -8583,7 +8595,7 @@ function renderProspects(){
           <button class="btn btn-danger btn-xs" onclick="deleteProspect('${p.id}')">🗑</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;}).join('');
 }
 
 function setProspectStatus(id,status){
@@ -8596,7 +8608,8 @@ function setProspectStatus(id,status){
 function deleteProspect(id){
   confirm2('Supprimer ce prospect ?','',()=>{
     S.prospects=(S.prospects||[]).filter(p=>p.id!==id);
-    saveState();renderProspects();updateProspectBadge();
+    if(S.bookings) S.bookings=S.bookings.filter(b=>b.prospectId!==id);
+    saveState();renderProspects();updateProspectBadge();try{updateBookingBadge();}catch(e){}
   });
 }
 
@@ -8678,7 +8691,11 @@ function _packLeft(p){ return p.size-_packUsed(p); }
 function _clientPacks(cid){ return S.packs.filter(p=>p.clientId===cid&&p.status!=='cancelled').sort((a,b)=>a.createdAt-b.createdAt); }
 function _clientUsablePack(cid){ return _clientPacks(cid).find(p=>_packLeft(p)>0)||null; }
 function _bookingsAt(iso,hStr){ return S.bookings.filter(b=>b.date===iso&&b.start===hStr&&_bkActive(b)); }
+function _bkProspect(b){ return b&&b.prospectId?(S.prospects||[]).find(p=>p.id===b.prospectId)||null:null; }
+function _bkWho(b){ if(b.prospectId){const p=_bkProspect(b);return p?_escT(`${p.prenom} ${p.nom}`):'Prospect';} return _clientName(b.clientId); }
+function _bkFirst(b){ if(b.prospectId){const p=_bkProspect(b);return p?_escT(p.prenom):'Prospect';} return _clientFirst(b.clientId); }
 function _formulaBadge(b){
+  if(b.formula==='bilan') return `<span class="bk-chip bk-chip-bilan">🎯 Bilan offert · nouveau prospect</span>`;
   if(b.formula==='pack'){
     const p=S.packs.find(x=>x.id===b.packId);
     return `<span class="bk-chip bk-chip-pack">🎟 Carnet${p?' '+p.size:''}</span>`;
@@ -9015,7 +9032,7 @@ function _selCell(iso,hour,isPast){
   if(isPast) return `<td class="${slot?'tt-avail':'tt-empty'} tt-past"></td>`;
   if(!slot&&here.length){
     // Demande hors créneau : pas sélectionnable ici
-    return `<td class="tt-pending" style="opacity:.6" title="Demande d'un coaché"><div class="tt-cell-label">${here.map(b=>_clientFirst(b.clientId)).join(', ')}</div></td>`;
+    return `<td class="tt-pending" style="opacity:.6" title="Demande d'un coaché"><div class="tt-cell-label">${here.map(b=>_bkFirst(b)).join(', ')}</div></td>`;
   }
   const sel=_sel.has(key)?' tt-sel':'';
   if(slot){
@@ -9063,9 +9080,9 @@ function renderPlanning(){
         return `<td class="tt-empty" onclick="quickAddSlot('${iso}',${hour})" title="Cliquer pour ajouter ${hour}h–${hour+1}h"></td>`;
       }
       // Demande(s) hors créneau
-      if(confirmed.length) return `<td class="tt-confirmed${past}" title="Séance confirmée (demande)"><div class="tt-cell-label">${confirmed.map(b=>_clientFirst(b.clientId)).join(', ')}</div><div class="tt-cell-badge" style="background:var(--success);color:#000">✅</div></td>`;
-      if(pending.length) return `<td class="tt-pending tt-req${past}" onclick="_scrollToPending()" title="Demande de créneau à traiter"><div class="tt-cell-label">${pending.map(b=>_clientFirst(b.clientId)).join(', ')}</div><div class="tt-cell-badge" style="background:var(--warn);color:#000">📩 ${pending.length}</div></td>`;
-      return `<td class="tt-proposed${past}" onclick="_scrollToPending()" title="Autre créneau proposé, en attente du coaché"><div class="tt-cell-label">${proposed.map(b=>_clientFirst(b.clientId)).join(', ')}</div><div class="tt-cell-badge" style="background:var(--purple);color:#fff">💬</div></td>`;
+      if(confirmed.length) return `<td class="tt-confirmed${past}" title="Séance confirmée (demande)"><div class="tt-cell-label">${confirmed.map(b=>_bkFirst(b)).join(', ')}</div><div class="tt-cell-badge" style="background:var(--success);color:#000">✅</div></td>`;
+      if(pending.length) return `<td class="tt-pending tt-req${past}" onclick="_scrollToPending()" title="Demande de créneau à traiter"><div class="tt-cell-label">${pending.map(b=>_bkFirst(b)).join(', ')}</div><div class="tt-cell-badge" style="background:var(--warn);color:#000">📩 ${pending.length}</div></td>`;
+      return `<td class="tt-proposed${past}" onclick="_scrollToPending()" title="Autre créneau proposé, en attente du coaché"><div class="tt-cell-label">${proposed.map(b=>_bkFirst(b)).join(', ')}</div><div class="tt-cell-badge" style="background:var(--purple);color:#fff">💬</div></td>`;
     }
 
     let cls='tt-avail';
@@ -9075,7 +9092,7 @@ function renderPlanning(){
     const shortType=slot.type?slot.type.replace('Coaching ','').substring(0,6):'';
     let badge='';
     if(pending.length) badge=`<div class="tt-cell-badge" style="background:var(--warn);color:#000">⏳ ${pending.length}</div>`;
-    else if(confirmed.length) badge=`<div class="tt-cell-badge" style="background:var(--success);color:#000">✅ ${confirmed.map(b=>_clientFirst(b.clientId)).join(', ')}</div>`;
+    else if(confirmed.length) badge=`<div class="tt-cell-badge" style="background:var(--success);color:#000">✅ ${confirmed.map(b=>_bkFirst(b)).join(', ')}</div>`;
     return `<td class="${cls}${past}" onclick="openEditSlot('${slot.id}')" title="${slot.type}${slot.note?' · '+slot.note:''}&#10;Cliquer pour modifier">
       <div class="tt-cell-label">${shortType}</div>${badge}</td>`;
   });
@@ -9092,14 +9109,17 @@ function renderPlanning(){
     const isReq=b.kind==='request';
     ph+=`<div class="bk-row" style="border-left-color:${isReq?'var(--orange)':'var(--warn)'}">
       <div style="flex:1;min-width:180px">
-        <div style="font-weight:700;font-size:13px">${_clientName(b.clientId)} ${isReq?'<span class="bk-chip bk-chip-req">📩 Demande hors créneau</span>':'<span class="bk-chip bk-chip-slot">📅 Sur un créneau</span>'}</div>
+        <div style="font-weight:700;font-size:13px">${_bkWho(b)} ${isReq?'<span class="bk-chip bk-chip-req">📩 Demande hors créneau</span>':'<span class="bk-chip bk-chip-slot">📅 Sur un créneau</span>'}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">${_bkWhenFull(b)} · ${b.type||'Coaching salle'}</div>
         <div style="margin-top:4px">${_formulaBadge(b)}</div>
         ${b.note?`<div style="font-size:11px;margin-top:4px;font-style:italic">💬 « ${_escT(b.note)} »</div>`:''}
+        ${b.prospectId&&_bkProspect(b)?.tel?`<div style="font-size:11px;margin-top:4px">📱 ${_escT(_bkProspect(b).tel)}</div>`:''}
       </div>
       <div class="bk-actions">
         <button class="btn" style="background:var(--success);color:#000;border:none;font-size:11px;padding:6px 10px" onclick="confirmBooking('${b.id}')">✅ Valider</button>
-        <button class="btn" style="background:var(--purple);color:#fff;border:none;font-size:11px;padding:6px 10px" onclick="openProposeSlot('${b.id}')">🔁 Proposer</button>
+        ${b.prospectId
+          ?(_bkProspect(b)?.tel?`<a class="btn" style="background:var(--info);color:#000;border:none;font-size:11px;padding:6px 10px;text-decoration:none" href="tel:${_escT(_bkProspect(b).tel)}">📱 Appeler</a>`:'')
+          :`<button class="btn" style="background:var(--purple);color:#fff;border:none;font-size:11px;padding:6px 10px" onclick="openProposeSlot('${b.id}')">🔁 Proposer</button>`}
         <button class="btn" style="font-size:11px;padding:6px 10px" onclick="rejectBooking('${b.id}')">❌ Refuser</button>
       </div>
     </div>`;
@@ -9109,7 +9129,7 @@ function renderPlanning(){
     proposedB.forEach(b=>{
       ph+=`<div class="bk-row" style="border-left-color:var(--purple)">
         <div style="flex:1;min-width:180px">
-          <div style="font-weight:700;font-size:13px">${_clientName(b.clientId)}</div>
+          <div style="font-weight:700;font-size:13px">${_bkWho(b)}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px">Demandé : <s>${_bkWhen(b)}</s></div>
           <div style="font-size:12px;color:var(--purple);font-weight:700;margin-top:2px">➡️ Proposé : ${fmtDateFull(new Date(b.proposedDate+'T00:00:00'))} · ${b.proposedStart}–${b.proposedEnd}</div>
           <div style="margin-top:4px">${_formulaBadge(b)}</div>
@@ -9128,7 +9148,7 @@ function renderPlanning(){
   } else {
     $('confirmed-bookings-list').innerHTML=confirmedB.map(b=>`<div class="bk-row" style="border-left-color:var(--success)">
         <div style="flex:1;min-width:180px">
-          <div style="font-weight:700;font-size:13px">${_clientName(b.clientId)}</div>
+          <div style="font-weight:700;font-size:13px">${_bkWho(b)}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px">${_bkWhenFull(b)} · ${b.type||'Coaching salle'}</div>
           <div style="margin-top:4px">${_formulaBadge(b)} ${b.formula==='unit'?_paidBadge(b.paid):''}</div>
         </div>
@@ -9249,7 +9269,7 @@ function openProposeSlot(id){
   _ensureSlots();
   const b=S.bookings.find(x=>x.id===id); if(!b) return;
   _proposeId=id;
-  $('propose-info').innerHTML=`<strong>${_clientName(b.clientId)}</strong> a demandé <strong>${_bkWhenFull(b)}</strong>`;
+  $('propose-info').innerHTML=`<strong>${_bkWho(b)}</strong> a demandé <strong>${_bkWhenFull(b)}</strong>`;
   $('propose-date').value=b.date;
   $('propose-hour').value=Math.min(22,parseInt(b.start)+1);
   $('propose-msg').value='';

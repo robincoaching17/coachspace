@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="description" content="Robin Coaching France - Bilan sportif gratuit. Évalue tes objectifs et reçois un plan personnalisé.">
+<meta name="description" content="Robin Coaching France - Réserve ton bilan sportif gratuit en moins d'une minute.">
 <meta property="og:title" content="Bilan Gratuit — Robin Coaching France">
-<meta property="og:description" content="Évalue tes objectifs et reçois un plan d'entraînement personnalisé. Gratuit, sans engagement.">
+<meta property="og:description" content="Réserve ton bilan gratuit avec Robin, coach sportif à Aix-en-Provence. Gratuit, sans engagement.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Robin Coaching France">
 <meta name="theme-color" content="#0d0d0e">
@@ -73,6 +73,27 @@ select option{background:var(--s2);color:var(--text);}
 .sending-box{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);padding:40px;text-align:center;}
 .sending-spinner{width:40px;height:40px;border:3px solid var(--border);border-top:3px solid var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---- Réservation du bilan ---- */
+.bk-week{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.bk-week .btn{padding:8px 12px}
+.bk-week-lbl{font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;letter-spacing:.5px;text-align:center;flex:1}
+.bk-day{margin-bottom:10px}
+.bk-day-name{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
+.bk-hours{display:flex;flex-wrap:wrap;gap:6px}
+.bk-hour{padding:9px 14px;border-radius:var(--rs);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--success);font-weight:800;font-size:13px;cursor:pointer;transition:all .15s;font-family:'Nunito',sans-serif}
+.bk-hour:hover{background:rgba(34,197,94,.2)}
+.bk-hour.sel{background:var(--success);color:#000;border-color:var(--success);box-shadow:0 4px 14px rgba(34,197,94,.3)}
+.bk-empty{font-size:12px;color:var(--muted);text-align:center;padding:18px 10px;background:var(--s2);border-radius:var(--rs);border:1px dashed var(--border)}
+.bk-or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:11px;margin:14px 0;text-transform:uppercase;letter-spacing:1px}
+.bk-or::before,.bk-or::after{content:'';flex:1;height:1px;background:var(--border)}
+.bk-callback{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--rs);background:var(--s2);border:1px solid var(--border);cursor:pointer;transition:all .15s;font-size:13px;font-weight:700}
+.bk-callback.sel{border-color:var(--info);background:rgba(56,189,248,.1)}
+.bk-callback .box{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;color:transparent}
+.bk-callback.sel .box{background:var(--info);border-color:var(--info);color:#000}
+.bk-chosen{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:var(--rs);padding:10px 12px;font-size:13px;margin-top:12px;display:none}
+.bk-loading{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+.obj-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 </style>
 </head>
 <body>
@@ -84,183 +105,69 @@ select option{background:var(--s2);color:var(--text);}
       <div style="font-family:'Oswald',sans-serif;font-size:32px;font-weight:700;letter-spacing:3px;margin-bottom:4px">ROBIN <span style="color:var(--red)">COACHING</span></div>
       <div style="font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:16px">COACH SPORTIF · AIX-EN-PROVENCE</div>
       <div class="login-title">🎯 Bilan <span style="color:var(--red)">Gratuit</span></div>
-      <div style="font-size:12px;color:var(--muted)">Remplis ce formulaire et Robin te contactera sous 24h</div>
+      <div style="font-size:12px;color:var(--muted)">2 étapes, moins d'une minute : tes coordonnées, puis ton créneau</div>
     </div>
-    <div class="pr-progress">
-      <div class="pr-progress-fill" id="pr-progress-fill" style="width:25%"></div>
-    </div>
-    <div class="pr-steps-label" id="pr-steps-label">Étape 1/4 — Tes infos</div>
+    <div class="pr-progress"><div class="pr-progress-fill" id="pr-progress-fill" style="width:50%"></div></div>
+    <div class="pr-steps-label" id="pr-steps-label">Étape 1/2 — Tes coordonnées</div>
 
-    <div class="prospect-form" id="prospect-form-wrap">
+    <div class="prospect-form">
 
-      <!-- STEP 1 -->
+      <!-- ÉTAPE 1 : coordonnées -->
       <div class="pr-step active" id="pr-step-1">
-        <div class="pr-step-title">👤 Tes informations</div>
+        <div class="pr-step-title">👤 Tes coordonnées</div>
         <div class="prospect-row">
-          <div class="field"><label class="flabel">Prénom *</label><input type="text" id="pr-prenom" placeholder="Ton prénom"></div>
-          <div class="field"><label class="flabel">Nom *</label><input type="text" id="pr-nom" placeholder="Ton nom"></div>
+          <div class="field"><label class="flabel">Prénom *</label><input type="text" id="pr-prenom" placeholder="Ton prénom" autocomplete="given-name"></div>
+          <div class="field"><label class="flabel">Nom *</label><input type="text" id="pr-nom" placeholder="Ton nom" autocomplete="family-name"></div>
         </div>
         <div class="prospect-row">
-          <div class="field"><label class="flabel">Âge</label><input type="number" id="pr-age" placeholder="25" min="14" max="80"></div>
-          <div class="field"><label class="flabel">Sexe</label><select id="pr-sexe"><option value="">—</option><option>Homme</option><option>Femme</option></select></div>
-        </div>
-        <div class="prospect-row">
-          <div class="field"><label class="flabel">Taille (cm)</label><input type="number" id="pr-taille" placeholder="175" min="100" max="230"></div>
-          <div class="field"><label class="flabel">Poids (kg)</label><input type="number" id="pr-poids" placeholder="70" min="30" max="200"></div>
-        </div>
-        <div class="prospect-row">
-          <div class="field"><label class="flabel">Email *</label><input type="email" id="pr-email" placeholder="ton@email.com"></div>
-          <div class="field"><label class="flabel">Téléphone</label><input type="tel" id="pr-tel" placeholder="06 00 00 00 00"></div>
+          <div class="field"><label class="flabel">Téléphone *</label><input type="tel" id="pr-tel" placeholder="06 00 00 00 00" autocomplete="tel"></div>
+          <div class="field"><label class="flabel">Email</label><input type="email" id="pr-email" placeholder="ton@email.com" autocomplete="email"></div>
         </div>
         <div class="field">
-          <label class="flabel">Objectif principal *</label>
-          <select id="pr-objectif">
-            <option value="">— Choisir —</option>
-            <option>💪 Prise de masse</option>
-            <option>🔥 Perte de poids / Rééquilibrage</option>
-            <option>⚡ Renforcement musculaire</option>
-            <option>🏃 Améliorer mon endurance</option>
-            <option>🧘 Mobilité & bien-être</option>
-            <option>🏆 Performance sportive</option>
-            <option>🩹 Réhabilitation / Retour de blessure</option>
-            <option>🎯 Autre</option>
-          </select>
+          <label class="flabel">Ton objectif (optionnel)</label>
+          <div class="obj-grid" id="pr-obj">
+            <div class="prospect-check" onclick="prRadio(this,'pr-obj')"><input type="radio" value="💪 Prise de masse">💪 Prise de masse</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-obj')"><input type="radio" value="🔥 Perte de poids">🔥 Perte de poids</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-obj')"><input type="radio" value="⚡ Renforcement">⚡ Renforcement</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-obj')"><input type="radio" value="🏃 Forme & endurance">🏃 Forme & endurance</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-obj')"><input type="radio" value="🩹 Reprise / blessure">🩹 Reprise / blessure</div>
+            <div class="prospect-check" onclick="prRadio(this,'pr-obj')"><input type="radio" value="🎯 Autre">🎯 Autre</div>
+          </div>
         </div>
-        <div class="field"><label class="flabel">Précise ton objectif</label><textarea id="pr-obj-detail" rows="2" placeholder="Ex: perdre 5kg avant l'été, reprendre après une blessure au genou..."></textarea></div>
-        <div class="pr-nav"><div></div><button class="btn btn-red" onclick="prStep(2)">Suivant →</button></div>
+        <div class="pr-nav"><button class="btn btn-red" onclick="prStep(2)">Choisir mon créneau →</button></div>
       </div>
 
-      <!-- STEP 2 -->
+      <!-- ÉTAPE 2 : créneau -->
       <div class="pr-step" id="pr-step-2">
-        <div class="pr-step-title">🏋️ Ton profil sportif</div>
-        <div class="field">
-          <label class="flabel">Niveau d'expérience en musculation</label>
-          <div class="prospect-check-grid" id="pr-level">
-            <div class="prospect-check" onclick="prRadio(this,'pr-level')"><input type="radio" name="pr-level" value="Débutant">🌱 Débutant</div>
-            <div class="prospect-check" onclick="prRadio(this,'pr-level')"><input type="radio" name="pr-level" value="Intermédiaire">⚡ Intermédiaire</div>
-            <div class="prospect-check" onclick="prRadio(this,'pr-level')"><input type="radio" name="pr-level" value="Avancé">🔥 Avancé</div>
-            <div class="prospect-check" onclick="prRadio(this,'pr-level')"><input type="radio" name="pr-level" value="Jamais pratiqué">🆕 Jamais pratiqué</div>
-          </div>
+        <div class="pr-step-title">📅 Réserve ton bilan</div>
+        <div class="bk-week">
+          <button class="btn btn-ghost" onclick="bkWeek(-1)" id="bk-prev">◀</button>
+          <div class="bk-week-lbl" id="bk-week-lbl"></div>
+          <button class="btn btn-ghost" onclick="bkWeek(1)">▶</button>
         </div>
-        <div class="field">
-          <label class="flabel">Fréquence d'entraînement actuelle</label>
-          <select id="pr-freq"><option value="">— Choisir —</option><option>Je ne m'entraîne pas actuellement</option><option>1-2 fois / semaine</option><option>3-4 fois / semaine</option><option>5+ fois / semaine</option></select>
-        </div>
-        <div class="field">
-          <label class="flabel">Depuis combien de temps tu t'entraînes ?</label>
-          <select id="pr-anciennete"><option value="">— Choisir —</option><option>Je débute</option><option>Moins de 6 mois</option><option>6 mois - 1 an</option><option>1-3 ans</option><option>3+ ans</option></select>
-        </div>
-        <div class="field"><label class="flabel">Autres sports / activités pratiqués</label><input type="text" id="pr-sports" placeholder="Ex: foot, natation, course à pied, arts martiaux..."></div>
-        <div class="field">
-          <label class="flabel">Où tu t'entraînes ?</label>
-          <div class="prospect-check-grid" id="pr-lieu">
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Salle de sport">🏢 Salle de sport</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="À domicile">🏠 À domicile</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="En extérieur">🌳 En extérieur</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Fitness Park">🔴 Fitness Park</div>
-          </div>
-        </div>
-        <div class="field">
-          <label class="flabel">Équipement accessible</label>
-          <div class="prospect-check-grid" id="pr-equip">
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Haltères">🏋️ Haltères</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Barres">📏 Barres</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Machines guidées">⚙️ Machines guidées</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Poulies">🔗 Poulies</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Élastiques">〰️ Élastiques</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Poids du corps uniquement">🤸 Poids du corps</div>
-          </div>
-        </div>
-        <div class="pr-nav"><button class="btn btn-ghost" onclick="prStep(1)">← Retour</button><button class="btn btn-red" onclick="prStep(3)">Suivant →</button></div>
-      </div>
+        <div id="bk-slots"><div class="bk-loading">Chargement des disponibilités…</div></div>
+        <div class="bk-chosen" id="bk-chosen"></div>
 
-      <!-- STEP 3 -->
-      <div class="pr-step" id="pr-step-3">
-        <div class="pr-step-title">🩺 Santé & antécédents</div>
-        <div class="field">
-          <label class="flabel">As-tu des blessures actuelles ou passées ?</label>
-          <div class="prospect-check-grid" id="pr-blessures">
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Aucune blessure">✅ Aucune</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Épaule">🦴 Épaule</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Genou">🦿 Genou</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Dos / Lombaires">🔙 Dos / Lombaires</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Cheville / Pied">🦶 Cheville / Pied</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Poignet / Coude">💪 Poignet / Coude</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Hanche">🦴 Hanche</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Autre">⚠️ Autre</div>
+        <div class="bk-or">ou</div>
+        <div class="bk-callback" id="bk-callback" onclick="bkToggleCallback()">
+          <div class="box">✓</div>
+          <div>📞 Aucun créneau ne me convient, je veux être rappelé(e) par Robin</div>
+        </div>
+        <div id="bk-callback-more" style="display:none;margin-top:10px">
+          <label class="flabel">Quand te rappeler ? (optionnel)</label>
+          <div class="prospect-check-grid" id="pr-moments">
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Matin">🌅 Matin</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Midi">🥪 Midi</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Après-midi">☀️ Après-midi</div>
+            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Soir">🌙 Soir</div>
           </div>
         </div>
-        <div class="field"><label class="flabel">Précisions sur tes blessures / pathologies</label><textarea id="pr-blessure-detail" rows="2" placeholder="Ex: rupture LCA genou droit en 2024, tendinite épaule gauche..."></textarea></div>
-        <div class="field">
-          <label class="flabel">Suivi médical en cours ?</label>
-          <div class="prospect-check-grid" id="pr-medical">
-            <div class="prospect-check" onclick="prRadio(this,'pr-medical')"><input type="radio" name="pr-medical" value="Non">Non</div>
-            <div class="prospect-check" onclick="prRadio(this,'pr-medical')"><input type="radio" name="pr-medical" value="Kiné">🩺 Kiné</div>
-            <div class="prospect-check" onclick="prRadio(this,'pr-medical')"><input type="radio" name="pr-medical" value="Ostéo">🦴 Ostéo</div>
-            <div class="prospect-check" onclick="prRadio(this,'pr-medical')"><input type="radio" name="pr-medical" value="Médecin du sport">⚕️ Médecin du sport</div>
-          </div>
-        </div>
-        <div class="field"><label class="flabel">Douleurs ou limitations physiques ?</label><textarea id="pr-douleurs" rows="2" placeholder="Ex: douleur au genou en squat profond, mobilité limitée des épaules..."></textarea></div>
-        <div class="pr-nav"><button class="btn btn-ghost" onclick="prStep(2)">← Retour</button><button class="btn btn-red" onclick="prStep(4)">Suivant →</button></div>
-      </div>
+        <div class="field" style="margin-top:12px"><label class="flabel">Un message pour Robin ? (optionnel)</label><textarea id="pr-message" rows="2" placeholder="Ex : reprise après une blessure au genou, dispo plutôt le soir..."></textarea></div>
 
-      <!-- STEP 4 -->
-      <div class="pr-step" id="pr-step-4">
-        <div class="pr-step-title">🗓 Mode de vie & disponibilités</div>
-        <div class="field">
-          <label class="flabel">Combien de séances par semaine tu peux faire ?</label>
-          <select id="pr-dispo"><option value="">— Choisir —</option><option>1-2 séances</option><option>3 séances</option><option>4 séances</option><option>5+ séances</option></select>
+        <div class="pr-nav">
+          <button class="btn btn-ghost" onclick="prStep(1)">← Retour</button>
+          <button class="btn btn-red" style="flex:2" id="bk-submit" onclick="submitProspect()">🎯 Réserver mon bilan</button>
         </div>
-        <div class="field">
-          <label class="flabel">Jours de préférence</label>
-          <div class="prospect-check-grid" id="pr-jours">
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Lundi">Lundi</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Mardi">Mardi</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Mercredi">Mercredi</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Jeudi">Jeudi</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Vendredi">Vendredi</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Samedi">Samedi</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Dimanche">Dimanche</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Flexible">🔄 Flexible</div>
-          </div>
-        </div>
-        <div class="field">
-          <label class="flabel">Durée de séance souhaitée</label>
-          <select id="pr-duree-seance"><option value="">— Choisir —</option><option>30-45 min</option><option>45 min - 1h</option><option>1h - 1h15</option><option>1h15+</option></select>
-        </div>
-        <div class="field">
-          <label class="flabel">Alimentation actuelle</label>
-          <select id="pr-alim"><option value="">— Choisir —</option><option>Aucun suivi, je mange comme je veux</option><option>J'essaie de faire attention</option><option>Je suis un plan alimentaire</option><option>Régime spécifique (végan, sans gluten...)</option></select>
-        </div>
-        <div class="field">
-          <label class="flabel">Qualité du sommeil</label>
-          <div class="prospect-check-grid" id="pr-sommeil">
-            <div class="prospect-check" onclick="prRadio(this,'pr-sommeil')"><input type="radio" name="pr-sommeil" value="Bon">😴 Bon (7-8h)</div>
-            <div class="prospect-check" onclick="prRadio(this,'pr-sommeil')"><input type="radio" name="pr-sommeil" value="Moyen">😐 Moyen (5-7h)</div>
-            <div class="prospect-check" onclick="prRadio(this,'pr-sommeil')"><input type="radio" name="pr-sommeil" value="Mauvais">😵 Mauvais (-5h)</div>
-          </div>
-        </div>
-        <div class="field">
-          <label class="flabel">Niveau de stress au quotidien</label>
-          <div class="prospect-check-grid" id="pr-stress">
-            <div class="prospect-check" onclick="prRadio(this,'pr-stress')"><input type="radio" name="pr-stress" value="Faible">😊 Faible</div>
-            <div class="prospect-check" onclick="prRadio(this,'pr-stress')"><input type="radio" name="pr-stress" value="Modéré">😐 Modéré</div>
-            <div class="prospect-check" onclick="prRadio(this,'pr-stress')"><input type="radio" name="pr-stress" value="Élevé">😰 Élevé</div>
-          </div>
-        </div>
-        <div class="field">
-          <label class="flabel">Ce que tu souhaites</label>
-          <div class="prospect-check-grid" id="pr-wishes">
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Bilan gratuit">🔍 Bilan gratuit</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Programme personnalisé">📋 Programme perso</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Séances coachées">🏋️ Séances coachées</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Suivi nutrition">🥗 Suivi nutrition</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Suivi en ligne">📱 Suivi en ligne</div>
-            <div class="prospect-check" onclick="toggleCheck(this)"><input type="checkbox" value="Pack complet">⭐ Pack complet</div>
-          </div>
-        </div>
-        <div class="field"><label class="flabel">Quelque chose à ajouter ?</label><textarea id="pr-message" rows="3" placeholder="Questions, contraintes, motivation, tout ce qui te semble important..."></textarea></div>
-        <div class="pr-nav"><button class="btn btn-ghost" onclick="prStep(3)">← Retour</button><button class="btn btn-red" style="flex:2" onclick="submitProspect()">🎯 Envoyer ma demande</button></div>
       </div>
     </div>
   </div>
@@ -276,20 +183,20 @@ select option{background:var(--s2);color:var(--text);}
 <div id="confirm-screen" class="screen">
   <div class="login-box" style="text-align:center">
     <div style="font-size:56px;margin-bottom:16px">🎉</div>
-    <div class="login-title" style="font-size:22px">Demande envoyée !</div>
-    <div style="font-size:13px;color:var(--muted);margin:12px 0 16px;line-height:1.6">Robin a bien reçu ta demande de bilan.<br>Il te contactera sous <strong style="color:var(--red)">24h</strong> par email ou téléphone.</div>
+    <div class="login-title" style="font-size:22px" id="cf-title">Demande envoyée !</div>
+    <div style="font-size:13px;color:var(--muted);margin:12px 0 16px;line-height:1.7" id="cf-text"></div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:14px;text-align:left;font-size:12px;line-height:1.8">
-      <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">EN ATTENDANT, TU PEUX :</div>
-      <div>✅ Préparer tes questions pour le bilan</div>
-      <div>✅ Noter tes objectifs précis et ton planning</div>
-      <div>✅ Suivre Robin sur Instagram pour du contenu gratuit</div>
+      <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">POUR TON BILAN, PENSE À :</div>
+      <div>✅ Venir en tenue de sport</div>
+      <div>✅ Noter tes objectifs et tes questions</div>
+      <div>✅ Signaler toute blessure ou douleur</div>
     </div>
     <div style="background:var(--red-dim);border:1px solid rgba(192,21,42,.2);border-radius:var(--rs);padding:12px;margin-bottom:20px;font-size:12px;color:var(--muted)">
       📧 robin.coaching@gmail.com<br>
       📱 07 70 00 19 71<br>
       📸 <a href="https://www.instagram.com/robin.coachingfrance" target="_blank" style="color:var(--red2)">@robin.coachingfrance</a>
     </div>
-    <button class="btn btn-red" style="width:100%;justify-content:center" onclick="resetForm()">🎯 Nouveau bilan</button>
+    <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="resetForm()">← Revenir au formulaire</button>
   </div>
 </div>
 
@@ -301,12 +208,11 @@ select option{background:var(--s2);color:var(--text);}
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, getDoc, runTransaction } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyA9vzaAzBrfjIV6YPR49Ue0lUX8jXaXS2k",
@@ -316,164 +222,209 @@ const firebaseConfig = {
   messagingSenderId: "939907979966",
   appId: "1:939907979966:web:316daab1c6990a4c289cef"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const DATA_REF = doc(db, 'coachspace', 'data');
 
-window._submitToFirebase = async function(prospect) {
-  // Strategy: read current state, add prospect to prospects array, write back
-  try {
-    const snap = await getDoc(DATA_REF);
-    if (snap.exists()) {
-      const data = snap.data();
-      const state = JSON.parse(data.state || '{}');
-      if (!state.prospects) state.prospects = [];
+// Lecture des créneaux disponibles
+window._loadSlots = async function(){
+  const snap = await getDoc(DATA_REF);
+  const state = snap.exists() ? JSON.parse(snap.data().state || '{}') : {};
+  return { slots: state.slots || [], bookings: state.bookings || [] };
+};
+
+// Envoi atomique : le créneau est revérifié au moment de l'écriture
+window._submitBilan = async function(prospect, slotId){
+  try{
+    return await runTransaction(db, async tx => {
+      const snap = await tx.get(DATA_REF);
+      const state = snap.exists() ? JSON.parse(snap.data().state || '{}') : {};
+      if(!state.prospects) state.prospects = [];
+      if(!state.bookings) state.bookings = [];
+      if(slotId){
+        const slot = (state.slots || []).find(s => s.id === slotId);
+        if(!slot || !window._slotFree(slot, state.bookings)) return { ok:false, reason:'taken' };
+        const bk = { id:'bk'+Date.now(), slotId, kind:'slot', clientId:null, prospectId:prospect.id,
+          date:slot.date, start:slot.start, end:slot.end, type:'Bilan', status:'pending',
+          formula:'bilan', price:0, paid:false, createdAt:Date.now(), note:prospect.message||'' };
+        state.bookings.push(bk);
+        prospect.bookingId = bk.id;
+        prospect.bilanSlot = { date:slot.date, start:slot.start, end:slot.end };
+      }
       state.prospects.unshift(prospect);
-      await setDoc(DATA_REF, { state: JSON.stringify(state), updatedAt: Date.now() });
-      return true;
-    } else {
-      // No state yet, create minimal one
-      const state = { prospects: [prospect] };
-      await setDoc(DATA_REF, { state: JSON.stringify(state), updatedAt: Date.now() });
-      return true;
-    }
-  } catch (e) {
+      tx.set(DATA_REF, { state: JSON.stringify(state), updatedAt: Date.now() });
+      return { ok:true };
+    });
+  }catch(e){
     console.error('Firebase error:', e);
-    return false;
+    return { ok:false, reason:'error' };
   }
 };
+window._fbReady = true;
+document.dispatchEvent(new Event('fb-ready'));
 </script>
 
 <script>
 const $ = id => document.getElementById(id);
+let bkWeekOffset = 0, bkData = null, bkSlotId = null, bkCallback = false;
 
-function showScreen(id) {
+function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = $(id);
-  if (el) { el.classList.add('active'); window.scrollTo(0, 0); }
+  const el = $(id); if(el){ el.classList.add('active'); window.scrollTo(0,0); }
 }
-
-function showToast(msg) {
-  const t = $('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+function showToast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
 }
-
-function toggleCheck(el) { el.classList.toggle('sel'); }
-
-function prRadio(el, groupId) {
-  const group = $(groupId);
-  if (group) group.querySelectorAll('.prospect-check').forEach(c => c.classList.remove('sel'));
-  el.classList.add('sel');
+function toggleCheck(el){ el.classList.toggle('sel'); }
+function prRadio(el, groupId){
+  const group = $(groupId); const was = el.classList.contains('sel');
+  if(group) group.querySelectorAll('.prospect-check').forEach(c => c.classList.remove('sel'));
+  if(!was) el.classList.add('sel');
 }
+function getCheckedValues(id){
+  return [...document.querySelectorAll(`#${id} .prospect-check.sel input`)].map(i => i.value);
+}
+function getRadioValue(id){
+  const s = document.querySelector(`#${id} .prospect-check.sel input`); return s ? s.value : '';
+}
+const esc = t => String(t||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const z = n => String(n).padStart(2,'0');
+const iso = d => `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
+const fmtLong = s => new Date(s+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
 
-function prStep(step) {
-  if (step > 1) {
-    const prenom = $('pr-prenom')?.value.trim();
-    const nom = $('pr-nom')?.value.trim();
-    const email = $('pr-email')?.value.trim();
-    const objectif = $('pr-objectif')?.value;
-    if (!prenom || !nom) { showToast('Prénom et nom requis !'); return; }
-    if (!email) { showToast('Email requis !'); return; }
-    if (!objectif) { showToast('Choisis un objectif !'); return; }
+// Un créneau est libre s'il est à venir et n'a aucune réservation active
+window._slotFree = function(slot, bookings){
+  const now = new Date(), today = iso(now);
+  if(slot.date < today) return false;
+  if(slot.date === today && parseInt(slot.start) <= now.getHours()) return false;
+  const active = (bookings||[]).filter(b => b.date === slot.date && b.start === slot.start && ['pending','confirmed','proposed'].includes(b.status));
+  return active.length < (slot.capacity || 1);
+};
+
+function prStep(step){
+  if(step === 2){
+    const prenom = $('pr-prenom').value.trim(), nom = $('pr-nom').value.trim(), tel = $('pr-tel').value.trim();
+    const email = $('pr-email').value.trim();
+    if(!prenom || !nom){ showToast('Prénom et nom requis !'); return; }
+    if(tel.replace(/\D/g,'').length < 9){ showToast('Indique un numéro de téléphone valide'); return; }
+    if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ showToast('Email invalide'); return; }
   }
   document.querySelectorAll('.pr-step').forEach(s => s.classList.remove('active'));
-  const target = $(`pr-step-${step}`);
-  if (target) { target.classList.add('active'); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-  const fill = $('pr-progress-fill');
-  if (fill) fill.style.width = `${step * 25}%`;
-  const labels = ['Tes infos', 'Profil sportif', 'Santé & antécédents', 'Mode de vie & disponibilités'];
-  const lbl = $('pr-steps-label');
-  if (lbl) lbl.textContent = `Étape ${step}/4 — ${labels[step - 1]}`;
+  $(`pr-step-${step}`).classList.add('active');
+  $('pr-progress-fill').style.width = `${step*50}%`;
+  $('pr-steps-label').textContent = step === 1 ? 'Étape 1/2 — Tes coordonnées' : 'Étape 2/2 — Ton créneau';
+  window.scrollTo({ top:0, behavior:'smooth' });
+  if(step === 2) loadSlots();
 }
 
-function getCheckedValues(containerId) {
-  return [...document.querySelectorAll(`#${containerId} .prospect-check.sel`)].map(el => {
-    const inp = el.querySelector('input');
-    return inp ? inp.value : el.textContent.trim();
-  });
+async function loadSlots(){
+  if(!window._fbReady){ document.addEventListener('fb-ready', loadSlots, { once:true }); return; }
+  $('bk-slots').innerHTML = '<div class="bk-loading">Chargement des disponibilités…</div>';
+  try{
+    bkData = await window._loadSlots();
+    // Ouvre directement sur la première semaine qui a des créneaux libres
+    if(bkWeekOffset === 0){
+      for(let w=0; w<8; w++){ if(freeSlotsOfWeek(w).length){ bkWeekOffset = w; break; } }
+    }
+  }catch(e){ bkData = { slots:[], bookings:[] }; }
+  renderSlots();
 }
 
-function getRadioValue(groupId) {
-  const sel = document.querySelector(`#${groupId} .prospect-check.sel input`);
-  return sel ? sel.value : '';
+function weekDays(offset){
+  const now = new Date(); now.setHours(0,0,0,0);
+  const day = now.getDay(); const mon = new Date(now);
+  mon.setDate(now.getDate() - day + (day===0 ? -6 : 1) + offset*7);
+  return [...Array(7)].map((_,i) => { const d = new Date(mon); d.setDate(mon.getDate()+i); return d; });
 }
-
-async function submitProspect() {
-  const prenom = $('pr-prenom')?.value.trim();
-  const nom = $('pr-nom')?.value.trim();
-  const email = $('pr-email')?.value.trim();
-  const objectif = $('pr-objectif')?.value;
-  if (!prenom || !nom) { showToast('Prénom et nom requis !'); prStep(1); return; }
-  if (!email) { showToast('Email requis !'); prStep(1); return; }
-  if (!objectif) { showToast('Choisis un objectif !'); prStep(1); return; }
-
-  const prospect = {
-    id: 'p' + Date.now(),
-    prenom, nom,
-    age: $('pr-age')?.value || '',
-    sexe: $('pr-sexe')?.value || '',
-    taille: $('pr-taille')?.value || '',
-    poids: $('pr-poids')?.value || '',
-    email,
-    tel: $('pr-tel')?.value.trim() || '',
-    objectif,
-    objectifDetail: $('pr-obj-detail')?.value.trim() || '',
-    niveau: getRadioValue('pr-level'),
-    frequence: $('pr-freq')?.value || '',
-    anciennete: $('pr-anciennete')?.value || '',
-    sports: $('pr-sports')?.value.trim() || '',
-    lieu: getCheckedValues('pr-lieu'),
-    equipement: getCheckedValues('pr-equip'),
-    blessures: getCheckedValues('pr-blessures'),
-    blessureDetail: $('pr-blessure-detail')?.value.trim() || '',
-    medical: getRadioValue('pr-medical'),
-    douleurs: $('pr-douleurs')?.value.trim() || '',
-    dispo: $('pr-dispo')?.value || '',
-    jours: getCheckedValues('pr-jours'),
-    dureeSeance: $('pr-duree-seance')?.value || '',
-    alimentation: $('pr-alim')?.value || '',
-    sommeil: getRadioValue('pr-sommeil'),
-    stress: getRadioValue('pr-stress'),
-    wishes: getCheckedValues('pr-wishes'),
-    message: $('pr-message')?.value.trim() || '',
-    date: new Date().toLocaleDateString('fr-FR'),
-    status: 'nouveau',
-    source: 'bilan-standalone'
-  };
-
-  // Show sending overlay
-  $('sending-overlay').classList.add('active');
-
-  const ok = await window._submitToFirebase(prospect);
-
-  $('sending-overlay').classList.remove('active');
-
-  if (ok) {
-    // Reset form fields
-    ['pr-prenom','pr-nom','pr-age','pr-poids','pr-taille','pr-email','pr-tel','pr-obj-detail','pr-sports','pr-blessure-detail','pr-douleurs','pr-message'].forEach(id => { const el = $(id); if (el) el.value = ''; });
-    ['pr-objectif','pr-sexe','pr-freq','pr-anciennete','pr-dispo','pr-duree-seance','pr-alim'].forEach(id => { const el = $(id); if (el) el.value = ''; });
-    document.querySelectorAll('.prospect-check').forEach(el => el.classList.remove('sel'));
-    prStep(1);
-    showScreen('confirm-screen');
-  } else {
-    showToast('Erreur d\'envoi. Réessaie !');
+function freeSlotsOfWeek(offset){
+  if(!bkData) return [];
+  const days = weekDays(offset).map(iso);
+  return bkData.slots.filter(s => days.includes(s.date) && window._slotFree(s, bkData.bookings))
+    .sort((a,b) => (a.date+a.start).localeCompare(b.date+b.start));
+}
+function bkWeek(dir){
+  bkWeekOffset = Math.max(0, bkWeekOffset + dir);
+  renderSlots();
+}
+function renderSlots(){
+  const days = weekDays(bkWeekOffset);
+  const f = d => d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+  $('bk-week-lbl').textContent = `${f(days[0])} — ${f(days[6])}`;
+  $('bk-prev').style.visibility = bkWeekOffset > 0 ? 'visible' : 'hidden';
+  const free = freeSlotsOfWeek(bkWeekOffset);
+  if(!free.length){
+    $('bk-slots').innerHTML = `<div class="bk-empty">Pas de créneau disponible cette semaine.<br>Regarde la semaine suivante ▶ ou demande à être rappelé(e) 👇</div>`;
+    return;
   }
+  const byDay = {};
+  free.forEach(s => { (byDay[s.date] = byDay[s.date] || []).push(s); });
+  $('bk-slots').innerHTML = Object.keys(byDay).map(d => `
+    <div class="bk-day">
+      <div class="bk-day-name">${fmtLong(d)}</div>
+      <div class="bk-hours">${byDay[d].map(s => `<button class="bk-hour${s.id===bkSlotId?' sel':''}" onclick="bkPick('${s.id}')">${parseInt(s.start)}h</button>`).join('')}</div>
+    </div>`).join('');
+}
+function bkPick(id){
+  bkSlotId = bkSlotId === id ? null : id;
+  if(bkSlotId && bkCallback) bkToggleCallback();
+  renderSlots(); updateChosen();
+}
+function bkToggleCallback(){
+  bkCallback = !bkCallback;
+  $('bk-callback').classList.toggle('sel', bkCallback);
+  $('bk-callback-more').style.display = bkCallback ? '' : 'none';
+  if(bkCallback && bkSlotId){ bkSlotId = null; renderSlots(); }
+  updateChosen();
+}
+function updateChosen(){
+  const el = $('bk-chosen');
+  const s = bkSlotId && bkData ? bkData.slots.find(x => x.id === bkSlotId) : null;
+  if(s){
+    el.style.display = 'block';
+    el.innerHTML = `✅ Ton bilan : <strong>${fmtLong(s.date)} à ${parseInt(s.start)}h</strong>`;
+  } else el.style.display = 'none';
+  $('bk-submit').textContent = bkCallback ? '📞 Demander à être rappelé(e)' : '🎯 Réserver mon bilan';
 }
 
-function resetForm() {
-  showScreen('form-screen');
+async function submitProspect(){
+  if(!bkSlotId && !bkCallback){ showToast('Choisis un créneau ou demande à être rappelé(e)'); return; }
+  const prenom = $('pr-prenom').value.trim(), nom = $('pr-nom').value.trim();
+  const prospect = {
+    id: 'p' + Date.now(), prenom, nom,
+    tel: $('pr-tel').value.trim(), email: $('pr-email').value.trim(),
+    objectif: getRadioValue('pr-obj'),
+    message: $('pr-message').value.trim(),
+    callback: bkCallback,
+    callbackMoments: bkCallback ? getCheckedValues('pr-moments') : [],
+    date: new Date().toLocaleDateString('fr-FR'),
+    status: 'nouveau', source: 'bilan-standalone'
+  };
+  $('sending-overlay').classList.add('active');
+  const res = await window._submitBilan(prospect, bkCallback ? null : bkSlotId);
+  $('sending-overlay').classList.remove('active');
+  if(!res.ok){
+    if(res.reason === 'taken'){
+      showToast('Oups, ce créneau vient d\'être pris. Choisis-en un autre !');
+      bkSlotId = null; await loadSlots(); updateChosen();
+    } else showToast('Erreur d\'envoi. Réessaie !');
+    return;
+  }
+  if(bkCallback){
+    $('cf-title').textContent = 'Demande envoyée !';
+    const m = prospect.callbackMoments.length ? ` (${prospect.callbackMoments.join(', ').toLowerCase()})` : '';
+    $('cf-text').innerHTML = `Merci ${esc(prenom)} ! Robin te rappelle au <strong style="color:var(--red2)">${esc(prospect.tel)}</strong>${esc(m)} pour fixer ton bilan ensemble.`;
+  } else {
+    $('cf-title').textContent = 'Bilan réservé !';
+    $('cf-text').innerHTML = `Merci ${esc(prenom)} ! Ta demande de bilan pour le <strong style="color:var(--red2)">${fmtLong(prospect.bilanSlot.date)} à ${parseInt(prospect.bilanSlot.start)}h</strong> est envoyée.<br>Robin la confirme rapidement par téléphone ou SMS.`;
+  }
+  ['pr-prenom','pr-nom','pr-tel','pr-email','pr-message'].forEach(id => $(id).value = '');
+  document.querySelectorAll('.prospect-check').forEach(el => el.classList.remove('sel'));
+  bkSlotId = null; if(bkCallback) bkToggleCallback(); bkWeekOffset = 0;
+  prStep(1);
+  showScreen('confirm-screen');
 }
-
-// Make functions available globally
-window.prStep = prStep;
-window.prRadio = prRadio;
-window.toggleCheck = toggleCheck;
-window.submitProspect = submitProspect;
-window.resetForm = resetForm;
-window.showScreen = showScreen;
+function resetForm(){ showScreen('form-screen'); }
 </script>
 </body>
 </html>
