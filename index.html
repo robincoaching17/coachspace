@@ -2314,18 +2314,38 @@ function renderStats(){
   $('st-l').textContent=tl;
 }
 
+// Avancement d'un programme : séances effectuées / passées / total
+function _progCompletion(p){
+  const d=(S.doneSeances||{})[p.clientId]||{};
+  let total=0,done=0,skipped=0;
+  const mark=v=>{ if(!v) return; if(v==='passée') skipped++; else done++; };
+  if(p.weeks&&p.weeks.length){
+    p.weeks.forEach((w,wi)=>(w.seances||[]).forEach((_,si)=>{ total++; mark(d[`${p.id}_w${wi}_s${si}`]||d[`${p.id}-w${wi}_s${si}`]); }));
+  } else if(p.seances&&p.seances.length){
+    p.seances.forEach((_,si)=>{ total++; mark(d[`${p.id}_wx_s${si}`]||d[`${p.id}_wundefined_s${si}`]); });
+  }
+  return {total,done,skipped};
+}
+function dismissProgAlert(id){
+  const p=S.programmes.find(x=>x.id===id); if(!p) return;
+  p.completionSeen=_progCompletion(p).total; saveState(); renderDashboard();
+}
 function renderDashboard(){
   renderStats();
-  // Alerts
-  const now=Date.now();
+  // Alertes : uniquement quand TOUTES les séances d'un programme sont effectuées ou passées
   let alertHtml='';
   S.programmes.forEach(p=>{
-    if(!p.startDate)return;
-    const end=new Date(p.startDate);end.setDate(end.getDate()+durDays(p.dur));
-    if(now>end.getTime()){
-      const c=S.clients.find(x=>x.id===p.clientId);
-      alertHtml+=`<div class="alert">🔔 <strong>${c?.prenom||'?'} ${c?.nom||''}</strong> — Programme <strong>"${p.name}"</strong> terminé (${p.dur}). Pense à créer un nouveau programme !</div>`;
-    }
+    const st=_progCompletion(p);
+    if(p.completionSeen&&p.completionSeen===st.total) return;
+    if(!st.total||st.done+st.skipped<st.total) return;
+    const c=S.clients.find(x=>x.id===p.clientId);
+    if(!c) return;
+    alertHtml+=`<div class="alert" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:220px">🏁 <strong>${_escT(c.prenom+' '+c.nom)}</strong> a terminé toutes les séances de <strong>« ${_escT(p.name||'Programme')} »</strong>
+        <span style="color:var(--muted);font-size:11px">(${st.done} effectuée${st.done>1?'s':''}${st.skipped?` · ${st.skipped} passée${st.skipped>1?'s':''}`:''})</span>. Pense à préparer la suite !</div>
+      <button class="btn btn-red btn-xs" onclick="openBuilderFor(${c.id})">📋 Nouveau programme</button>
+      <button class="btn btn-ghost btn-xs" onclick="dismissProgAlert(${JSON.stringify(p.id)})">✓ Vu</button>
+    </div>`;
   });
   $('renewal-alerts').innerHTML=alertHtml;
   const el=$('dash-clist');
