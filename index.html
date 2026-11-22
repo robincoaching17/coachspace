@@ -927,6 +927,58 @@ a.contact-link:hover{text-decoration:underline;}
 .nr-acc.open .nr-chev{transform:rotate(180deg)}
 .nr-acc-body{display:none;padding:0 12px 12px}
 .nr-acc.open .nr-acc-body{display:block}
+
+/* ---- Répertoire des exercices ---- */
+#enc-ov{position:fixed;inset:0;z-index:99000;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:14px}
+#enc-ov.open{display:flex}
+.enc-panel{width:min(640px,100%);max-height:calc(100dvh - 28px);overflow-y:auto;background:var(--s1);border:1px solid var(--border);border-radius:18px;padding:16px 16px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+@media(max-width:640px){#enc-ov{padding:0}.enc-panel{max-height:100dvh;height:100dvh;border-radius:0;border:none}}
+.enc-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;position:sticky;top:-16px;background:var(--s1);padding:6px 0;z-index:2}
+.enc-title{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;letter-spacing:1.5px}
+.enc-title span{color:var(--red)}
+.enc-sub{font-size:11px;color:var(--muted)}
+.enc-close,.enc-back{background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 12px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px}
+.enc-search{width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;color:var(--text);margin-bottom:10px;outline:none}
+.enc-modes{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.enc-modes button{padding:9px;border-radius:10px;border:1px solid var(--border);background:var(--s2);color:var(--muted);font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif}
+.enc-modes button.on{background:var(--red);border-color:var(--red);color:#fff}
+.enc-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px}
+.enc-chips::-webkit-scrollbar{display:none}
+.enc-chips button{flex-shrink:0;padding:6px 11px;border-radius:20px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+.enc-chips button.on{background:var(--c,var(--red));border-color:var(--c,var(--red));color:#fff}
+.enc-letter{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:var(--red2);margin:12px 2px 6px;letter-spacing:1px}
+.enc-letter small{font-size:11px;color:var(--muted);font-weight:400}
+.enc-row{display:flex;align-items:center;gap:12px;width:100%;padding:7px;margin-bottom:5px;border-radius:12px;border:1px solid var(--border);background:var(--s2);cursor:pointer;text-align:left;color:var(--text);font-family:'Nunito',sans-serif}
+.enc-row:hover{border-color:var(--red)}
+.enc-thumb{width:72px;height:50px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:20px}
+.enc-thumb img{width:100%;height:100%;object-fit:cover}
+.enc-row-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.enc-row-name{font-weight:800;font-size:14px}
+.enc-row-grp{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.enc-chev{color:var(--muted);font-size:20px;padding-right:4px}
+.enc-empty{text-align:center;color:var(--muted);padding:30px}
+.enc-d-name{font-family:'Oswald',sans-serif;font-size:24px;font-weight:700;letter-spacing:1px;line-height:1.2}
+.enc-d-grp{font-size:12px;font-weight:800;margin:2px 0 12px;text-transform:uppercase;letter-spacing:1px}
+.enc-imgs{display:grid;gap:8px;margin-bottom:12px}
+.enc-imgs.two{grid-template-columns:1fr 1fr}
+.enc-imgs figure{margin:0;position:relative;border-radius:12px;overflow:hidden;background:var(--s3)}
+.enc-imgs img{width:100%;display:block;aspect-ratio:3/2;object-fit:cover}
+.enc-imgs figcaption{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.65);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:10px}
+@media(max-width:480px){.enc-imgs.two{grid-template-columns:1fr}}
+.enc-noimg{background:var(--s2);border:1px dashed var(--border);border-radius:12px;padding:24px;text-align:center;color:var(--muted);margin-bottom:12px}
+.enc-addimg{width:100%;padding:8px;margin-bottom:10px;border-radius:10px;border:1px dashed var(--border);background:var(--s2);color:var(--muted);font-size:12px;cursor:pointer}
+.enc-box{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.65;margin-bottom:8px}
+.enc-box.ok{border-color:rgba(34,197,94,.3)}.enc-box.ok b{color:var(--success)}
+.enc-box.ko{border-color:rgba(239,68,68,.3)}.enc-box.ko b{color:#ef4444}
+.enc-box.tip{border-color:rgba(56,189,248,.3)}.enc-box.tip b{color:var(--info)}
+.enc-vars{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.enc-vars span{font-size:11px;padding:3px 9px;border-radius:12px;background:var(--s3)}
+.exo-info-btn{background:none;border:none;cursor:pointer;font-size:13px;padding:0 2px;vertical-align:middle;opacity:.85}
+.exo-info-btn:hover{opacity:1;transform:scale(1.15)}
+.enc-banner{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;margin-bottom:14px;border-radius:14px;border:1px solid rgba(192,21,42,.35);background:linear-gradient(135deg,rgba(192,21,42,.14),rgba(192,21,42,.04));color:var(--text);cursor:pointer;text-align:left;font-family:'Nunito',sans-serif}
+.enc-banner .eb-ico{font-size:26px}
+.enc-banner .eb-t{font-weight:800;font-size:14px}
+.enc-banner .eb-s{font-size:11px;color:var(--muted)}
 /* ---- Réservations : carnets, demandes, prix ---- */
 :root{--purple:#a855f7;--orange:#fb923c}
 .timetable .tt-proposed{background:rgba(168,85,247,.16);border-color:rgba(168,85,247,.35);cursor:pointer}
@@ -1608,6 +1660,7 @@ a.contact-link:hover{text-decoration:underline;}
   <div class="cld-user"><div id="cld-av" class="cld-av">?</div><div><div id="cld-name" style="font-weight:800;font-size:14px">—</div><div style="font-size:11px;color:var(--muted)">Mon espace coaché</div></div></div>
   <nav class="cld-nav">
     <button class="cld-item" data-tab="programme" onclick="clDrawerGo('programme')"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6.5 8v8M17.5 8v8"/><path d="M3.5 10v4M20.5 10v4"/><path d="M6.5 12h11" class="a"/></svg><span class="cld-txt"><span class="cld-t">Mon programme</span><span class="cld-s">Tes séances de la semaine</span></span></button>
+    <button class="cld-item" data-tab="__exos" onclick="closeClDrawer();openEncyclopedia()"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 6.5c-2-1.6-4.7-2-8-1.6v13.2c3.3-.4 6 0 8 1.6 2-1.6 4.7-2 8-1.6V4.9c-3.3-.4-6 0-8 1.6z"/><path d="M12 6.5v13.2" class="a"/></svg><span class="cld-txt"><span class="cld-t">Répertoire des exercices</span><span class="cld-s">Tous les exercices en images</span></span></button>
     <button class="cld-item" data-tab="journal" onclick="clDrawerGo('journal')"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5v17"/><path d="M12 9h4M12 12.5h4" class="a"/></svg><span class="cld-txt"><span class="cld-t">Journal</span><span class="cld-s">Historique de tes séances</span></span></button>
     <button class="cld-item" data-tab="nutrition" onclick="clDrawerGo('nutrition')"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 7.5c-1.4-1.5-4.5-1.6-6 .5-1.7 2.5-.6 7 1.6 9.6 1.3 1.5 2.6 1.4 4.4.6 1.8.8 3.1.9 4.4-.6 2.2-2.6 3.3-7.1 1.6-9.6-1.5-2.1-4.6-2-6-.5z"/><path d="M12 7.5c0-1.6.6-3 2.2-4" class="a"/></svg><span class="cld-txt"><span class="cld-t">Nutrition & recettes</span><span class="cld-s">Calories, macros et idées repas</span></span></button>
     <button class="cld-item" data-tab="ressources" onclick="clDrawerGo('ressources')"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 6.5c-2-1.6-4.7-2-8-1.6v13.2c3.3-.4 6 0 8 1.6 2-1.6 4.7-2 8-1.6V4.9c-3.3-.4-6 0-8 1.6z"/><path d="M12 6.5v13.2" class="a"/></svg><span class="cld-txt"><span class="cld-t">Ressources</span><span class="cld-s">Exercices, conseils, vidéos</span></span></button>
@@ -4672,7 +4725,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
           dsHtml+=`<tr class="ds-sub-row"><td><span style="color:var(--warn);font-size:10px">↘ drop ${di+1}</span></td><td>${dr.reps}</td><td>${dr.load||'—'}</td></tr>`;
         });
       });
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${dsHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${_exoInfoBtn(e.name)}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${dsHtml}</tbody></table></td></tr>`;
     } else if(e.method==='Rest-Pause' && e.methodData && e.methodData.sets){
       const md=e.methodData;
       let rpHtml='';
@@ -4683,7 +4736,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
           rpHtml+=`<tr class="ds-sub-row"><td><span style="color:var(--info);font-size:10px">↩ relance ${ri+1}</span> ${r.reps}</td><td>=</td><td>${ri===st.relances.length-1?(md.restEnd||"2'00"):(st.pause||'15s')}</td></tr>`;
         });
       });
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpHtml}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${_exoInfoBtn(e.name)}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Bloc</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${rpHtml}</tbody></table></td></tr>`;
     } else if(e.method==='Circuit' && e.methodData && e.methodData.stations){
       const md=e.methodData;
       let ctHtml=`<tr style="background:rgba(56,189,248,.05)"><td colspan="4" style="font-size:10px;color:var(--info);padding:4px 8px">🔄 ${md.tours} tours · Repos entre tours: ${md.reposTours||'—'} · Repos entre stations: ${md.reposStations||'0'}</td></tr>`;
@@ -4728,10 +4781,10 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
       h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name||'Tabata'}</div><div class="exo-detail-badge">${MT(e.method)}</div>${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>#</th><th>Exercice</th><th>Charge</th></tr></thead><tbody>${tbHtml}</tbody></table></td></tr>`;
     } else if(e.detail&&e.setDetails&&e.setDetails.length){
       const _tempoSD=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:flex;gap:6px;align-items:center;margin:4px 0;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:4px;padding:6px 10px;font-size:11px"><span style="font-weight:700;color:#a855f7">⏱</span>${e.methodData.tempo.split('-').map(v=>'<span style="font-weight:700;background:rgba(139,92,246,.12);border-radius:3px;padding:2px 6px;min-width:22px;text-align:center">'+v+'s</span>').join('<span style="color:var(--border);font-size:8px">—</span>')}</div>`:'';
-      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${_tempoSD}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
+      h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${_exoInfoBtn(e.name)}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${_tempoSD}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
     } else {
       const tempoInfo=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:flex;gap:6px;align-items:center;margin-top:4px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:4px;padding:6px 10px;font-size:11px"><span style="font-weight:700;color:#a855f7">⏱</span>${e.methodData.tempo.split('-').map(v=>'<span style="font-weight:700;background:rgba(139,92,246,.12);border-radius:3px;padding:2px 6px;min-width:22px;text-align:center">'+v+'s</span>').join('<span style="color:var(--border);font-size:8px">—</span>')}</div>`:'';
-      h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}${e.variant?` <span style="font-size:11px;color:var(--muted);font-weight:400;font-style:italic">(${e.variant})</span>`:''}</div>${MT(e.method)}${tempoInfo}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
+      h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}${_exoInfoBtn(e.name)}${e.variant?` <span style="font-size:11px;color:var(--muted);font-weight:400;font-style:italic">(${e.variant})</span>`:''}</div>${MT(e.method)}${tempoInfo}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
     }
     if(withLog&&!preview){
       let seriesHtml='';
@@ -6910,7 +6963,7 @@ function renderClientProg(){
         h+=`</div>`;
       }
     }
-    el.innerHTML=h;
+    el.innerHTML=`<button class="enc-banner" onclick="openEncyclopedia()"><span class="eb-ico">📖</span><span style="flex:1"><span class="eb-t" style="display:block">Répertoire des exercices</span><span class="eb-s">Tous les exercices en images · A → Z ou par muscle</span></span><span style="color:var(--red2);font-size:20px">›</span></button>`+h;
     // Init swipe for all prog seance tabs
     progs.forEach(prog=>{
       const weeks=prog.weeks||[];
@@ -8002,41 +8055,111 @@ const EXERCISE_ENCYCLOPEDIA=[
 {name:"Battle ropes",group:"Épaules",muscles:"Épaules, biceps, core, cardio",variants:["Vagues alternées", "Simultanées", "Slams", "Cercles"],instructions:"Léger squat. Fouette les cordes. Garde le rythme.",erreurs:["Se redresser", "Cordes molles"],tips:"20-30s intense + 30s repos. 5-8 rounds."}
 ];
 
-function openEncyclopedia(){
-  const groups=[...new Set(EXERCISE_ENCYCLOPEDIA.map(e=>e.group))];
-  let h=`<div style="max-width:600px;max-height:85vh;overflow-y:auto">
-    <div style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px">📚 Encyclopédie des exercices</div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">${EXERCISE_ENCYCLOPEDIA.length} exercices · ${groups.length} groupes musculaires</div>
-    <input type="text" id="encyclo-search" placeholder="🔍 Rechercher un exercice..." oninput="filterEncyclopedia()" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px;font-size:13px;color:var(--text);outline:none;margin-bottom:8px">
-    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">
-      <button class="wiz-preset-btn active" onclick="filterEncyclopedia('')" id="enc-all">Tous</button>
-      ${groups.map(g=>`<button class="wiz-preset-btn" onclick="filterEncyclopedia('','${g}')">${g}</button>`).join('')}
-    </div>
-    <div id="encyclo-list">`;
-  const groupIcons={'Pectoraux':'🫁','Dos':'🔙','Épaules':'🔺','Biceps':'💪','Triceps':'🦾','Quadriceps':'🦵','Ischio-jambiers':'🦿','Fessiers':'🍑','Mollets':'🦶','Abdominaux':'🎯'};
-  const groupColors={'Pectoraux':'#c0152a','Dos':'#3b82f6','Épaules':'#f59e0b','Biceps':'#22c55e','Triceps':'#a855f7','Quadriceps':'#ec4899','Ischio-jambiers':'#f97316','Fessiers':'#14b8a6','Mollets':'#6366f1','Abdominaux':'#ef4444'};
-  EXERCISE_ENCYCLOPEDIA.forEach((ex,i)=>{
-    const gcol=groupColors[ex.group]||'var(--red)';
-    const gicon=groupIcons[ex.group]||'🏋️';
-    h+=`<div class="encyclo-card" data-name="${ex.name.toLowerCase()}" data-group="${ex.group}" style="border-left:3px solid ${gcol}">
-      <div class="encyclo-hd" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:22px;flex-shrink:0">${gicon}</span>
-        <div style="flex:1"><strong>${ex.name}</strong><br><span style="font-size:9px;color:${gcol};font-weight:700">${ex.group}</span> <span style="font-size:9px;color:var(--muted)">· ${ex.muscles.split(',')[0]}</span></div>
-        <span style="font-size:10px;color:var(--muted)">▶</span>
-      </div>
-      <div style="display:none;padding:10px;font-size:11px;line-height:1.7;border-top:1px solid var(--border);background:var(--s2)">
-        ${(()=>{const imgUrl=ex.photo||(S.exerciseImages||{})[ex.name]||'';return imgUrl?`<img src="${imgUrl}" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;margin-bottom:8px" onerror="this.style.display='none'">`:''})()}
-        <button style="width:100%;padding:6px;margin-bottom:8px;background:var(--s3);border:1px dashed var(--border);border-radius:var(--rs);color:var(--muted);font-size:10px;cursor:pointer" onclick="addExoImage('${ex.name.replace(/'/g,"\\'")}',this)">${(ex.photo||(S.exerciseImages||{})[ex.name])?"🔄 Changer l'image":"📷 Ajouter une image"}</button>
-        <div style="color:var(--muted);margin-bottom:6px"><strong style="color:var(--text)">🎯 Muscles ciblés</strong><br>${ex.muscles}</div>
-        ${ex.variants&&ex.variants.length?`<div style="margin-bottom:6px"><strong>🔄 Variantes</strong><br><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">${ex.variants.map(v=>`<span style="font-size:10px;padding:2px 6px;background:var(--s3);border:1px solid var(--border);border-radius:3px">${v}</span>`).join('')}</div></div>`:''}
-        <div style="margin-bottom:6px;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:var(--rs);padding:8px"><strong style="color:#22c55e">✅ Comment faire</strong><br>${ex.instructions}</div>
-        ${ex.erreurs?`<div style="margin-bottom:6px;background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:var(--rs);padding:8px"><strong style="color:#ef4444">❌ Erreurs fréquentes</strong><br>${ex.erreurs.map(e=>'• '+e).join('<br>')}</div>`:''}
-        ${ex.tips?`<div style="background:rgba(56,189,248,.05);border:1px solid rgba(56,189,248,.15);border-radius:var(--rs);padding:8px"><strong style="color:var(--info)">💡 Conseil pro</strong><br>${ex.tips}</div>`:''}
-      </div>
-    </div>`;
+const EXO_IMG={"Développé couché barre":["developpe-couche-barre",2],"Développé couché haltères":["developpe-couche-halteres",2],"Développé incliné barre":["developpe-incline-barre",2],"Développé incliné haltères":["developpe-incline-halteres",2],"Développé décliné":["developpe-decline",2],"Écarté couché haltères":["ecarte-couche-halteres",2],"Pec fly machine":["pec-fly-machine",2],"Cable crossover":["cable-crossover",2],"Dips pectoraux":["dips-pectoraux",2],"Pompes":["pompes",2],"Pull-over haltère":["pull-over-haltere",2],"Développé couché prise serrée":["developpe-couche-prise-serree",2],"Floor press":["floor-press",2],"Écarté poulie haute":["ecarte-poulie-haute",2],"Écarté poulie basse":["ecarte-poulie-basse",2],"Machine convergente pectoraux":["machine-convergente-pectoraux",2],"Pompes pieds surélevés":["pompes-pieds-sureleves",2],"Pompes diamant":["pompes-diamant",2],"Tractions":["tractions",2],"Tirage vertical poulie haute":["tirage-vertical-poulie-haute",2],"Rowing barre":["rowing-barre",2],"Rowing haltère unilatéral":["rowing-haltere-unilateral",2],"Rowing T-bar":["rowing-t-bar",2],"Tirage horizontal poulie basse":["tirage-horizontal-poulie-basse",2],"Soulevé de terre":["souleve-de-terre",2],"Face pull":["face-pull",2],"Hyperextensions":["hyperextensions",2],"Shrugs":["shrugs",2],"Tirage poulie haute prise neutre":["tirage-poulie-haute-prise-neutre",2],"Tirage poulie haute unilatéral":["tirage-poulie-haute-unilateral",2],"Rowing machine Hammer Strength":["rowing-machine-hammer-strength",2],"Rowing Meadows landmine":["rowing-meadows-landmine",2],"Rowing Pendlay":["rowing-pendlay",2],"Rowing inversé (australien)":["rowing-inverse-australien",2],"Muscle-up":["muscle-up",2],"Lat pullover poulie":["lat-pullover-poulie",2],"Sled pull":["sled-pull",2],"Développé militaire":["developpe-militaire",2],"Développé Arnold":["developpe-arnold",2],"Élévations latérales":["elevations-laterales",2],"Élévations frontales":["elevations-frontales",2],"Oiseau (rear delt fly)":["oiseau-rear-delt-fly",2],"Rowing menton":["rowing-menton",2],"Élévations latérales poulie basse":["elevations-laterales-poulie-basse",2],"Élévations latérales machine":["elevations-laterales-machine",2],"Face pull avec rotation externe":["face-pull-avec-rotation-externe",2],"Développé militaire landmine":["developpe-militaire-landmine",2],"Développé haltères prise neutre":["developpe-halteres-prise-neutre",2],"Élévation Y (scaption)":["elevation-y-scaption",2],"Bradford press":["bradford-press",2],"Bus driver":["bus-driver",2],"Curl biceps":["curl-biceps",2],"Curl marteau":["curl-marteau",2],"Curl incliné":["curl-incline",2],"Curl pupitre (preacher)":["curl-pupitre-preacher",2],"Curl concentré":["curl-concentre",2],"Curl poulie basse":["curl-poulie-basse",2],"Curl araignée (spider curl)":["curl-araignee-spider-curl",2],"Curl Zottman":["curl-zottman",2],"Curl 21s":["curl-21s",2],"Curl prise inversée (reverse)":["curl-prise-inversee-reverse",2],"Extension triceps poulie haute":["extension-triceps-poulie-haute",2],"Dips triceps":["dips-triceps",2],"Barre au front (skull crusher)":["barre-au-front-skull-crusher",2],"Extension nuque":["extension-nuque",2],"Kickback triceps":["kickback-triceps",2],"Extension poulie haute corde":["extension-poulie-haute-corde",2],"Extension poulie basse overhead":["extension-poulie-basse-overhead",2],"Dips banc (bench dips)":["dips-banc-bench-dips",2],"JM Press":["jm-press",2],"Extension triceps haltère unilatéral":["extension-triceps-haltere-unilateral",2],"Squat":["squat",2],"Presse à cuisses":["presse-a-cuisses",2],"Leg extension":["leg-extension",2],"Fentes":["fentes",2],"Hack squat":["hack-squat",2],"Squat bulgare":["squat-bulgare",2],"Goblet squat":["goblet-squat",2],"Front squat":["front-squat",2],"Step-up":["step-up",2],"Sissy squat":["sissy-squat",2],"Thruster":["thruster",2],"Sled push":["sled-push",2],"Box jump":["box-jump",2],"Soulevé de terre roumain (RDL)":["souleve-de-terre-roumain-rdl",2],"Leg curl allongé":["leg-curl-allonge",2],"Leg curl assis":["leg-curl-assis",2],"Nordic curl":["nordic-curl",2],"Good morning":["good-morning",2],"RDL unilatéral":["rdl-unilateral",2],"Glute ham raise (GHR)":["glute-ham-raise-ghr",2],"Swiss ball leg curl":["swiss-ball-leg-curl",2],"Hip thrust":["hip-thrust",2],"Pont fessier (glute bridge)":["pont-fessier-glute-bridge",2],"Hip thrust unilatéral":["hip-thrust-unilateral",2],"Kickback fessier":["kickback-fessier",2],"Abduction":["abduction",2],"Cable pull-through":["cable-pull-through",2],"Frog pump":["frog-pump",2],"Squat sumo":["squat-sumo",2],"Curl poignet (wrist curl)":["curl-poignet-wrist-curl",2],"Extension poignet (reverse wrist curl)":["extension-poignet-reverse-wrist-curl",2],"Farmer walk":["farmer-walk",2],"Wrist roller":["wrist-roller",2],"Mollets debout":["mollets-debout",2],"Mollets assis":["mollets-assis",2],"Mollets presse à cuisses":["mollets-presse-a-cuisses",2],"Mollets debout unilatéral":["mollets-debout-unilateral",2],"Saut à la corde":["saut-a-la-corde",2],"Crunch":["crunch",2],"Crunch inversé":["crunch-inverse",2],"Relevé de jambes":["releve-de-jambes",2],"Planche (gainage)":["planche-gainage",2],"Russian twist":["russian-twist",2],"Ab wheel":["ab-wheel",2],"Pallof press":["pallof-press",2],"Dead bug":["dead-bug",2],"Clean and press":["clean-and-press",2],"Turkish get-up":["turkish-get-up",2],"Battle ropes":["battle-ropes",2]}; // images : free-exercise-db (domaine public)
+
+const _ENC_COL={'Pectoraux':'#c0152a','Dos':'#3b82f6','Épaules':'#f59e0b','Biceps':'#22c55e','Triceps':'#a855f7','Quadriceps':'#ec4899','Ischio-jambiers':'#f97316','Fessiers':'#14b8a6','Mollets':'#6366f1','Abdominaux':'#ef4444','Avant-bras':'#84cc16'};
+const _ENC_ORDER=['Pectoraux','Dos','Épaules','Biceps','Triceps','Avant-bras','Quadriceps','Ischio-jambiers','Fessiers','Mollets','Abdominaux'];
+let _encState={mode:'az',group:'',q:'',detail:null};
+const _encNorm=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\(.*?\)/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+function _exoImgs(ex){
+  const custom=ex.photo||(S.exerciseImages||{})[ex.name];
+  const m=EXO_IMG[ex.name]; const arr=[];
+  if(custom) arr.push(custom);
+  if(m) for(let k=0;k<m[1];k++) arr.push(`images/exercices/${m[0]}-${k}.jpg`);
+  return arr;
+}
+function findEncyclopediaExo(name){
+  const n=_encNorm(name); if(!n) return null;
+  let best=null,score=0;
+  EXERCISE_ENCYCLOPEDIA.forEach(ex=>{
+    const e=_encNorm(ex.name);
+    let sc=0;
+    if(e===n) sc=1000;
+    else if(n.startsWith(e+' ')||n.includes(' '+e+' ')||n.endsWith(' '+e)) sc=e.length;
+    else if(e.startsWith(n+' ')) sc=n.length*0.9;
+    if(sc>score){score=sc;best=ex;}
   });
-  h+=`</div></div>`;
-  showModal('',h);
+  return score>=4?best:null;
+}
+function _exoInfoBtn(name){
+  const ex=findEncyclopediaExo(name); if(!ex) return '';
+  return ` <button class="exo-info-btn" title="Voir l'exercice en image" onclick="event.stopPropagation();openExoSheet('${ex.name.replace(/'/g,"\\'")}')">📖</button>`;
+}
+function openEncyclopedia(){ _encState.detail=null; _renderEnc(); _encOv().classList.add('open'); }
+function openExoSheet(name){ _encState.detail=name; _renderEnc(); _encOv().classList.add('open'); }
+function closeEncyclopedia(){ _encOv().classList.remove('open'); }
+function _encOv(){
+  let ov=document.getElementById('enc-ov');
+  if(!ov){ ov=document.createElement('div'); ov.id='enc-ov'; document.body.appendChild(ov);
+    ov.addEventListener('click',e=>{ if(e.target===ov) closeEncyclopedia(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&ov.classList.contains('open')){ if(_encState.detail){_encState.detail=null;_renderEnc();} else closeEncyclopedia(); } }); }
+  return ov;
+}
+function encSet(k,v){ _encState[k]=v; if(k!=='q') _renderEnc(); else _renderEncList(); }
+function _renderEnc(){
+  const ov=_encOv(); const st=_encState;
+  if(st.detail){ ov.innerHTML=`<div class="enc-panel">${_encDetailHTML(st.detail)}</div>`; ov.querySelector('.enc-panel').scrollTop=0; return; }
+  const groups=_ENC_ORDER.filter(g=>EXERCISE_ENCYCLOPEDIA.some(e=>e.group===g)).concat([...new Set(EXERCISE_ENCYCLOPEDIA.map(e=>e.group))].filter(g=>!_ENC_ORDER.includes(g)));
+  ov.innerHTML=`<div class="enc-panel">
+    <div class="enc-hd">
+      <div><div class="enc-title">Répertoire des <span>exercices</span></div><div class="enc-sub">${EXERCISE_ENCYCLOPEDIA.length} exercices en images</div></div>
+      <button class="enc-close" onclick="closeEncyclopedia()" aria-label="Fermer">✕</button>
+    </div>
+    <input type="search" class="enc-search" placeholder="🔍 Rechercher un exercice…" value="${_escT(st.q)}" oninput="encSet('q',this.value)">
+    <div class="enc-modes">
+      <button class="${st.mode==='az'?'on':''}" onclick="encSet('mode','az')">🔤 A → Z</button>
+      <button class="${st.mode==='muscle'?'on':''}" onclick="encSet('mode','muscle')">💪 Par muscle</button>
+    </div>
+    <div class="enc-chips">
+      <button class="${!st.group?'on':''}" onclick="encSet('group','')">Tous</button>
+      ${groups.map(g=>`<button class="${st.group===g?'on':''}" style="--c:${_ENC_COL[g]||'var(--red)'}" onclick="encSet('group','${g}')">${g}</button>`).join('')}
+    </div>
+    <div id="enc-list"></div>
+  </div>`;
+  _renderEncList();
+  const s=ov.querySelector('.enc-search'); if(s&&st.q){ s.focus(); s.setSelectionRange(s.value.length,s.value.length); }
+}
+function _encRow(ex){
+  const img=_exoImgs(ex)[0]; const col=_ENC_COL[ex.group]||'var(--red)';
+  return `<button class="enc-row" onclick="openExoSheet('${ex.name.replace(/'/g,"\\'")}')">
+    <span class="enc-thumb">${img?`<img loading="lazy" src="${img}" alt="">`:'<span>🏋️</span>'}</span>
+    <span class="enc-row-txt"><span class="enc-row-name">${_escT(ex.name)}</span><span class="enc-row-grp" style="color:${col}">${ex.group} <span style="color:var(--muted)">· ${_escT((ex.muscles||'').split(',')[0])}</span></span></span>
+    <span class="enc-chev">›</span></button>`;
+}
+function _renderEncList(){
+  const el=document.getElementById('enc-list'); if(!el) return;
+  const st=_encState, q=_encNorm(st.q);
+  let list=EXERCISE_ENCYCLOPEDIA.filter(e=>(!st.group||e.group===st.group)&&(!q||_encNorm(e.name+' '+e.muscles+' '+e.group).includes(q)));
+  if(!list.length){ el.innerHTML='<div class="enc-empty">Aucun exercice trouvé</div>'; return; }
+  const cmp=(a,b)=>a.name.localeCompare(b.name,'fr',{sensitivity:'base'});
+  let h='';
+  if(st.mode==='az'){
+    list.sort(cmp); let last='';
+    list.forEach(ex=>{ const L=_encNorm(ex.name).charAt(0).toUpperCase(); if(L!==last){ h+=`<div class="enc-letter">${L}</div>`; last=L; } h+=_encRow(ex); });
+  } else {
+    const gs=[...new Set(list.map(e=>e.group))].sort((a,b)=>(_ENC_ORDER.indexOf(a)+99)%99-(_ENC_ORDER.indexOf(b)+99)%99);
+    gs.forEach(g=>{ const sub=list.filter(e=>e.group===g).sort(cmp); h+=`<div class="enc-letter" style="color:${_ENC_COL[g]||'var(--red)'}">${g} <small>${sub.length}</small></div>`+sub.map(_encRow).join(''); });
+  }
+  el.innerHTML=h;
+}
+function _encDetailHTML(name){
+  const ex=EXERCISE_ENCYCLOPEDIA.find(e=>e.name===name); if(!ex) return '';
+  const imgs=_exoImgs(ex); const col=_ENC_COL[ex.group]||'var(--red)';
+  const isCoach=document.getElementById('coach-app')?.classList.contains('active');
+  return `<div class="enc-hd">
+      <button class="enc-back" onclick="_encState.detail=null;_renderEnc()">‹ Répertoire</button>
+      <button class="enc-close" onclick="closeEncyclopedia()" aria-label="Fermer">✕</button>
+    </div>
+    <div class="enc-d-name">${_escT(ex.name)}</div>
+    <div class="enc-d-grp" style="color:${col}">${ex.group}</div>
+    ${imgs.length?`<div class="enc-imgs${imgs.length>1?' two':''}">${imgs.slice(0,2).map((u,k)=>`<figure><img src="${u}" alt="${_escT(ex.name)}" onerror="this.closest('figure').remove()">${imgs.length>1?`<figcaption>${k===0?'① Départ':'② Arrivée'}</figcaption>`:''}</figure>`).join('')}</div>`
+      :`<div class="enc-noimg">🏋️ Pas encore d'image pour cet exercice</div>`}
+    ${isCoach?`<button class="enc-addimg" onclick="addExoImage('${ex.name.replace(/'/g,"\\'")}',this);setTimeout(()=>_renderEnc(),300)">📷 ${(S.exerciseImages||{})[ex.name]?'Changer mon image':'Ajouter ma propre image'}</button>`:''}
+    <div class="enc-box"><b>🎯 Muscles ciblés</b><br>${_escT(ex.muscles||'')}</div>
+    <div class="enc-box ok"><b>✅ Comment faire</b><br>${_escT(ex.instructions||'')}</div>
+    ${ex.erreurs&&ex.erreurs.length?`<div class="enc-box ko"><b>❌ Erreurs fréquentes</b><br>${ex.erreurs.map(e=>'• '+_escT(e)).join('<br>')}</div>`:''}
+    ${ex.tips?`<div class="enc-box tip"><b>💡 Conseil pro</b><br>${_escT(ex.tips)}</div>`:''}
+    ${ex.variants&&ex.variants.length?`<div class="enc-box"><b>🔄 Variantes</b><div class="enc-vars">${ex.variants.map(v=>`<span>${_escT(v)}</span>`).join('')}</div></div>`:''}`;
 }
 
 function addExoImage(exoName,btn){
