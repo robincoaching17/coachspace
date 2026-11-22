@@ -66,7 +66,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font
 .l-card .lci{font-size:38px;margin-bottom:12px;}
 .l-card .lct{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;letter-spacing:1px;margin-bottom:4px;}
 .l-card .lcd{font-size:11px;color:var(--muted);line-height:1.5;}
-.l-ver{position:static;margin-top:18px;font-size:10px;color:var(--s3);letter-spacing:1px;text-align:center;padding:0 16px;}
+.l-ver{position:static;margin-top:8px;height:1px}
 @media(max-height:820px){#landing>img:first-of-type{width:104px!important}.l-card{padding:22px 26px}.btn-install{margin-top:12px}}
 
 /* LOGIN */
@@ -856,6 +856,36 @@ a.contact-link:hover{text-decoration:underline;}
 @media(max-width:640px){.selbar-row select,.selbar-row input{flex:1 1 100%}.selbar-row .btn{flex:1 1 auto;justify-content:center}}
 .selbar .btn[disabled]{opacity:.4;pointer-events:none}
 .btn-sel-on{background:var(--info)!important;color:#fff!important;border-color:var(--info)!important}
+
+/* ---- Vitrine d'un message (capture Instagram) ---- */
+#showcase-ov{position:fixed;inset:0;z-index:100000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;background:rgba(6,6,8,.55);-webkit-backdrop-filter:blur(18px) saturate(.8);backdrop-filter:blur(18px) saturate(.8)}
+#showcase-ov.open{display:flex;animation:scIn .25s ease}
+@keyframes scIn{from{opacity:0}to{opacity:1}}
+.sc-card{position:relative;overflow:hidden;aspect-ratio:9/16;height:min(84vh,calc((100vw - 32px)*16/9));max-width:calc(100vw - 32px);border-radius:26px;background:linear-gradient(165deg,#17171c 0%,#0c0c0e 55%,#140608 100%);border:1px solid rgba(255,255,255,.08);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(192,21,42,.15);display:flex;flex-direction:column;padding:clamp(22px,5vh,44px) clamp(22px,4vh,40px);color:#f0ece8;cursor:pointer;box-sizing:border-box}
+.sc-glow{position:absolute;width:120%;height:60%;left:-10%;top:-18%;background:radial-gradient(ellipse at center,rgba(192,21,42,.32),transparent 65%);pointer-events:none}
+.sc-glow::after{content:'';position:absolute;width:70%;height:70%;right:-30%;top:160%;background:radial-gradient(circle,rgba(192,21,42,.18),transparent 65%)}
+.sc-top{position:relative;display:flex;justify-content:flex-start}
+.sc-badge{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#fff;background:rgba(192,21,42,.85);padding:6px 12px;border-radius:20px}
+.sc-quote-mark{position:relative;font-family:Georgia,'Times New Roman',serif;font-size:120px;line-height:.8;color:var(--red);margin-top:auto;height:60px;opacity:.95}
+.sc-text{position:relative;font-family:'Nunito',sans-serif;font-weight:800;font-style:italic;line-height:1.35;color:#fff;word-break:break-word;overflow-wrap:anywhere;margin-top:14px}
+.sc-who{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:22px;font-family:'Oswald',sans-serif;font-size:20px;font-weight:600;letter-spacing:1.5px;color:#fff}
+.sc-dash{width:28px;height:3px;background:var(--red);border-radius:2px}
+.sc-date{font-family:'Nunito',sans-serif;font-size:12px;letter-spacing:0;font-weight:600;color:rgba(255,255,255,.45)}
+.sc-foot{position:relative;display:flex;align-items:center;gap:12px;margin-top:auto;padding-top:18px;border-top:1px solid rgba(255,255,255,.08)}
+.sc-logo{width:44px;height:44px;object-fit:contain}
+.sc-brand{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;letter-spacing:4px;color:#fff}
+.sc-brand span{color:var(--red)}
+.sc-insta{font-size:12px;color:rgba(255,255,255,.55);font-weight:700}
+.sc-tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.sc-btn{font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:8px 14px;cursor:pointer}
+.sc-btn:hover{background:rgba(255,255,255,.2)}
+.sc-close{background:rgba(192,21,42,.8);border-color:transparent}
+.sc-hint{display:none;font-size:11px;color:rgba(255,255,255,.5)}
+#showcase-ov.sc-clean .sc-tools{display:none}
+#showcase-ov.sc-clean .sc-hint{display:block;animation:scHint 2.6s forwards}
+@keyframes scHint{0%,60%{opacity:1}100%{opacity:0}}
+.sc-open-btn{background:rgba(192,21,42,.12);border:1px solid rgba(192,21,42,.35);color:var(--text)}
+.sc-open-btn:hover{background:rgba(192,21,42,.22)}
 /* ---- Réservations : carnets, demandes, prix ---- */
 :root{--purple:#a855f7;--orange:#fb923c}
 .timetable .tt-proposed{background:rgba(168,85,247,.16);border-color:rgba(168,85,247,.35);cursor:pointer}
@@ -986,7 +1016,7 @@ a.contact-link:hover{text-decoration:underline;}
     <a href="mailto:robin.coaching@gmail.com" style="text-decoration:none;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:#4285F4;box-shadow:0 2px 8px rgba(66,133,244,.3)"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
   </div>
   <button class="install-btn btn-install" onclick="installApp()">📲 Installer l'app sur mon téléphone</button>
-  <div class="l-ver" style="margin-top:14px">CoachSpace v7.0 · Robin Coaching France · Aix-en-Provence</div>
+  <div class="l-ver" aria-hidden="true"></div>
 </div>
 
 <!-- PROSPECT FORM -->
@@ -2078,6 +2108,54 @@ document.addEventListener('DOMContentLoaded',updateInstallButtons);
 if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')){
   window.addEventListener('load',()=>{ navigator.serviceWorker.register('/sw.js').catch(()=>{}); });
 }
+
+
+// ════════════════════════════════════════════
+// VITRINE D'UN MESSAGE COACHÉ (pour capture Instagram)
+// ════════════════════════════════════════════
+let _scState=null;
+function openFeedbackShowcase(cid,idx){
+  const arr=(S.feedbacks||{})[cid]||[]; const fb=arr[idx]; if(!fb) return;
+  const c=S.clients.find(x=>String(x.id)===String(cid));
+  _scState={cid,idx,name:c?c.prenom:'',hideName:false};
+  let ov=document.getElementById('showcase-ov');
+  if(!ov){
+    ov=document.createElement('div'); ov.id='showcase-ov';
+    ov.addEventListener('click',e=>{ if(e.target===ov) closeFeedbackShowcase(); });
+    document.body.appendChild(ov);
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeFeedbackShowcase(); });
+  }
+  _renderShowcase();
+  ov.classList.add('open');
+}
+function _renderShowcase(){
+  const ov=document.getElementById('showcase-ov'); if(!ov||!_scState) return;
+  const fb=((S.feedbacks||{})[_scState.cid]||[])[_scState.idx]; if(!fb) return;
+  const t=String(fb.text||'').trim();
+  const L=t.length;
+  const fs=L<60?34:L<120?28:L<200?23:L<320?19:16;
+  const who=_scState.hideName||!_scState.name?'Un(e) coaché(e)':_escT(_scState.name);
+  ov.innerHTML=`
+    <div class="sc-card" onclick="event.stopPropagation();document.getElementById('showcase-ov').classList.toggle('sc-clean')">
+      <div class="sc-glow"></div>
+      <div class="sc-top"><span class="sc-badge">💬 Retour de séance</span></div>
+      <div class="sc-quote-mark">“</div>
+      <div class="sc-text" style="font-size:${fs}px">${_escT(t)}</div>
+      <div class="sc-who"><span class="sc-dash"></span>${who}<span class="sc-date">${_escT(fb.date||'')}</span></div>
+      <div class="sc-foot">
+        <img src="icons/rcf-logo.svg" alt="" class="sc-logo">
+        <div><div class="sc-brand">COACH<span>SPACE</span></div><div class="sc-insta">@robin.coachingfrance</div></div>
+      </div>
+    </div>
+    <div class="sc-tools" onclick="event.stopPropagation()">
+      <button class="sc-btn" onclick="toggleShowcaseName()">${_scState.hideName?'👤 Afficher le prénom':'🙈 Masquer le prénom'}</button>
+      <button class="sc-btn" onclick="document.getElementById('showcase-ov').classList.add('sc-clean')">📸 Mode capture</button>
+      <button class="sc-btn sc-close" onclick="closeFeedbackShowcase()">✕ Fermer</button>
+    </div>
+    <div class="sc-hint">Touche la carte pour faire réapparaître les boutons</div>`;
+}
+function toggleShowcaseName(){ if(_scState){ _scState.hideName=!_scState.hideName; _renderShowcase(); } }
+function closeFeedbackShowcase(){ const ov=document.getElementById('showcase-ov'); if(ov) ov.classList.remove('open','sc-clean'); _scState=null; }
 
 // ════════════════════════════════════════════
 // UTILS
@@ -5585,12 +5663,14 @@ function renderSuiviDashboard(cid){
   if(clientFeedbacks.length){
     h+=`<div class="sd-section-title">💬 RETOURS DU COACHÉ (${clientFeedbacks.length})</div>`;
     clientFeedbacks.slice().reverse().forEach((fb,fi)=>{
+      const _origIdx=clientFeedbacks.length-1-fi;
       h+=`<div style="background:var(--s2);border-radius:var(--rs);padding:10px 12px;margin-bottom:6px;border-left:3px solid var(--red)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
           <span style="font-size:10px;color:var(--muted)">🗓 ${fb.date}</span>
           ${!fb.read?'<span style="font-size:9px;background:var(--red);color:#fff;padding:1px 6px;border-radius:8px;font-weight:700">NOUVEAU</span>':''}
         </div>
-        <div style="font-size:13px;color:var(--text);font-style:italic">"${fb.text}"</div>
+        <div style="font-size:13px;color:var(--text);font-style:italic">"${_escT(fb.text)}"</div>
+        <div style="margin-top:8px;text-align:right"><button class="btn btn-xs sc-open-btn" onclick="openFeedbackShowcase(${JSON.stringify(cid)},${_origIdx})">📸 Afficher pour Instagram</button></div>
       </div>`;
     });
     // Mark all as read
