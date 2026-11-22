@@ -51,9 +51,12 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font
 
 /* LANDING */
 #landing{flex-direction:column;align-items:center;justify-content:flex-start;position:relative;overflow-x:hidden;overflow-y:auto;padding:24px 0 18px;}
-#landing>img:first-of-type{margin-top:auto!important}
+#landing>.l-app-name{margin-top:auto}
 #landing>.l-ver{margin-bottom:auto}
 #landing::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(192,21,42,.07),transparent 70%);pointer-events:none;}
+.l-app-name{font-family:'Oswald',sans-serif;font-size:34px;font-weight:700;letter-spacing:8px;color:var(--text);margin-bottom:14px;text-align:center;line-height:1;padding-left:8px}
+.l-app-name span{color:var(--red)}
+@media(max-height:820px){.l-app-name{font-size:28px;margin-bottom:10px}}
 .l-logo{font-family:'Oswald',sans-serif;font-size:52px;font-weight:700;letter-spacing:4px;margin-bottom:4px;}
 .l-logo span{color:var(--red);}
 .l-sub{font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:56px;}
@@ -93,6 +96,9 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font
 .inst-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
 .inst-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);color:var(--text);border-radius:var(--rs);padding:10px 12px;font-size:12px;margin-bottom:10px;line-height:1.5}
 .inst-tip{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6}
+.repl-line{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.repl-lbl{flex:0 0 62px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--info)}
+.repl-inp{flex:1;min-width:0;width:100%!important;margin:0!important;background:var(--s1)!important;border:1px solid var(--border)!important;border-radius:var(--rs)!important;padding:6px 9px!important;font-size:12px!important;color:var(--text)!important;outline:none}
 .snav .si{font-size:15px;width:18px;height:18px;text-align:center;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 .ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;flex-shrink:0}
 .ic .a{stroke:var(--red2)}
@@ -950,6 +956,7 @@ a.contact-link:hover{text-decoration:underline;}
 <body>
 
 <div id="landing" class="screen active">
+  <div class="l-app-name">COACH<span>SPACE</span></div>
   <img src="data:image/png;base64,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" style="width:140px;margin-bottom:8px;filter:drop-shadow(0 4px 16px rgba(192,21,42,.3))" alt="Robin Coaching France">
   <div style="font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;letter-spacing:2px;color:var(--text);margin-bottom:2px">ROBIN <span style="color:var(--red)">COACHING</span> FRANCE</div>
   <div style="font-size:11px;color:var(--muted);margin-bottom:18px;max-width:320px;text-align:center;line-height:1.6">Programmes personnalisés · Suivi de progression · Coaching en salle & en ligne</div>
@@ -4511,7 +4518,7 @@ function renderSeanceContent(s,isActive,pid,idx,withLog,preview=false,progIdOver
       h+=`<tr><td colspan="6" class="exo-detail-cell"><div class="exo-detail-name">${e.name}${e.variant?' <span style="font-size:12px;color:var(--muted);font-weight:400;font-style:italic">('+e.variant+')</span>':''}</div><div class="exo-detail-badge">${MT(e.method)}</div>${_tempoSD}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}<table class="set-tbl"><thead><tr><th>Série</th><th>Rép.</th><th>Charge</th><th>Repos</th></tr></thead><tbody>${e.setDetails.map((sd,si)=>`<tr><td>${si+1}</td><td>${sd.reps}</td><td>${sd.load}</td><td>${sd.rest}</td></tr>`).join('')}</tbody></table></td></tr>`;
     } else {
       const tempoInfo=e.method==='Tempo'&&e.methodData&&e.methodData.tempo?`<div style="display:flex;gap:6px;align-items:center;margin-top:4px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:4px;padding:6px 10px;font-size:11px"><span style="font-weight:700;color:#a855f7">⏱</span>${e.methodData.tempo.split('-').map(v=>'<span style="font-weight:700;background:rgba(139,92,246,.12);border-radius:3px;padding:2px 6px;min-width:22px;text-align:center">'+v+'s</span>').join('<span style="color:var(--border);font-size:8px">—</span>')}</div>`:'';
-      h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}</div>${MT(e.method)}${tempoInfo}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
+      h+=`<tr class="exo-row"><td><span class="mono">${String(i+1).padStart(2,'0')}</span></td><td><div style="font-weight:800">${e.name}${e.variant?` <span style="font-size:11px;color:var(--muted);font-weight:400;font-style:italic">(${e.variant})</span>`:''}</div>${MT(e.method)}${tempoInfo}${e.tech?`<div class="tech-note">💡 ${e.tech}</div>`:''}${_demoHtml}</td><td><span class="mono">${e.sets}</span></td><td><span class="mono">${e.reps}</span></td><td><span class="mono">${e.load}</span></td><td><span class="mono">${e.rest}</span></td></tr>`;
     }
     if(withLog&&!preview){
       let seriesHtml='';
@@ -6854,9 +6861,11 @@ function openReplaceExo(pid,eid,oldName,currentMethod){
   replDiv.innerHTML=`
     <div style="font-size:10px;color:var(--info);font-weight:700;margin-bottom:6px">🔄 Remplacer "${oldName}"</div>
     <div style="margin-bottom:6px"><input type="text" id="repl-name-${pid}-${eid}" placeholder="Nouvel exercice" style="width:100%;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:6px 10px;font-size:13px;font-weight:700;color:var(--text);outline:none"></div>
-    <div style="display:flex;gap:6px;margin-bottom:6px">
-      <input type="text" id="repl-variant-${pid}-${eid}" placeholder="Variante (optionnel)" style="flex:1;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:5px 8px;font-size:11px;color:var(--muted);font-style:italic;outline:none">
-      <select id="repl-method-${pid}-${eid}" onchange="toggleReplTempo('${pid}','${eid}')" style="background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:5px 8px;font-size:11px;color:var(--text);outline:none">${methodOpts}</select>
+    <div class="repl-line"><label class="repl-lbl">Variante</label>
+      <input type="text" id="repl-variant-${pid}-${eid}" placeholder="ex : haltères, prise serrée… (optionnel)" class="repl-inp" style="font-style:italic">
+    </div>
+    <div class="repl-line"><label class="repl-lbl">Méthode</label>
+      <select id="repl-method-${pid}-${eid}" onchange="toggleReplTempo('${pid}','${eid}')" class="repl-inp">${methodOpts}</select>
     </div>
     <div id="repl-tempo-${pid}-${eid}" style="display:${curMethod==='Tempo'?'flex':'none'};gap:4px;align-items:center;margin-bottom:6px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:var(--rs);padding:6px 8px">
       <span style="font-size:10px;font-weight:700;color:#a855f7">⏱</span>
@@ -6884,6 +6893,8 @@ function openReplaceExo(pid,eid,oldName,currentMethod){
     if(nameInp) nameInp.value=_existRepl.newName||'';
     const varInp=document.getElementById(`repl-variant-${pid}-${eid}`);
     if(varInp) varInp.value=_existRepl.variant||'';
+    const mInp=document.getElementById(`repl-method-${pid}-${eid}`);
+    if(mInp&&_existRepl.method){ mInp.value=_existRepl.method; toggleReplTempo(pid,eid); }
     if(_existRepl.methodData&&_existRepl.methodData.tempo){
       const tp=_existRepl.methodData.tempo.split('-');
       const t1=document.getElementById(`repl-t1-${pid}-${eid}`);if(t1&&tp[0])t1.value=tp[0];
@@ -6930,8 +6941,40 @@ function confirmReplaceExo(pid,eid,oldName){
   const btn=document.querySelector(`[onclick*="openReplaceExo('${pid}',${eid}"]`);
   if(btn){btn.textContent='✅ Remplacé';btn.style.color='var(--info)';}
   showToast(`🔄 ${oldName} → ${newName}`,true);
-  // Re-render programme to apply method change visually
-  try{renderClientProg();}catch(e){}
+  // Ré-affiche le programme en gardant la semaine, la séance et la position à l'écran
+  try{ const _ui=_saveProgUI(); renderClientProg(); _restoreProgUI(_ui,pid,eid); }catch(e){ try{renderClientProg();}catch(_){} }
+}
+
+// Mémorise / restaure la semaine, la séance ouvertes et le défilement du programme coaché
+function _saveProgUI(){
+  const root=document.getElementById('clp-programme')||document;
+  const st={weeks:[],stabs:[],scroll:0,win:window.scrollY};
+  root.querySelectorAll('.week-tabs-wrap').forEach(w=>{
+    const wt=w.querySelector('.week-tab.active');
+    const wc=w.querySelector('.week-tab-content.active');
+    const sc=wc?wc.querySelector('.seance-tab.active'):null;
+    st.weeks.push({key:w.id.replace(/-\d+$/,''),wi:wt?parseInt(wt.dataset.wi):null,si:sc?parseInt(sc.dataset.si):null});
+  });
+  root.querySelectorAll('.stab.active').forEach(t=>st.stabs.push(t.id));
+  const body=document.querySelector('#client-app .cbody'); st.scroll=body?body.scrollTop:0;
+  return st;
+}
+function _restoreProgUI(st,pid,eid){
+  if(!st) return;
+  const root=document.getElementById('clp-programme')||document;
+  st.weeks.forEach(w=>{
+    const wrap=[...root.querySelectorAll('.week-tabs-wrap')].find(x=>x.id.replace(/-\d+$/,'')===w.key);
+    if(!wrap) return;
+    if(w.wi!==null&&!isNaN(w.wi)) switchWeekTab(wrap.id,w.wi);
+    if(w.si!==null&&!isNaN(w.si)){
+      const wc=wrap.querySelector('.week-tab-content.active');
+      const btn=wc&&wc.querySelector(`.seance-tab[data-si="${w.si}"]`);
+      if(btn) switchAccSeanceTab(btn);
+    }
+  });
+  st.stabs.forEach(id=>{ const t=document.getElementById(id); if(t&&t.onclick) t.click(); });
+  const body=document.querySelector('#client-app .cbody'); if(body) body.scrollTop=st.scroll;
+  window.scrollTo(0,st.win);
 }
 
 function skipSeance(progId,seanceIdx,weekIdx){
