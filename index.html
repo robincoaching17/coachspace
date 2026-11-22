@@ -1960,8 +1960,15 @@ const DEFAULT_STATE={
 
 // Boot: wait for Firebase to load, then init S
 let S = loadState(); // immediate local load so app is usable offline
+// Photos des recettes par défaut (images/recettes/<id>.jpg)
+const RECIPE_PHOTOS={rd1:1,rd2:1,rd3:1,rd4:1,rd5:1};
+function _applyRecipePhotos(){
+  let changed=false;
+  (S.recipes||[]).forEach(r=>{ if(RECIPE_PHOTOS[r.id]&&!r.photo){ r.photo=`images/recettes/${r.id}.jpg`; changed=true; } });
+  return changed;
+}
 // Migrate: add default recipes if empty
-if(!S.recipes||S.recipes.length===0){S.recipes=DEFAULT_STATE.recipes.map(r=>({...r}));try{localStorage.setItem('cs_v5',JSON.stringify(S));}catch(e){}}
+if(!S.recipes||S.recipes.length===0){S.recipes=DEFAULT_STATE.recipes.map(r=>({...r}));try{localStorage.setItem('cs_v5',JSON.stringify(S));}catch(e){}}if(_applyRecipePhotos()){try{localStorage.setItem('cs_v5',JSON.stringify(S));}catch(e){}}
 
 // Once Firebase data arrives, refresh S and re-render
 if(window._fbReady){
@@ -1969,7 +1976,7 @@ if(window._fbReady){
     const fresh = loadState(); // re-read from localStorage (Firebase may have updated it)
     Object.assign(S, fresh);
     // Re-migrate recipes if Firebase had empty
-    if(!S.recipes||S.recipes.length===0){S.recipes=DEFAULT_STATE.recipes.map(r=>({...r}));try{localStorage.setItem('cs_v5',JSON.stringify(S));}catch(e){}}
+    if(!S.recipes||S.recipes.length===0){S.recipes=DEFAULT_STATE.recipes.map(r=>({...r}));try{localStorage.setItem('cs_v5',JSON.stringify(S));}catch(e){}}if(_applyRecipePhotos()){try{localStorage.setItem('cs_v5',JSON.stringify(S));}catch(e){}}
     // If landing screen is still shown, no re-render needed
     // If coach/client app is already shown, refresh
     if(document.getElementById('coach-app')?.classList.contains('active')){
@@ -6308,6 +6315,7 @@ function toggleResContent(id){
 function renderResCoach(){
   // Ensure recipes are loaded
   if(!S.recipes||S.recipes.length===0){S.recipes=DEFAULT_STATE.recipes.map(r=>({...r}));}
+  if(_applyRecipePhotos()){try{saveState();}catch(e){}}
   let h=`<div style="background:var(--red-dim);border:1px solid rgba(192,21,42,.2);border-radius:var(--rs);padding:12px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:10px" onclick="openEncyclopedia()">
     <span style="font-size:28px">📚</span>
     <div style="flex:1"><div style="font-weight:700;font-size:14px">Encyclopédie des exercices</div><div style="font-size:10px;color:var(--muted)">${EXERCISE_ENCYCLOPEDIA.length} exercices · Exécution, variantes, erreurs à éviter</div></div>
@@ -6397,7 +6405,7 @@ function openEditRes(id){const r=S.resources.find(x=>x.id===id);if(!r)return;$('
 function saveRes(){const id=$('mr-id').value;const r=S.resources.find(x=>x.id===id);if(!r)return;r.content=$('mr-content').value;saveState();closeModal('mod-res');renderResCoach();showToast('✅ Sauvegardé',true);}
 
 function recipeCardHTML(r,withActions=false){
-  return `<div class="recipe-card" onclick="viewRecipe('${r.id}')">${r.photo?`<img class="rc-img" src="${r.photo}" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`:''}<div class="rc-ph" style="${r.photo?'display:none':''}">🍽️</div><div class="rc-body"><div class="rc-cat">${r.category}</div><div class="rc-name">${r.name}</div><div class="rc-macros">${r.calories?`<div class="rc-macro"><span>${r.calories}</span>kcal</div>`:''}${r.proteines?`<div class="rc-macro"><span>${r.proteines}g</span>prot</div>`:''}${r.glucides?`<div class="rc-macro"><span>${r.glucides}g</span>gluc</div>`:''}${r.lipides?`<div class="rc-macro"><span>${r.lipides}g</span>lip</div>`:''}</div>${withActions?`<div style="margin-top:8px;display:flex;gap:4px"><button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openEditRecipe('${r.id}')">✏️</button><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();deleteRecipe('${r.id}')">🗑</button></div>`:''}</div></div>`;
+  return `<div class="recipe-card" onclick="viewRecipe('${r.id}')">${r.photo?`<img class="rc-img" loading="lazy" src="${r.photo}" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`:''}<div class="rc-ph" style="${r.photo?'display:none':''}">🍽️</div><div class="rc-body"><div class="rc-cat">${r.category}</div><div class="rc-name">${r.name}</div><div class="rc-macros">${r.calories?`<div class="rc-macro"><span>${r.calories}</span>kcal</div>`:''}${r.proteines?`<div class="rc-macro"><span>${r.proteines}g</span>prot</div>`:''}${r.glucides?`<div class="rc-macro"><span>${r.glucides}g</span>gluc</div>`:''}${r.lipides?`<div class="rc-macro"><span>${r.lipides}g</span>lip</div>`:''}</div>${withActions?`<div style="margin-top:8px;display:flex;gap:4px"><button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openEditRecipe('${r.id}')">✏️</button><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();deleteRecipe('${r.id}')">🗑</button></div>`:''}</div></div>`;
 }
 function viewRecipe(id){
   const r=S.recipes.find(x=>x.id===id);if(!r)return;
@@ -8518,6 +8526,7 @@ function renderClientRes(){
   const el=$('cl-res-view');if(!el)return;
   // Ensure recipes are loaded
   if(!S.recipes||S.recipes.length===0){S.recipes=DEFAULT_STATE.recipes.map(r=>({...r}));}
+  if(_applyRecipePhotos()){try{saveState();}catch(e){}}
   let h=`<div style="font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:12px">Mes <span style="color:var(--red)">ressources</span></div>
   <div style="background:var(--red-dim);border:1px solid rgba(192,21,42,.2);border-radius:var(--rs);padding:12px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:10px" onclick="openEncyclopedia()">
     <span style="font-size:28px">📚</span>
