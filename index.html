@@ -1961,7 +1961,7 @@ const DEFAULT_STATE={
 // Boot: wait for Firebase to load, then init S
 let S = loadState(); // immediate local load so app is usable offline
 // Photos des recettes par défaut (images/recettes/<id>.jpg)
-const RECIPE_PHOTOS={rd1:1,rd2:1,rd3:1,rd4:1,rd5:1};
+const RECIPE_PHOTOS={rd1:1,rd2:1,rd3:1,rd4:1,rd5:1,rd6:1,rd7:1,rd8:1,rd9:1,rd10:1,rd11:1,rd12:1,rd13:1,rd14:1,rd15:1,rd16:1,rd17:1,rd18:1,rd19:1,rd20:1}; // rd1-5 : Canva IA · rd6-20 : Unsplash (licence libre)
 function _applyRecipePhotos(){
   let changed=false;
   (S.recipes||[]).forEach(r=>{ if(RECIPE_PHOTOS[r.id]&&!r.photo){ r.photo=`images/recettes/${r.id}.jpg`; changed=true; } });
