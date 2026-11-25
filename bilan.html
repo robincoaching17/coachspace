@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#0d0d0e">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='35' width='15' height='30' rx='3' fill='%23c0152a'/%3E%3Crect x='75' y='35' width='15' height='30' rx='3' fill='%23c0152a'/%3E%3Crect x='25' y='45' width='50' height='10' rx='2' fill='%23c0152a'/%3E%3Crect x='5' y='30' width='8' height='40' rx='3' fill='%23c0152a'/%3E%3Crect x='87' y='30' width='8' height='40' rx='3' fill='%23c0152a'/%3E%3C/svg%3E">
 <title>Bilan Gratuit — Robin Coaching France</title>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Manrope:wght@400;600;700;800&family=Oswald:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0c0c0e;--s1:#131316;--s2:#1a1a1f;--s3:#222228;--border:#2d2d35;
@@ -21,7 +21,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
-  font-family:'Nunito',sans-serif;
+  font-family:'Manrope','Nunito',sans-serif;
   background:var(--bg);color:var(--text);
   min-height:100vh;min-height:100dvh;
   display:flex;flex-direction:column;align-items:center;
@@ -30,18 +30,18 @@ body{
 .screen{display:none;width:100%;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;}
 .screen.active{display:flex;}
 .login-box{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);padding:36px;width:560px;max-width:95vw;box-sizing:border-box;overflow:hidden;}
-.login-title{font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:4px;}
+.login-title{font-family:'Barlow Condensed','Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;margin-bottom:4px;}
 .field{margin-bottom:12px;}
 .flabel{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:5px;display:block;}
 input[type="text"],input[type="email"],input[type="tel"],input[type="number"],textarea,select{
   width:100%;padding:10px 14px;background:var(--s2);border:1px solid var(--border);
-  border-radius:var(--rs);color:var(--text);font-size:14px;font-family:'Nunito',sans-serif;
+  border-radius:var(--rs);color:var(--text);font-size:14px;font-family:'Manrope','Nunito',sans-serif;
   outline:none;transition:border .2s;
 }
 input:focus,textarea:focus,select:focus{border-color:var(--red);}
 select{cursor:pointer;}
 select option{background:var(--s2);color:var(--text);}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--rs);font-weight:700;font-size:13px;border:none;cursor:pointer;transition:all .15s;font-family:'Nunito',sans-serif;text-decoration:none;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--rs);font-weight:700;font-size:13px;border:none;cursor:pointer;transition:all .15s;font-family:'Manrope','Nunito',sans-serif;text-decoration:none;}
 .btn-red{background:var(--red);color:#fff;}
 .btn-red:hover{background:var(--red2);transform:translateY(-1px);box-shadow:0 5px 16px var(--red-glow);}
 .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);}
@@ -57,7 +57,7 @@ select option{background:var(--s2);color:var(--text);}
 .pr-steps-label{font-size:10px;color:var(--muted);text-align:center;margin-bottom:14px;letter-spacing:.5px;}
 .pr-step{display:none;}
 .pr-step.active{display:block;animation:fadeIn .25s ease;}
-.pr-step-title{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;color:var(--text);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.pr-step-title{font-family:'Barlow Condensed','Oswald',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;color:var(--text);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
 .pr-nav{display:flex;gap:8px;margin-top:16px;}
 .pr-nav .btn{flex:1;justify-content:center;padding:12px;}
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);padding:10px 22px;font-size:13px;font-weight:700;opacity:0;transition:opacity .3s;z-index:99999;pointer-events:none;}
@@ -77,11 +77,11 @@ select option{background:var(--s2);color:var(--text);}
 /* ---- Réservation du bilan ---- */
 .bk-week{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .bk-week .btn{padding:8px 12px}
-.bk-week-lbl{font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;letter-spacing:.5px;text-align:center;flex:1}
+.bk-week-lbl{font-family:'Barlow Condensed','Oswald',sans-serif;font-size:14px;font-weight:600;letter-spacing:.5px;text-align:center;flex:1}
 .bk-day{margin-bottom:10px}
 .bk-day-name{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
 .bk-hours{display:flex;flex-wrap:wrap;gap:6px}
-.bk-hour{padding:9px 14px;border-radius:var(--rs);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--success);font-weight:800;font-size:13px;cursor:pointer;transition:all .15s;font-family:'Nunito',sans-serif}
+.bk-hour{padding:9px 14px;border-radius:var(--rs);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--success);font-weight:800;font-size:13px;cursor:pointer;transition:all .15s;font-family:'Manrope','Nunito',sans-serif}
 .bk-hour:hover{background:rgba(34,197,94,.2)}
 .bk-hour.sel{background:var(--success);color:#000;border-color:var(--success);box-shadow:0 4px 14px rgba(34,197,94,.3)}
 .bk-empty{font-size:12px;color:var(--muted);text-align:center;padding:18px 10px;background:var(--s2);border-radius:var(--rs);border:1px dashed var(--border)}
@@ -94,6 +94,14 @@ select option{background:var(--s2);color:var(--text);}
 .bk-chosen{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:var(--rs);padding:10px 12px;font-size:13px;margin-top:12px;display:none}
 .bk-loading{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 .obj-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+
+:root{--bg:#09090b;--s1:#111114;--s2:#17171b;--s3:#212127;--border:rgba(255,255,255,.08);--red:#e3202f;--red2:#ff4b3e;--red-dim:rgba(227,32,47,.13);--red-glow:rgba(227,32,47,.38);--muted:#8c8c97;--text:#f5f2ee;--success:#2fd36f;--r:16px;--rs:11px;--rl:24px}
+body{background:radial-gradient(600px 380px at 50% 0%,rgba(227,32,47,.2),transparent 70%),var(--bg)}
+.login-box{border-radius:26px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.01)),var(--s1);border:1px solid rgba(255,255,255,.09);box-shadow:0 40px 90px -30px rgba(0,0,0,.8);position:relative;overflow:hidden}
+.login-box::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(135deg,#e3202f,#ff4b3e)}
+.btn{border-radius:12px}.btn-red{background:linear-gradient(135deg,#e3202f,#ff4b3e);box-shadow:0 8px 22px -8px var(--red-glow)}
+input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px var(--red-dim)}
+.login-title,.pr-step-title{text-transform:uppercase;letter-spacing:.8px}
 </style>
 </head>
 <body>
@@ -102,7 +110,7 @@ select option{background:var(--s2);color:var(--text);}
 <div id="form-screen" class="screen active" style="overflow-y:auto !important;overflow-x:hidden">
   <div class="login-box" style="max-width:560px;width:90vw;box-sizing:border-box;overflow:hidden">
     <div style="text-align:center;margin-bottom:20px">
-      <div style="font-family:'Oswald',sans-serif;font-size:32px;font-weight:700;letter-spacing:3px;margin-bottom:4px">ROBIN <span style="color:var(--red)">COACHING</span></div>
+      <div style="font-family:'Barlow Condensed','Oswald',sans-serif;font-size:32px;font-weight:700;letter-spacing:3px;margin-bottom:4px">ROBIN <span style="color:var(--red)">COACHING</span></div>
       <div style="font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:16px">COACH SPORTIF · AIX-EN-PROVENCE</div>
       <div class="login-title">🎯 Bilan <span style="color:var(--red)">Gratuit</span></div>
       <div style="font-size:12px;color:var(--muted)">2 étapes, moins d'une minute : tes coordonnées, puis ton créneau</div>
@@ -186,7 +194,7 @@ select option{background:var(--s2);color:var(--text);}
     <div class="login-title" style="font-size:22px" id="cf-title">Demande envoyée !</div>
     <div style="font-size:13px;color:var(--muted);margin:12px 0 16px;line-height:1.7" id="cf-text"></div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:14px;text-align:left;font-size:12px;line-height:1.8">
-      <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">POUR TON BILAN, PENSE À :</div>
+      <div style="font-family:'Barlow Condensed','Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">POUR TON BILAN, PENSE À :</div>
       <div>✅ Venir en tenue de sport</div>
       <div>✅ Noter tes objectifs et tes questions</div>
       <div>✅ Signaler toute blessure ou douleur</div>
@@ -204,7 +212,7 @@ select option{background:var(--s2);color:var(--text);}
 <div class="sending-overlay" id="sending-overlay">
   <div class="sending-box">
     <div class="sending-spinner"></div>
-    <div style="font-family:'Oswald',sans-serif;font-size:16px;letter-spacing:1px">Envoi en cours...</div>
+    <div style="font-family:'Barlow Condensed','Oswald',sans-serif;font-size:16px;letter-spacing:1px">Envoi en cours...</div>
   </div>
 </div>
 
