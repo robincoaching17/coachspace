@@ -1370,11 +1370,17 @@ body.light-theme img[src*="rcf-logo"]{content:url(icons/rcf-logo-light.svg);filt
 body.light-theme img[src*="rcf-badge"]{content:url(icons/rcf-badge-light.svg);filter:none!important}
 body.light-theme #landing>img,body.light-theme .sl img{filter:brightness(0) invert(1)!important}
 /* Sélecteur de thème */
-.theme-seg{display:flex;gap:4px;padding:4px;border-radius:12px;background:var(--s2);border:1px solid var(--border)}
-.theme-seg button{flex:1;min-height:40px;border:0;border-radius:9px;background:transparent;color:var(--muted);font:700 13px var(--f-body);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
-.theme-seg button.on{background:var(--red);color:#fff}
 body.light-theme{background:var(--bg)!important}
 
+
+.theme-sw{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:6px 14px;border-radius:12px;background:var(--s2);border:1px solid var(--border);cursor:pointer;-webkit-user-select:none;user-select:none}
+.theme-sw-t{font-weight:700;font-size:14px;color:var(--text)}
+.theme-cb{position:absolute;opacity:0;width:1px;height:1px}
+.theme-sw-k{position:relative;flex:none;width:51px;height:31px;border-radius:999px;background:var(--s3);border:1px solid var(--border);transition:background .25s}
+.theme-sw-k::after{content:'';position:absolute;top:2px;left:2px;width:25px;height:25px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .25s}
+.theme-cb:checked+.theme-sw-k{background:#34c759;border-color:#34c759}
+.theme-cb:checked+.theme-sw-k::after{transform:translateX(20px)}
+.theme-cb:focus-visible+.theme-sw-k{outline:3px solid var(--red-dim);outline-offset:2px}
 </style>
   <!-- Firebase SDK -->
   <script type="module">
@@ -1421,7 +1427,7 @@ body.light-theme{background:var(--bg)!important}
   </script>
 </head>
 <body>
-<script>try{var _p=localStorage.getItem('cs_theme')||'dark';if(_p==='light'||(_p==='auto'&&matchMedia('(prefers-color-scheme: light)').matches))document.body.classList.add('light-theme');}catch(e){}</script>
+<script>try{var _p=localStorage.getItem('cs_theme')||'dark';if(_p==='light')document.body.classList.add('light-theme');}catch(e){}</script>
 
 <div id="landing" class="screen active">
   <div class="l-app-name">COACH<span>SPACE</span></div>
@@ -1928,10 +1934,7 @@ body.light-theme{background:var(--bg)!important}
         <div class="panel" style="max-width:460px">
           <div class="panel-hd"><div class="panel-title">Mon profil</div></div>
           <div class="panel-body">
-            <div class="field"><label class="flabel">Thème de l'appli (sur cet appareil)</label><div class="theme-seg" role="radiogroup" aria-label="Thème">
-<button type="button" data-th="dark" onclick="setTheme('dark')">Sombre</button>
-<button type="button" data-th="light" onclick="setTheme('light')">Clair</button>
-<button type="button" data-th="auto" onclick="setTheme('auto')">Auto</button></div></div>
+            <div class="field"><label class="theme-sw"><span class="theme-sw-t">Thème clair</span><input type="checkbox" class="theme-cb" role="switch" onchange="setTheme(this.checked?'light':'dark')"><span class="theme-sw-k" aria-hidden="true"></span></label></div>
             <div class="field"><label class="flabel">Prénom</label><input type="text" id="set-name" placeholder="Robin"></div>
             <div class="field"><label class="flabel">Nouveau mot de passe</label><input type="password" id="set-pwd" placeholder="Laisser vide pour ne pas changer"></div>
             <button class="btn btn-red" onclick="saveSettings()">Sauvegarder</button>
@@ -2009,10 +2012,7 @@ body.light-theme{background:var(--bg)!important}
     <button class="cld-item" data-tab="contact" onclick="clDrawerGo('contact')"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4.5 6.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H11l-4.5 3.5v-3.5h0a2 2 0 0 1-2-2z"/><path d="M8.5 9.5h7M8.5 12.5h4" class="a"/></svg><span class="cld-txt"><span class="cld-t">Contact</span><span class="cld-s">Joindre ton coach</span></span></button>
     <button class="cld-item" data-tab="profil" onclick="clDrawerGo('profil')"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M5 20c0-3.9 3.1-6.5 7-6.5s7 2.6 7 6.5"/><path d="M10 20h4" class="a"/></svg><span class="cld-txt"><span class="cld-t">Mon profil</span><span class="cld-s">Infos, mesures, progression</span></span></button>
   </nav>
-  <div style="margin:6px 14px 0"><div class="cld-s" style="margin:0 0 6px 4px">Thème</div><div class="theme-seg" role="radiogroup" aria-label="Thème">
-<button type="button" data-th="dark" onclick="setTheme('dark')">Sombre</button>
-<button type="button" data-th="light" onclick="setTheme('light')">Clair</button>
-<button type="button" data-th="auto" onclick="setTheme('auto')">Auto</button></div></div>
+  <div style="margin:6px 14px 0"><label class="theme-sw"><span class="theme-sw-t">Thème clair</span><input type="checkbox" class="theme-cb" role="switch" onchange="setTheme(this.checked?'light':'dark')"><span class="theme-sw-k" aria-hidden="true"></span></label></div>
   <button class="cld-logout" onclick="closeClDrawer();goLanding()">Se déconnecter</button>
 </aside>
 </div>
@@ -6982,17 +6982,16 @@ function renderClientNotifs(){
 }
 
 function _themePref(){try{return localStorage.getItem('cs_theme')||'dark';}catch(e){return 'dark';}}
-function _themeIsLight(p){p=p||_themePref();if(p==='auto'){try{return window.matchMedia('(prefers-color-scheme: light)').matches;}catch(e){return false;}}return p==='light';}
+function _themeIsLight(p){return (p||_themePref())==='light';}
 function setTheme(p){try{localStorage.setItem('cs_theme',p);}catch(e){}applyTheme();}
 function toggleTheme(){setTheme(_themeIsLight()?'dark':'light');}
-function updateThemeUI(){const p=_themePref();document.querySelectorAll('.theme-seg button').forEach(b=>{const on=b.dataset.th===p;b.classList.toggle('on',on);b.setAttribute('role','radio');b.setAttribute('aria-checked',on);});}
+function updateThemeUI(){const l=_themeIsLight();document.querySelectorAll('.theme-cb').forEach(c=>{c.checked=l;});}
 function applyTheme(){
   const light=_themeIsLight();
   document.body.classList.toggle('light-theme',light);
   const m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',light?'#2547f4':'#09090b');
   updateThemeUI();
 }
-try{window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{if(_themePref()==='auto')applyTheme();});}catch(e){}
 document.addEventListener('DOMContentLoaded',()=>{try{applyTheme();}catch(e){}});
 
 function saveSettings(){const n=$('set-name').value.trim();if(n)S.coachName=n;const p=$('set-pwd').value.trim();if(p)S.coachPassword=p;saveState();$('c-greet').textContent=S.coachName;$('c-name').textContent=S.coachName;showToast('✅ Paramètres sauvegardés',true);}
