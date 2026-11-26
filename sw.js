@@ -2,7 +2,7 @@
 // - Pages : réseau d'abord (toujours la dernière version en ligne), copie de secours si pas de réseau
 // - Icônes : mises en cache
 // - Firebase, polices et autres sites : jamais interceptés
-const CACHE = 'coachspace-v1';
+const CACHE = 'coachspace-v2';
 const PRECACHE = ['/', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', event => {
